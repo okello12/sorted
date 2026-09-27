@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@import "@fontsource/atkinson-hyperlegible/latin-400.css";
+@import "@fontsource/atkinson-hyperlegible/latin-700.css";
+@import "@fontsource/fraunces/latin-600.css";
+
+@theme {
+  --font-sans: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+
+  --color-navy: #10182b;
+  --color-ink: #172033;
+  --color-paper: #f3f0ea;
+  --color-card: #ffffff;
+  --color-yellow: #f0c14a;
+  --color-lilac: #efe6ff;
+  --color-butter: #fbf3d0;
+  --color-sky: #e5f1fb;
+  --color-peach: #fde8dc;
+  --color-official: #e7f2fb;
+  --color-brown: #7a3b24;
+  --color-orange: #d4652f;
+  --color-line: #e4ddd2;
+  --color-muted: #5c6570;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.45;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-navy);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition: none !important;
+    }
+  }
+}
+
+@layer components {
+  .field {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    margin-top: 0.45rem;
+    width: 100%;
+    min-height: 3.25rem;
+    border-radius: 0.9rem;
+    border: 1px solid #ddd6cc;
+    background: #fbfaf8;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    font-weight: 400;
+    color: var(--color-ink);
+  }
+
+  .field textarea {
+    min-height: 6.5rem;
+    resize: vertical;
+  }
+
+  .hint {
+    margin-top: 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+}

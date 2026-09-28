@@ -101,7 +101,7 @@ export function prepareState(task: SortedTask, now: Date): PrepareState {
 }
 
 export function prepareTitle(task: SortedTask, now: Date, state: PrepareState): string {
-  if (state === "missed") return "Nothing logged yet";
+  if (state === "missed") return "Check outcome";
   const due = task.dueAt ? new Date(task.dueAt) : null;
   if (!due) return "Due";
   const sameDay = startOfDay(now).getTime() === startOfDay(due).getTime();
@@ -115,13 +115,13 @@ export function formatWhen(dueAt: string | null, dueEnd: string | null): string 
   const start = clock(due);
   if (!dueEnd) return `${date}  ${start}`;
   const end = new Date(dueEnd);
-  return `${date}  ${start}\u2013${clock(end)}`;
+  return `${date}  ${start}–${clock(end)}`;
 }
 
 export function listMeta(task: SortedTask, now: Date): string {
   const state = prepareState(task, now);
-  if (state === "prepare" && task.dueAt) return `${prepareTitle(task, now, state)} \u00b7 ${clock(new Date(task.dueAt))}`;
-  if (state === "missed") return "Nothing logged yet";
+  if (state === "prepare" && task.dueAt) return `${prepareTitle(task, now, state)} · ${clock(new Date(task.dueAt))}`;
+  if (state === "missed") return "Check outcome";
   if (task.board === "done") return task.outcome || "Finished";
   if (task.board === "waiting" && task.dueAt) return formatWhen(task.dueAt, task.dueEnd);
   if (task.expiry) return `Expires ${task.expiry}`;
@@ -157,88 +157,64 @@ function at(now: Date, dayOffset: number, hours: number, minutes: number): strin
 }
 
 function event(label: string, hoursAgo = 0): ThreadEvent {
-  return { id: label.slice(0, 12), at: new Date(Date.now() - hoursAgo * 3600000).toISOString(), label };
+  return { id: `${label.slice(0, 12)}-${hoursAgo}`, at: new Date(Date.now() - hoursAgo * 3600000).toISOString(), label };
 }
 
 export function buildSeed(now: Date): SortedTask[] {
-  const due = at(now, 1, 14, 0);
-  const end = at(now, 1, 16, 0);
+  const due = at(now, 1, 8, 0);
+  const end = at(now, 1, 13, 0);
   return [
+    {
+      id: "heat",
+      mode: "fix",
+      title: "Heating",
+      baseline: "I was going to call the letting agent again.",
+      board: "your_move",
+      item: "Boiler and radiators",
+      fault: "No heating",
+      bought: "",
+      retailer: "",
+      renewing: "",
+      expiry: "",
+      contact: "Oakridge Lettings",
+      ask: "Confirm when an engineer is coming.",
+      phone: "",
+      callAdded: true,
+      promise: "",
+      dueAt: null,
+      dueEnd: null,
+      reference: "",
+      party: "Oakridge Lettings",
+      outcome: "",
+      events: [event("You recorded that the heating is still not working.", 2)],
+    },
     {
       id: "wash",
       mode: "fix",
-      title: "Washing machine won\u2019t drain",
-      baseline: "I was going to search why it won\u2019t drain.",
+      title: "Washing machine",
+      baseline: "I was going to call the retailer.",
       board: "waiting",
-      item: "Bosch",
-      fault: "Won\u2019t drain",
+      item: "Bosch washing machine",
+      fault: "Won’t drain",
       bought: "Mar 2023",
       retailer: "John Lewis",
       renewing: "",
       expiry: "",
       contact: "John Lewis",
-      ask: "Send an engineer. It\u2019s still under warranty.",
+      ask: "Send an engineer. It’s still under warranty.",
       phone: "",
       callAdded: true,
-      promise: "Engineer to replace the pump",
+      promise: "Engineer visit",
       dueAt: due,
       dueEnd: end,
-      reference: "A1842",
-      party: "John Lewis engineer",
+      reference: "OL-55821",
+      party: "John Lewis",
       outcome: "",
       events: [
-        event("Started in Fix. Still under warranty, so this needs a call.", 30),
-        event("Call added: John Lewis, ask for an engineer.", 26),
-        event("They promised an engineer, Tue 14:00\u201316:00, ref A1842.", 20),
+        event("You recorded the washing machine fault.", 30),
+        event("You called John Lewis and asked for an engineer.", 26),
+        event("They promised an engineer visit and gave reference OL-55821.", 20),
       ],
-    },
-    {
-      id: "passport",
-      mode: "renew",
-      title: "Renew my passport",
-      baseline: "I was going to leave it until the month it expires.",
-      board: "your_move",
-      item: "",
-      fault: "",
-      bought: "",
-      retailer: "",
-      renewing: "UK passport",
-      expiry: "12 Dec 2026",
-      contact: "",
-      ask: "",
-      phone: "",
-      callAdded: false,
-      promise: "",
-      dueAt: null,
-      dueEnd: null,
-      reference: "",
-      party: "",
-      outcome: "",
-      events: [event("Renewal started. Official page not opened yet.", 5)],
-    },
-    {
-      id: "energy",
-      mode: "call",
-      title: "Call about the energy bill",
-      baseline: "I was going to pay whatever the letter said.",
-      board: "to_sort",
-      item: "",
-      fault: "",
-      bought: "",
-      retailer: "",
-      renewing: "",
-      expiry: "",
-      contact: "The supplier on the account I already use",
-      ask: "Explain the bill and confirm the correct amount.",
-      phone: "",
-      callAdded: true,
-      promise: "",
-      dueAt: null,
-      dueEnd: null,
-      reference: "",
-      party: "",
-      outcome: "",
-      events: [event("Call drafted. Not made yet.", 2)],
     },
   ];
 }

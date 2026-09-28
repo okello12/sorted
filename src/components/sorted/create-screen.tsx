@@ -25,11 +25,15 @@ export function CreateScreen({ mode }: { mode: Mode }) {
       <Link to="/" className="mb-4 inline-flex items-center gap-1 text-base font-bold text-navy no-underline">
         <span aria-hidden>←</span> All tasks
       </Link>
-      <section className="rounded-3xl bg-card p-4 shadow-[0_8px_30px_rgba(16,24,43,0.04)]">
-        <div className="flex items-center gap-3">
-          <ModeIcon mode={mode} />
-          <h1 className="text-2xl font-bold text-ink">{modeTitle(mode)}</h1>
+      <section className="overflow-hidden rounded-3xl bg-card shadow-[4px_4px_0_#10182b]">
+        <div className={`flex items-center gap-3 px-4 py-4 ${mode === "fix" ? "bg-lilac" : mode === "renew" ? "bg-butter" : "bg-sky"}`}>
+          <ModeIcon mode={mode} large />
+          <div>
+            <p className="text-sm font-bold tracking-wide text-navy">{step === "baseline" ? "First, your plan" : "Then the facts"}</p>
+            <h1 className="font-display text-3xl leading-none text-ink">{modeTitle(mode)}</h1>
+          </div>
         </div>
+        <div className="p-4">
 
         {step === "baseline" ? (
           <form
@@ -37,7 +41,7 @@ export function CreateScreen({ mode }: { mode: Mode }) {
             onSubmit={(event) => {
               event.preventDefault();
               if (baseline.trim().length < 3) {
-                setError("Write what you were about to do, even if it was \u201cleave it\u201d.");
+                setError("Write what you were about to do, even if it was “leave it”.");
                 return;
               }
               setError("");
@@ -50,7 +54,7 @@ export function CreateScreen({ mode }: { mode: Mode }) {
               <textarea value={baseline} onChange={(event) => setBaseline(event.target.value)} rows={3} />
             </label>
             {error ? <p className="mt-3 text-base text-brown">{error}</p> : null}
-            <button type="submit" className="mt-5 min-h-12 rounded-full bg-navy px-5 text-lg font-bold text-card">
+            <button type="submit" className="btn btn-yellow mt-5">
               Continue
             </button>
           </form>
@@ -136,11 +140,12 @@ export function CreateScreen({ mode }: { mode: Mode }) {
               </>
             ) : null}
             {error ? <p className="text-base text-brown">{error}</p> : null}
-            <button type="submit" className="min-h-12 w-fit rounded-full bg-navy px-5 text-lg font-bold text-card">
-              Create task +
+            <button type="submit" className="btn btn-navy w-fit">
+              Create task
             </button>
           </form>
         )}
+        </div>
       </section>
     </Frame>
   );

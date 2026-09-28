@@ -9,7 +9,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Sorted" },
-      { name: "description", content: "Fix it, renew it, or make the call — and keep what they promised on the same task." },
+      { name: "description", content: "One task, from the first question to what they promised — shown again when that promise is due." },
       { name: "theme-color", content: "#10182b" },
     ],
     links: [

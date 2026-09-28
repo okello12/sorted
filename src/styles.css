@@ -9,17 +9,20 @@
 
   --color-navy: #10182b;
   --color-ink: #172033;
-  --color-paper: #f3f0ea;
-  --color-card: #ffffff;
+  --color-paper: #f3ecdf;
+  --color-card: #fffdf8;
   --color-yellow: #f0c14a;
-  --color-lilac: #efe6ff;
-  --color-butter: #fbf3d0;
-  --color-sky: #e5f1fb;
-  --color-peach: #fde8dc;
-  --color-official: #e7f2fb;
-  --color-brown: #7a3b24;
-  --color-orange: #d4652f;
-  --color-line: #e4ddd2;
+  --color-lilac: #ddd0ff;
+  --color-plum: #3c2a78;
+  --color-butter: #ffd56a;
+  --color-amber: #8a4514;
+  --color-sky: #b7e3f7;
+  --color-sea: #0d4f73;
+  --color-peach: #ffd4bf;
+  --color-official: #d5ebf8;
+  --color-brown: #6e3018;
+  --color-orange: #e15a28;
+  --color-line: #e4d7c4;
   --color-muted: #5c6570;
 }
 
@@ -31,7 +34,11 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: var(--color-paper);
+    background-color: var(--color-paper);
+    background-image:
+      linear-gradient(90deg, rgba(16, 24, 43, 0.035) 1px, transparent 1px),
+      linear-gradient(rgba(16, 24, 43, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 1.0625rem;
@@ -73,8 +80,8 @@
     width: 100%;
     min-height: 3.25rem;
     border-radius: 0.9rem;
-    border: 1px solid #ddd6cc;
-    background: #fbfaf8;
+    border: 1px solid var(--color-line);
+    background: #fffaf3;
     padding: 0.7rem 0.9rem;
     font: inherit;
     font-weight: 400;
@@ -91,5 +98,75 @@
     font-size: 0.95rem;
     font-weight: 400;
     color: var(--color-muted);
+  }
+
+  .docket {
+    overflow: hidden;
+    border-radius: 1.6rem;
+    background: var(--color-card);
+    box-shadow:
+      0 0 0 1px rgba(16, 24, 43, 0.08),
+      0 16px 40px rgba(16, 24, 43, 0.08);
+  }
+
+  .docket-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--color-navy);
+    color: var(--color-card);
+    padding: 1.1rem 1.15rem 1rem;
+  }
+
+  .docket-body {
+    padding: 1.15rem;
+  }
+
+  .stamp {
+    display: grid;
+    min-width: 4.5rem;
+    place-items: center;
+    border: 2px dashed var(--color-yellow);
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+    color: var(--color-yellow);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  .perforation {
+    height: 1rem;
+    background:
+      radial-gradient(circle at 12px 0, transparent 8px, var(--color-paper) 9px) left top / 24px 12px repeat-x,
+      var(--color-peach);
+  }
+
+  .btn {
+    min-height: 3rem;
+    border-radius: 999px;
+    padding: 0.65rem 1.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .btn-navy {
+    background: var(--color-navy);
+    color: var(--color-card);
+    box-shadow: 4px 4px 0 var(--color-yellow);
+  }
+
+  .btn-yellow {
+    background: var(--color-yellow);
+    color: var(--color-navy);
+    box-shadow: 4px 4px 0 var(--color-navy);
+  }
+
+  .btn-paper {
+    background: var(--color-card);
+    color: var(--color-navy);
+    box-shadow: 4px 4px 0 var(--color-line);
   }
 }

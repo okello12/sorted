@@ -18,7 +18,7 @@ export function AppHeader({ share = false }: { share?: boolean }) {
       <Mark />
       <span>
         <span className="block text-3xl font-bold leading-none tracking-tight">sorted.</span>
-        <span className="mt-1 block text-sm font-bold text-yellow">{share ? "One task, for someone else" : "On this phone"}</span>
+        <span className="mt-1 block text-sm font-bold text-yellow">{share ? "One case, for someone else" : "One case, all the way"}</span>
       </span>
     </span>
   );
@@ -31,13 +31,7 @@ export function AppHeader({ share = false }: { share?: boolean }) {
             {word}
           </Link>
         )}
-        <span className="hidden text-right text-sm font-bold text-card/80 sm:block">
-          Fix
-          <span className="text-yellow"> · </span>
-          Renew
-          <span className="text-yellow"> · </span>
-          Call
-        </span>
+        <span className="hidden text-right text-sm font-bold text-card/70 sm:block">The situation stays together.</span>
       </div>
     </header>
   );
@@ -138,9 +132,9 @@ export function ProtectPanel() {
       <div className="flex">
         <div className="w-2 shrink-0 bg-orange" aria-hidden />
         <div className="p-4">
-          <h2 className="text-lg font-bold">Protect yourself before calling</h2>
+          <h2 className="text-lg font-bold">Use a number you trust</h2>
           <p className="mt-2 text-base leading-snug">
-            Use the organisation’s official website or an account you already trust. Do not rely on a number in an unexpected text or letter.
+            Prefer the number on the organisation’s official website, your statement or a number you already use. Be cautious with numbers in unexpected texts or emails.
           </p>
         </div>
       </div>
@@ -150,63 +144,50 @@ export function ProtectPanel() {
 
 export function OfficialPanel({ href }: { href: string | null }) {
   return (
-    <aside className="overflow-hidden rounded-2xl bg-official text-sea">
+    <aside className="overflow-hidden rounded-2xl bg-sky text-sea">
       <div className="flex">
         <div className="w-2 shrink-0 bg-sea" aria-hidden />
         <div className="p-4">
-          <h2 className="text-lg font-bold">Check the official process</h2>
-          <p className="mt-2 text-base leading-snug text-navy">
-            Check the official page before applying. You can usually apply online; Post Office help is optional.
-          </p>
+          <h2 className="text-lg font-bold">Official route first</h2>
+          <p className="mt-2 text-base leading-snug">Use the official service rather than a sponsored result or a link from an unexpected message.</p>
           {href ? (
-            <a href={href} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center gap-1 text-base font-bold text-sea underline">
-              Open trusted starting point
-              <span aria-hidden>↗</span>
+            <a href={href} target="_blank" rel="noreferrer" className="mt-3 inline-flex min-h-11 items-center font-bold text-sea underline">
+              Open the official page
             </a>
-          ) : (
-            <p className="mt-3 text-base text-navy">Use the account or letter you already have. Don’t follow a link from an unexpected text.</p>
-          )}
+          ) : null}
         </div>
       </div>
     </aside>
   );
 }
 
-export function HoldUpCard({
-  task,
-  eyebrow,
-}: {
-  task: Pick<SortedTask, "title" | "party" | "contact" | "dueAt" | "dueEnd" | "reference" | "item" | "fault" | "promise" | "renewing" | "expiry">;
-  eyebrow: string;
-}) {
-  const who = task.party || task.contact || task.title;
+export function HoldUpCard({ task, eyebrow }: { task: SortedTask; eyebrow: string }) {
   return (
-    <section className="docket">
-      <div className="docket-head">
-        <div>
-          <p className="text-sm font-bold tracking-[0.14em] text-yellow">{eyebrow}</p>
-          <h2 className="mt-2 font-display text-4xl leading-none text-balance">{who}</h2>
-        </div>
-        <p className="stamp">{task.reference ? task.reference : "No ref"}</p>
+    <section className="overflow-hidden rounded-3xl bg-card shadow-[6px_6px_0_#10182b]">
+      <div className="bg-navy px-4 py-3 text-card">
+        <p className="text-sm font-bold tracking-[0.14em] text-yellow">{eyebrow}</p>
+        <h2 className="mt-1 font-display text-3xl leading-tight">{task.title}</h2>
       </div>
-      <div className="h-3 bg-peach" aria-hidden />
-      <div className="docket-body">
-        <p className="text-xl font-bold text-navy">{formatWhen(task.dueAt, task.dueEnd)}</p>
-        {task.promise ? <p className="mt-2 text-lg">They said {task.promise}</p> : null}
-        {task.item || task.fault ? (
-          <p className="mt-3 text-lg text-ink">
-            {task.item}
-            {task.item && task.fault ? " · " : ""}
-            {task.fault}
-          </p>
-        ) : null}
-        {task.renewing ? (
-          <p className="mt-3 text-lg">
-            {task.renewing}
-            {task.expiry ? ` · ${task.expiry}` : ""}
-          </p>
-        ) : null}
+      <div className="p-4">
+        <dl className="grid gap-3 text-base">
+          {task.item ? <InfoRow label="What" value={task.item} /> : null}
+          {task.fault ? <InfoRow label="Problem" value={task.fault} /> : null}
+          {task.contact ? <InfoRow label="Who" value={task.contact} /> : null}
+          {task.ask ? <InfoRow label="Ask" value={task.ask} /> : null}
+          {task.promise ? <InfoRow label="They promised" value={task.promise} /> : null}
+          {task.dueAt ? <InfoRow label="When" value={formatWhen(task.dueAt, task.dueEnd)} /> : null}
+          {task.reference ? <InfoRow label="Reference" value={task.reference} /> : null}
+        </dl>
       </div>
     </section>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-sm font-bold uppercase tracking-[0.08em] text-muted">{label}</dt>
+      <dd className="mt-1 text-lg text-ink">{value}</dd>
+    </div>
   );
 }

@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EEF0F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10121B" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Fix it, renew it, follow it up. One calm place to work out what to do, keep track of what people promise, and come back when it matters.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232A3990'/%3E%3Ccircle cx='23' cy='23' r='4' fill='%23fff'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<title>Sorted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:wght@400;600;800&display=swap">
+<style>
+:root{
+  --paper:#EEF0F2;
+  --sheet:#FFFFFF;
+  --ink:#141726;
+  --ink-2:#4A5063;
+  --rule:#C9CDD8;
+  --carbon:#2A3990;
+  --carbon-ink:#FFFFFF;
+  --carbon-soft:#E4E8FA;
+  --yellow:#FFF0A6;
+  --yellow-edge:#D9BC2E;
+  --pink:#FFD6E0;
+  --pink-edge:#D9738F;
+  --done:#E3E6EA;
+  --danger:#A3211A;
+  --danger-soft:#FBE3E0;
+  --focus:#2A3990;
+  --sans:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Atkinson Hyperlegible Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#10121B;--sheet:#1A1D2A;--ink:#EEEFF5;--ink-2:#A9AEC2;--rule:#353A4E;
+    --carbon:#9FAEFF;--carbon-ink:#10121B;--carbon-soft:#232A4F;
+    --yellow:#3B3514;--yellow-edge:#B89C22;--pink:#43202B;--pink-edge:#C8607D;--done:#232633;
+    --danger:#FF8A7E;--danger-soft:#3A1614;--focus:#9FAEFF;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#10121B;--sheet:#1A1D2A;--ink:#EEEFF5;--ink-2:#A9AEC2;--rule:#353A4E;
+  --carbon:#9FAEFF;--carbon-ink:#10121B;--carbon-soft:#232A4F;
+  --yellow:#3B3514;--yellow-edge:#B89C22;--pink:#43202B;--pink-edge:#C8607D;--done:#232633;
+  --danger:#FF8A7E;--danger-soft:#3A1614;--focus:#9FAEFF;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.45;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:560px;margin:0 auto}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.15}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack-s{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.eq{align-items:stretch}
+.row.eq .btn{flex:1 1 9em}
+
+/* top bar */
+.bar{display:flex;justify-content:space-between;align-items:center;padding-block:18px 10px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--paper);z-index:5}
+.mark{font-weight:800;font-size:26px;letter-spacing:-0.02em;background:none;border:0;padding:0;color:var(--ink)}
+.mark b{color:var(--carbon)}
+.link{background:none;border:0;padding:8px 0;min-height:44px;color:var(--carbon);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* type */
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.h1{font-size:34px;font-weight:800;letter-spacing:-0.02em}
+.h2{font-size:24px;font-weight:800;letter-spacing:-0.01em}
+.h3{font-size:19px;font-weight:600}
+.lede{font-size:18px;color:var(--ink-2);max-width:34em}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:12px 20px;border-radius:6px;border:2px solid var(--ink);background:var(--sheet);font-weight:600;text-align:center}
+.btn.primary{background:var(--carbon);border-color:var(--carbon);color:var(--carbon-ink)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+:root[data-theme="dark"] .btn.danger{color:#1a0b0a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.danger{color:#1a0b0a}}
+.btn.block{width:100%}
+a.btn{text-decoration:none;color:inherit}
+a.btn.primary{color:var(--carbon-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* start choices */
+.start{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;width:100%;text-align:left;background:var(--sheet);border:2px solid var(--ink);border-radius:6px;padding:18px 18px}
+.start .h3{grid-column:1}
+.start .sub{grid-column:1;color:var(--ink-2);font-size:16px}
+.start .go{grid-column:2;grid-row:1/3;font-size:26px;color:var(--carbon);font-weight:800}
+
+/* slips: the list rows, coloured like the copies of a job sheet */
+.group{display:flex;flex-direction:column;gap:10px}
+.group-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.slip{display:block;width:100%;text-align:left;background:var(--sheet);border:1.5px solid var(--rule);border-radius:4px;padding:0;color:var(--ink)}
+.slip.yellow{background:var(--yellow);border-color:var(--yellow-edge)}
+.slip.pink{background:var(--pink);border-color:var(--pink-edge)}
+.slip.grey{background:var(--done);border-color:var(--rule)}
+.slip-main{padding:14px 16px 12px;display:flex;flex-direction:column;gap:2px}
+.slip-kind{font-size:14px;color:var(--ink-2)}
+.slip-title{font-size:20px;font-weight:600;line-height:1.25}
+.slip-stub{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:9px 16px 11px;border-top:1.5px dashed currentColor;font-size:15px}
+.slip.yellow .slip-stub{border-top-color:var(--yellow-edge)}
+.slip.pink .slip-stub{border-top-color:var(--pink-edge)}
+.slip:not(.yellow):not(.pink) .slip-stub{border-top-color:var(--rule)}
+.flag{font-weight:600}
+.example{opacity:.9;pointer-events:none;position:relative}
+.example-tag{position:absolute;top:-10px;right:12px;background:var(--ink);color:var(--paper);font-size:12px;font-weight:600;letter-spacing:.1em;padding:2px 8px;border-radius:3px}
+
+/* sheet */
+.sheet{background:var(--sheet);border:1.5px solid var(--rule);border-radius:6px;padding:20px}
+.sheet.tight{padding:16px}
+.kv{display:grid;grid-template-columns:8.5em 1fr;gap:6px 12px;font-size:17px}
+.kv dt{color:var(--ink-2)}
+.kv dd{margin:0}
+@media (max-width:420px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:6px}}
+
+/* fields */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600}
+label.f .hint{font-weight:400;font-size:16px;color:var(--ink-2)}
+input[type=text],input[type=date],input[type=time],textarea{width:100%;min-height:52px;padding:12px 14px;border:2px solid var(--ink-2);border-radius:6px;background:var(--sheet);font-size:18px}
+textarea{min-height:96px;resize:vertical;line-height:1.4}
+input:focus,textarea:focus{border-color:var(--carbon);outline:none;box-shadow:0 0 0 3px var(--carbon-soft)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:48px;padding:10px 16px;border-radius:999px;border:2px solid var(--ink-2);background:var(--sheet);font-size:17px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:600}
+.err{color:var(--danger);font-weight:600}
+
+/* panels */
+.safety{background:var(--danger-soft);border:2px solid var(--danger);border-radius:6px;padding:18px;color:var(--ink)}
+.safety .h2,.safety .h3{color:var(--danger)}
+.check{border:2px solid var(--carbon);border-radius:6px;padding:16px 18px;background:var(--carbon-soft)}
+.check .tag{display:inline-block;background:var(--carbon);color:var(--carbon-ink);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;margin-bottom:8px}
+.note{border-left:0;background:var(--paper);border-radius:6px;padding:14px 16px;font-size:17px}
+.escape{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:2px solid var(--danger);border-radius:6px;padding:10px 14px;color:var(--danger);font-weight:600;background:transparent;width:100%;text-align:left;min-height:52px}
+
+/* steps */
+.steps{display:flex;gap:6px}
+.steps span{flex:1;height:6px;border-radius:3px;background:var(--rule)}
+.steps span.on{background:var(--carbon)}
+
+/* promise slip on task */
+.promise{border-radius:6px;border:2px solid var(--yellow-edge);background:var(--yellow);overflow:hidden}
+.promise.pink{border-color:var(--pink-edge);background:var(--pink)}
+.promise-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px 10px}
+.promise-body{padding:0 18px 16px;display:flex;flex-direction:column;gap:6px}
+.promise-foot{padding:14px 18px 18px;border-top:2px dashed var(--yellow-edge);display:flex;flex-direction:column;gap:10px}
+.promise.pink .promise-foot{border-top-color:var(--pink-edge)}
+.promise.white{border-color:var(--ink);background:var(--sheet)}
+.promise.white .promise-foot{border-top-color:var(--rule)}
+.ref{font-family:var(--mono);font-weight:600;font-size:17px;border:2px solid currentColor;border-radius:4px;padding:3px 8px;white-space:nowrap}
+.missed{border:1.5px solid var(--rule);border-radius:6px;padding:12px 14px;font-size:16px;color:var(--ink-2)}
+.missed s{color:var(--ink)}
+
+/* thread */
+.thread{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.thread li{display:grid;grid-template-columns:5.2em 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--rule);font-size:16px}
+.thread li:first-child{border-top:0}
+.thread time{font-family:var(--mono);font-size:14px;color:var(--ink-2);padding-top:2px}
+
+/* hold-up card */
+.hold{background:var(--ink);color:var(--paper);border-radius:8px;padding:24px 20px;display:flex;flex-direction:column;gap:14px}
+.hold .eyebrow{color:var(--paper);opacity:.75}
+.hold .who{font-size:38px;font-weight:800;line-height:1.05;letter-spacing:-0.02em}
+.hold .big{font-size:22px}
+.hold .refbig{font-family:var(--mono);font-size:34px;font-weight:600;letter-spacing:.04em}
+
+.copybox{width:100%;min-height:150px;font-family:var(--mono);font-size:15px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:6px;font-weight:600;z-index:20;max-width:calc(100% - 32px)}
+.shared-banner{background:var(--carbon);color:var(--carbon-ink);border-radius:6px;padding:14px 16px;font-size:17px}
+hr.cut{border:0;border-top:2px dashed var(--rule);margin:4px 0}
+/* public hero */
+.hero{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.hero .h1{font-size:clamp(34px,9vw,46px);line-height:1.02;letter-spacing:-0.03em}
+.hero .h1 em{font-style:normal;color:var(--carbon)}
+.hero-art{display:block;width:100%;max-width:420px;height:auto;margin:4px auto 0}
+.hero-art .k{fill:var(--ink)}.hero-art .s{fill:var(--sheet)}.hero-art .o{stroke:var(--ink);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.hero-art .l{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+@media (prefers-reduced-motion:no-preference){.fade{animation:fade .18s ease-out}@keyframes fade{from{transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="netbar" class="toast" hidden style="bottom:auto;top:calc(8px + env(safe-area-inset-top,0px))">Offline. Your changes will save when you’re back online.</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- config ---------- */
+var SUPA_URL = "https://boxrwcuhxmimayaxzywu.supabase.co";
+var SUPA_KEY = "sb_publishable_K-xd-zbT0cIo7GkfdW9s5g_kpOaF-Mw";
+var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit"}});
+
+/* ---------- small helpers ---------- */
+function $(s,r){return (r||document).querySelector(s)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function uid(){return (crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random().toString(16).slice(2)).replace(/-/g,"").slice(0,12)}
+function nowIso(){return new Date().toISOString()}
+var DAY=86400000, HOUR=3600000;
+
+function fmtDay(d){var o={weekday:"short",day:"numeric",month:"short"};if(d.getFullYear()!==new Date().getFullYear())o.year="numeric";return d.toLocaleDateString("en-GB",o)}
+function fmtTime(d){return d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function stampLabel(iso){var d=new Date(iso),n=new Date();return sameDay(d,n)?fmtTime(d):d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})}
+
+/* ---------- storage: Supabase, with a copy on this phone for speed ---------- */
+function cacheKey(){return "sorted.cache."+(S.user?S.user.id:"none")}
+function cacheRead(){try{var v=JSON.parse(localStorage.getItem(cacheKey())||"[]");return Array.isArray(v)?v:[]}catch(e){return []}}
+function cacheWrite(){try{localStorage.setItem(cacheKey(),JSON.stringify(S.tasks))}catch(e){}}
+function clean(t){var c={};for(var k in t)if(k!=="_dirty")c[k]=t[k];return c}
+/* write every changed task to the database; a failed write stays marked and retries */
+function save(){
+  cacheWrite();
+  if(!S.user)return;
+  S.tasks.forEach(function(t){
+    if(!t._dirty)return;t._dirty=false;
+    var body=clean(t);
+    sb.from("tasks").upsert({id:t.id,data:body}).then(function(r){
+      if(r.error){t._dirty=true;cacheWrite();offline(true);return}
+      offline(false);
+      if(t.shareToken)sb.from("shares").update({card:shareCard(t)}).eq("task_id",t.id).then(function(){});
+    },function(){t._dirty=true;cacheWrite();offline(true)});
+  });
+}
+function offline(on){if(S.offline===on)return;S.offline=on;var el=document.getElementById("netbar");if(el)el.hidden=!on}
+window.addEventListener("online",function(){save()});
+
+/* ---------- state ---------- */
+var S={tasks:[],view:{name:"home"},draft:{},shared:null,user:null,booting:true,offline:false};
+
+function task(id){for(var i=0;i<S.tasks.length;i++)if(S.tasks[i].id===id)return S.tasks[i];return null}
+function log(t,label){t.events.push({at:nowIso(),label:label});t.updatedAt=nowIso();t._dirty=true}
+function commit(){save();render()}
+
+/* ---------- promises & state ---------- */
+function openPromise(t){for(var i=t.promises.length-1;i>=0;i--)if(t.promises[i].status==="open")return t.promises[i];return null}
+function recentMiss(t){var l=t.promises[t.promises.length-1];return l&&l.status==="missed"?l:null}
+function window_(p){
+  if(!p.dueAt)return null;
+  var start=new Date(p.dueAt), end;
+  if(p.allDay){end=new Date(start);end.setHours(23,59,59,999)}
+  else if(p.dueEnd){end=new Date(p.dueEnd)}
+  else{end=new Date(start.getTime()+HOUR)}
+  return {start:start,end:end};
+}
+/* later: more than a day away. soon: within 24h of the start. now: inside the slot. check: the slot has ended. */
+function phase(p,now){
+  now=now||new Date();var w=window_(p);
+  if(!w)return "nodate";
+  if(now>w.end)return "check";
+  if(now>=w.start)return "now";
+  if(w.start-now<=DAY)return "soon";
+  return "later";
+}
+function whenText(p){
+  var w=window_(p);
+  if(!w)return "No date given";
+  if(p.by)return "By "+fmtDay(w.start);
+  if(p.allDay)return fmtDay(w.start)+", any time";
+  if(p.dueEnd)return fmtDay(w.start)+", "+fmtTime(w.start)+"–"+fmtTime(w.end);
+  return fmtDay(w.start)+", "+fmtTime(w.start);
+}
+function phaseTitle(p){
+  var ph=phase(p),w=window_(p),n=new Date();
+  if(ph==="nodate")return "No date yet";
+  if(ph==="check")return p.by?"Has it happened?":"Did it happen?";
+  if(ph==="now")return "Happening now";
+  if(ph==="soon")return sameDay(w.start,n)?"Due today":"Due tomorrow";
+  return "Waiting on them";
+}
+function state(t){
+  if(t.board==="done")return "done";
+  var p=openPromise(t);
+  if(p){var ph=phase(p);return ph==="nodate"?"yours":ph==="later"?"waiting":"due"}
+  if(t.mode==="renew"&&t.renew&&t.renew.step==="done"&&!t.renew.applied&&rphase(t.renew)==="upcoming")return "upcoming";
+  return "yours";
+}
+
+/* ---------- safety words ---------- */
+var DANGER=/(burn|smok|spark|fire|flame|gas\b|smell of gas|melt|scorch|electric shock|shock|fuse box|water (near|by|on|in) (the )?(plug|socket|wires?|electrics?))/i;
+function looksUnsafe(){for(var i=0;i<arguments.length;i++){if(arguments[i]&&DANGER.test(arguments[i]))return true}return false}
+
+/* ---------- washing machine content ---------- */
+var FAULTS=[["drain","Won't drain"],["spin","Won't spin"],["leak","Leaking"],["start","Won't start"],["code","Shows an error code"],["other","Something else"]];
+var CHECKS={
+  drain:[
+    ["hose","Look behind the machine. Is the grey drain hose bent, squashed or kinked? Straighten it."],
+    ["prog","Run a drain or spin-only programme on its own."],
+    ["filter","Clean the pump filter. It is usually behind a small flap at the bottom front. Put towels and a shallow tray down first: water will come out."]
+  ],
+  spin:[
+    ["load","Check the load. One heavy item, like a bath mat, can stop it spinning. Add or remove items and try again."],
+    ["speed","Check the spin speed is not set to 0 or ‘no spin’."],
+    ["drain","If water is left in the drum, it won't spin. Try the drain checks: hose, then drain programme."]
+  ],
+  leak:[
+    ["powder","Use less detergent. Too much can foam and overflow through the drawer."],
+    ["seal","Look at the rubber door seal for tears or trapped items like coins or socks. Look only, don't cut or pull it."],
+    ["hoses","Look at the hoses behind the machine for drips. Only look: don't touch anything near the plug."]
+  ],
+  start:[
+    ["door","Close the door firmly until it clicks."],
+    ["lock","Check the child lock is off. The manual shows the button."],
+    ["tap","Check the water tap behind or beside the machine is turned on."],
+    ["socket","Check the socket works by plugging in something else, like a lamp."]
+  ],
+  code:[
+    ["lookup","Find the code in the manual or on the maker's website. Write the code down: you'll need it for the call."]
+  ],
+  other:[]
+};
+var WHO=[["me","It's mine"],["landlord","My landlord"],["uni","Student accommodation"],["employer","My employer"],["other","Someone else"]];
+var AGE=[["lt1","Under a year"],["1to2","1 to 2 years"],["2to6","2 to 6 years"],["gt6","Over 6 years"],["unsure","Not sure"]];
+var COVER=[["yes","Yes"],["no","No"],["unsure","Not sure"]];
+var VIA=[["phone","Phone"],["email","Email"],["account","Their app or account"],["letter","Letter"]];
+var PLANS=["Not sure yet","Try to fix it myself","Call someone","Leave it for now"];
+
+/* ---------- renewals ---------- */
+var RKINDS=[["passport","UK passport"],["licence","Driving licence"],["mot","MOT"],["tax","Car tax"],["tv","TV licence"],["visa","Visa"],["insurance","Insurance"],["other","Something else"]];
+var VISAS=[["student","Student visa"],["skilled","Skilled Worker visa"],["other","Another visa"]];
+var OFFICIAL={
+  passport:{url:"https://www.gov.uk/renew-adult-passport",lead:90,where:"On the photo page of your passport.",need:["Your current passport","A digital photo. You can take it on your phone","A debit or credit card"],note:"You can apply online yourself. The Post Office Check and Send service is optional and costs extra."},
+  licence:{url:"https://www.gov.uk/renew-driving-licence",lead:30,where:"On the front of your photocard, next to 4b.",need:[],note:"GOV.UK tells you when you sign in if you need to prove your identity.",extra:["https://www.gov.uk/renew-driving-licence-at-70","Aged 70 or over? Use the free over-70 service"]},
+  mot:{url:"https://www.gov.uk/getting-an-mot",lead:30,where:"Check it on GOV.UK with your registration number.",whereUrl:"https://www.gov.uk/check-mot-history",need:["Your registration number"],note:"You can get an MOT up to a month (minus a day) before it runs out and keep the same renewal date."},
+  tax:{url:"https://www.gov.uk/vehicle-tax",lead:14,where:"On your DVLA reminder letter, or check on GOV.UK.",whereUrl:"https://www.gov.uk/check-vehicle-tax",need:["The reference number from your DVLA reminder letter, your log book (V5C), or the green new keeper slip","A debit or credit card"],note:"You might also need to show a valid MOT for when the tax starts."},
+  tv:{url:"https://www.tvlicensing.co.uk/renew",lead:30,where:"On your TV Licence or your renewal letter.",need:["Your 10-digit TV Licence number or 9-digit customer number","Your postcode"],note:""},
+  "visa:student":{url:"https://www.gov.uk/student-visa/extend-your-visa",lead:120,where:"In your UKVI account (your eVisa).",whereUrl:"https://www.gov.uk/view-prove-immigration-status",need:["A new CAS from your university. Ask them first","Your passport"],note:"The earliest you can apply is 3 months before your new course starts, and you must apply within 6 months of getting your CAS."},
+  "visa:skilled":{url:"https://www.gov.uk/skilled-worker-visa/extend-your-visa",lead:90,where:"In your UKVI account (your eVisa).",whereUrl:"https://www.gov.uk/view-prove-immigration-status",need:["Your employer’s support for the extension. Ask them about your certificate of sponsorship first","Your passport"],note:"You must apply online before your current visa ends. Decisions usually take about 8 weeks."},
+  "visa:other":{url:"https://www.gov.uk/browse/visas-immigration",lead:90,where:"In your UKVI account (your eVisa).",whereUrl:"https://www.gov.uk/view-prove-immigration-status",need:["Your passport"],note:"Check the rules for your visa type on GOV.UK before you apply."}
+};
+function rinfo(r){if(!r)return null;if(r.kind==="visa")return OFFICIAL["visa:"+(r.visa||"other")];return OFFICIAL[r.kind]||null}
+function rname(r){if(!r)return "";if(r.kind==="visa")return label(VISAS,r.visa)||"Visa";if(r.kind==="insurance")return r.what?r.what+" insurance":"Insurance";if(r.kind==="other")return r.what||"Renewal";return label(RKINDS,r.kind)}
+function rlead(r){var i=rinfo(r);return i?i.lead:(r&&r.kind==="insurance"?28:30)}
+function dayEnd(ymd){var p=ymd.split("-").map(Number);return new Date(p[0],p[1]-1,p[2],23,59,59,999)}
+function startBy(r){if(!r||!r.expiry)return null;var d=dayEnd(r.expiry);d.setDate(d.getDate()-rlead(r));d.setHours(0,0,0,0);return d}
+function rphase(r,now){now=now||new Date();if(!r.expiry)return "unknown";var e=dayEnd(r.expiry);if(now>e)return "expired";if(now>=startBy(r))return "now";return "upcoming"}
+function localRef(id,v){var k="sorted.local."+id;try{if(v===undefined)return localStorage.getItem(k)||"";if(v)localStorage.setItem(k,v);else localStorage.removeItem(k)}catch(e){return ""}}
+
+function label(list,key){for(var i=0;i<list.length;i++)if(list[i][0]===key)return list[i][1];return ""}
+function agoText(age){return !age||age==="unsure"?"":label(AGE,age).toLowerCase()+" ago"}
+function whoName(t){var f=t.fix||{};if(f.party)return f.party;return {landlord:"your landlord",uni:"the accommodation office",employer:"your employer",other:"them"}[f.responsible]||"them"}
+
+var MODE_LABEL={fix:"Something’s broken",call:"Contact someone",renew:"Renew something"};
+/* ---------- recommendation ---------- */
+function advice(t){
+  var f=t.fix;
+  if(f.responsible&&f.responsible!=="me"){
+    return {key:"report",title:"Report it to "+whoName(t),
+      body:"It is "+whoName(t)+"’s job to fix this. Report it in writing if you can, so there is a record, and ask for a date."};
+  }
+  if(f.cover==="yes")return {key:"claim",title:"Start with your warranty or insurance",body:"You said it is covered. Claim there first. It may pay for the repair."};
+  if(f.age==="lt1")return {key:"claim",title:"Go back to the shop",body:"It is under a year old. The shop you bought it from should repair or replace a faulty item. In the first six months the law assumes the fault was there from the start. Many makers also give a one or two year guarantee."};
+  if(f.age==="1to2")return {key:"claim",title:"Check the maker’s guarantee",body:"Many guarantees last two years. Start with the maker. You can also go back to the shop, but after six months you may need to show the fault was there when you bought it."};
+  if(f.age==="2to6")return {key:"repair",title:"A paid repair is probably quicker",body:"You may still have rights against the shop for up to six years, but you would need to show the fault was there when you bought it. That is harder. Get a repair quote."};
+  return {key:"repair",title:"Get a repair quote",body:"It is probably out of guarantee. Get a quote for a repair before you decide whether to replace it."};
+}
+
+/* ---------- call card defaults ---------- */
+function callDefaults(t,kind){
+  var f=t.fix||{},m=recentMiss(t),item=f.item||"it";
+  var fault=label(FAULTS,f.fault)||f.detail||"a fault";
+  var who="",ask="";
+  if(m){
+    who=m.party||(t.call&&t.call.who)||"";
+    ask=(m.dueAt?(m.by?"You said that by "+fmtDay(new Date(m.dueAt))+": ":"For "+whenText(m)+" you said: "):"You said: ")+"“"+m.said+"”"+(m.ref?" (ref "+m.ref+")":"")+". That didn't happen. What happens now, and when?";
+    return {who:who,ask:ask};
+  }
+  if(kind==="report"){who=f.party||"";ask="My "+item.toLowerCase()+" has a fault: "+fault.toLowerCase()+". Please arrange a repair and give me a date."+(f.jobRef?" My job number is "+f.jobRef+".":"")}
+  else if(kind==="claim"){who=f.cover==="yes"?"My warranty or insurer":(f.seller||"The shop I bought it from");ask="My "+item.toLowerCase()+" has a fault: "+fault.toLowerCase()+"."+((agoText(f.age)||f.seller)?" I bought it"+(agoText(f.age)?" "+agoText(f.age):"")+(f.seller?" from "+f.seller:"")+".":"")+" I'd like it repaired or replaced."}
+  else if(kind==="repair"){who="A repair company";ask="My "+item.toLowerCase()+" has a fault: "+fault.toLowerCase()+". Can you give me a price and the earliest date an engineer can come?"}
+  else if(t.mode==="renew"&&t.renew){
+    var rr=t.renew;who=rr.provider||"";
+    ask=rr.kind==="insurance"?"My "+rname(rr).toLowerCase()+" renews"+(rr.expiry?" on "+fmtDay(dayEnd(rr.expiry)):" soon")+". What will the renewal price be, and is there a better deal?":"I’d like to renew my "+rname(rr).toLowerCase()+(rr.expiry?", which ends on "+fmtDay(dayEnd(rr.expiry)):"")+". What do I need to do?";
+  }
+  else if(t.mode==="call"&&t.title){
+    var parts=t.title.split(/\s+about\s+/i);
+    if(parts.length>1){who=parts[0].charAt(0).toUpperCase()+parts[0].slice(1);ask="I’m getting in touch about "+parts.slice(1).join(" about ")+". "}
+    else{who="";ask="I’m getting in touch about "+t.title.charAt(0).toLowerCase()+t.title.slice(1)+". "}
+  }
+  return {who:who,ask:ask};
+}
+function haveReady(t){
+  var f=t.fix||{},out=[],m=recentMiss(t);
+  if(m)out.push("What they promised last time: "+m.said+", "+whenText(m)+(m.ref?", ref "+m.ref:""));
+  if(f.item)out.push("What it is: "+f.item+(f.model?" ("+f.model+")":""));
+  if(f.fault)out.push("The fault: "+(label(FAULTS,f.fault)||"")+(f.detail?", "+f.detail:""));
+  if(f.age&&f.responsible==="me")out.push("When you bought it"+(f.seller?" and from where ("+f.seller+")":""));
+  if(f.responsible==="me"&&f.age!=="gt6")out.push("Your receipt or order number, if you have it");
+  if(f.jobRef)out.push("Job number: "+f.jobRef);
+  var tried=triedList(t);if(tried.length)out.push("What you tried: "+tried.join("; "));
+  if(t.mode==="renew"){out.push("Your policy, account or contract number");out.push("What you pay now");}
+  if(t.mode==="call"){out.push("When the problem started");out.push("Dates of any earlier calls or messages, and what they said");out.push("How it’s affecting you");}
+  out.push(t.call&&t.call.via&&t.call.via!=="phone"?"A copy of what you send":"A pen, or this screen, to write down what they say");
+  return out;
+}
+function triedList(t){
+  var f=t.fix||{},list=CHECKS[f.fault]||[],r=[];
+  list.forEach(function(c){var v=(f.checks||{})[c[0]];if(v==="fixed"||v==="not")r.push(shortCheck(c[0])+" ("+(v==="fixed"?"fixed it":"still broken")+")")});
+  return r;
+}
+function shortCheck(k){return {hose:"checked the drain hose",prog:"ran a drain programme",filter:"cleaned the pump filter",load:"rebalanced the load",speed:"checked the spin setting",drain:"tried the drain checks",powder:"used less detergent",seal:"looked at the door seal",hoses:"looked at the hoses",door:"closed the door firmly",lock:"checked the child lock",tap:"checked the water tap",socket:"tested the socket",lookup:"looked up the error code"}[k]||k}
+function repairerSummary(t){
+  var f=t.fix||{},lines=[];
+  lines.push((f.item||"Appliance")+(f.model?" ("+f.model+")":"")+": "+(label(FAULTS,f.fault)||"fault").toLowerCase()+".");
+  if(f.detail)lines.push("Details: "+f.detail);
+  if(f.responsible==="me"&&f.age)lines.push("Bought: "+(agoText(f.age)||"not sure when")+(f.seller?", from "+f.seller:"")+".");
+  var tried=triedList(t);if(tried.length)lines.push("Already tried: "+tried.join("; ")+".");
+  if(t.safety)lines.push("Safety: there was a safety concern (burning, sparks or water near electrics). It has been switched off.");
+  if(f.jobRef)lines.push("Job number: "+f.jobRef+".");
+  return lines.join("\n");
+}
+
+/* ---------- actions ---------- */
+function go(view){S.view=view;S.draft={};render();window.scrollTo(0,0)}
+function toast(msg){var el=$("#toast");el.textContent=msg;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2400)}
+function copy(text,done){
+  function fallback(){S.view.copyText=text;render();var ta=$("#copyfallback");if(ta){ta.focus();ta.select()}}
+  try{navigator.clipboard.writeText(text).then(function(){toast(done||"Copied")},fallback)}catch(e){fallback()}
+}
+
+function newTask(mode){
+  var d=S.draft,t={id:uid(),mode:mode,title:d.title.trim(),baseline:d.baseline.trim(),created:nowIso(),updatedAt:nowIso(),
+    board:"yours",safety:!!d.safety,fix:mode==="fix"?{step:"what",checks:{}}:null,renew:mode==="renew"?{step:"what"}:null,call:null,promises:[],outcome:"",events:[],sharedAt:null};
+  log(t,"Started. Before any advice, the plan was: “"+t.baseline+"”");
+  if(d.safety)log(t,"Safety stop shown. Told to switch off only if safe and get qualified help.");
+  S.tasks.unshift(t);save();
+  if(mode==="renew"){var guess=[[/\btv\b|tv licen/i,"tv"],[/passport/i,"passport"],[/visa|\bbrp\b/i,"visa"],[/licen[cs]e/i,"licence"],[/\bmot\b/i,"mot"],[/(car|road|vehicle) tax/i,"tax"],[/insurance/i,"insurance"]];for(var gi=0;gi<guess.length;gi++)if(guess[gi][0].test(t.title)){t.renew.kind=guess[gi][1];break}}
+  go({name:"task",id:t.id,panel:mode==="call"?"call":null});
+}
+
+/* ---------- views ---------- */
+function topbar(extra){
+  return '<header class="bar"><button class="mark" data-a="home" aria-label="Sorted, all tasks">sorted<b>.</b></button>'+
+    (extra||'<button class="link" data-a="data">Your data</button>')+'</header>';
+}
+
+function viewHome(){
+  var yours=[],waiting=[],upcoming=[],done=[];
+  S.tasks.forEach(function(t){var s=state(t);(s==="done"?done:s==="waiting"?waiting:s==="upcoming"?upcoming:yours).push(t)});
+  upcoming.sort(function(a,b){return startBy(a.renew)-startBy(b.renew)});
+  var h=topbar();
+  h+='<main class="stack fade" style="gap:28px;margin-top:8px">';
+  h+='<section class="stack"><h1 class="h1">What do you need to sort out?</h1>';
+  h+=startBtn("fix","Something’s broken","Check it safely, then claim, repair or replace");
+  h+=startBtn("call","I need to contact someone","Get ready, then keep what they promise");
+  h+=startBtn("renew","Something needs renewing","Passport, MOT, visa and more: know when to start");
+  h+='</section>';
+  if(!S.tasks.length){
+    h+='<section class="stack"><div class="group-h"><h2 class="h3">Your tasks</h2><span class="mono muted">0</span></div>';
+    h+='<p class="muted">Nothing here yet. When someone promises you something, it sits here like this until it’s due.</p>';
+    h+='<div class="slip yellow example" aria-hidden="true"><span class="example-tag">EXAMPLE</span><div class="slip-main"><span class="slip-kind">Something’s broken · waiting on them</span><span class="slip-title">Washing machine won’t drain</span></div><div class="slip-stub"><span>Engineer visit</span><span class="mono">Tue 14:00–16:00 · A1842</span></div></div>';
+    h+='</section>';
+  }else{
+    h+=group("Needs you",yours);
+    h+=group("Waiting on them",waiting);
+    h+=group("Coming up",upcoming);
+    h+=group("Done",done);
+  }
+
+  h+='</main>';
+  return h;
+}
+function startBtn(mode,title,sub){return '<button class="start" data-a="new" data-mode="'+mode+'"><span class="h3">'+title+'</span><span class="sub">'+sub+'</span><span class="go" aria-hidden="true">→</span></button>'}
+function group(title,list){
+  if(!list.length)return "";
+  var h='<section class="group"><div class="group-h"><h2 class="h3">'+title+'</h2><span class="mono muted">'+list.length+'</span></div>';
+  list.forEach(function(t){h+=slip(t)});
+  return h+'</section>';
+}
+function slip(t){
+  var s=state(t),p=openPromise(t),cls=s==="due"?"pink":s==="waiting"?"yellow":s==="done"?"grey":"";
+  var kind=MODE_LABEL[t.mode];
+  var left="",right="";
+  if(s==="done"){left=t.outcome||"Finished";right=stampLabel(t.updatedAt)}
+  else if(p){left='<span class="flag">'+esc(phaseTitle(p))+'</span>';right=esc(whenText(p))+(p.ref?" · "+esc(p.ref):"")}
+  else if(t.mode==="renew"&&t.renew&&t.renew.step==="done"){var rp=rphase(t.renew),sbd=startBy(t.renew);
+    left='<span class="flag">'+(rp==="upcoming"?"Start by "+esc(fmtDay(sbd)):rp==="now"?"Start now":rp==="expired"?"Expired":"Find the expiry date")+'</span>';
+    right=t.renew.expiry?"Ends "+esc(fmtDay(dayEnd(t.renew.expiry))):""}
+  else{left=esc(nextStepText(t));right=recentMiss(t)?"Missed promise":""}
+  return '<button class="slip '+cls+'" data-a="open" data-id="'+t.id+'"><div class="slip-main"><span class="slip-kind">'+kind+'</span><span class="slip-title">'+esc(t.title)+'</span></div><div class="slip-stub"><span>'+(s==="done"?esc(left):left)+'</span><span class="mono">'+right+'</span></div></button>';
+}
+function nextStepText(t){
+  if(t.mode==="fix"&&t.fix&&t.fix.step!=="done")return "Next: finish the checks";
+  if(t.mode==="renew"&&t.renew&&t.renew.step!=="done")return "Next: add the details";
+  if(!t.call)return "Next: get the call ready";
+  return "Next: "+ch(t.call.via).next;
+}
+
+/* --- new task --- */
+function viewNew(){
+  var v=S.view,d=S.draft,mode=v.mode;
+  if(!d.step){d.step="title";d.title=d.title||"";d.baseline=d.baseline||"";}
+  var h=topbar('<button class="link" data-a="home">Cancel</button>');
+  h+='<main class="stack fade" style="margin-top:8px">';
+  h+='<p class="eyebrow">'+MODE_LABEL[mode]+' · step '+(d.step==="title"?1:2)+' of 2</p>';
+  if(d.step==="title"){
+    if(mode==="fix")h+='<button class="escape" data-a="safety-new"><span>Burning smell, smoke, sparks or water near the plug?</span><span>Stop here →</span></button>';
+    h+='<form class="stack" data-f="title">';
+    h+='<label class="f"><span class="h2">'+(mode==="fix"?"What’s wrong, in a few words?":mode==="renew"?"What needs renewing?":"Who do you need to contact, and why?")+'</span><span class="hint">You’ll see this name on your list.</span><input type="text" id="f-title" name="title" autocomplete="off" value="'+esc(d.title)+'" placeholder="'+(mode==="fix"?"Washing machine won’t drain":mode==="renew"?"My passport":"Landlord about the heating")+'"></label>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }else{
+    h+='<form class="stack" data-f="baseline">';
+    h+='<div class="stack-s"><h1 class="h2">What were you planning to do next?</h1><p class="lede">We ask before giving any advice. There’s no right answer, and “not sure” is fine.</p></div>';
+    h+='<div class="chips" role="group" aria-label="Quick answers">';
+    PLANS.forEach(function(p){h+='<button type="button" class="chip" data-a="plan" data-v="'+esc(p)+'" aria-pressed="'+(d.baseline===p)+'">'+esc(p)+'</button>'});
+    h+='</div>';
+    h+='<label class="f">Or in your own words<textarea id="f-baseline" name="baseline" rows="3">'+(PLANS.indexOf(d.baseline)<0?esc(d.baseline):"")+'</textarea></label>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<div class="row"><button class="btn" type="button" data-a="back-title">Back</button><button class="btn primary" style="flex:1" type="submit">Start this task</button></div></form>';
+  }
+  return h+'</main>';
+}
+
+/* --- safety stop --- */
+function safetyBlock(){
+  return '<section class="safety stack" role="alert"><h1 class="h2">Stop. Don’t use it.</h1>'+
+  '<ul class="stack-s" style="margin:0;padding-left:1.1em">'+
+  '<li>If you can reach the socket safely, switch it off at the wall. If not, leave it.</li>'+
+  '<li>Don’t open it, touch wiring, or mop water near the plug.</li>'+
+  '<li>Smell gas? Don’t use switches. Open windows, leave, and call the gas emergency line: <span class="mono">0800 111 999</span>.</li>'+
+  '<li>Fire or smoke you can’t control? Get everyone out and call <span class="mono">999</span>.</li>'+
+  '</ul><p>Once it’s safe, Sorted can help you arrange a repair. It won’t suggest any checks you do yourself.</p></section>';
+}
+function viewSafety(){
+  var h=topbar('<button class="link" data-a="home">Close</button>');
+  h+='<main class="stack fade" style="margin-top:8px">'+safetyBlock();
+  h+='<button class="btn primary block" data-a="safe-continue">It’s safe now. Arrange a repair</button>';
+  h+='<button class="btn block" data-a="home">Not now</button></main>';
+  return h;
+}
+
+/* --- task --- */
+function viewTask(){
+  var t=task(S.view.id);if(!t)return topbar()+'<main class="stack" style="margin-top:8px"><p>That task isn’t on this phone.</p><button class="btn" data-a="home">All tasks</button></main>';
+  var h=topbar('<button class="link" data-a="home">← All tasks</button>');
+  var s=state(t),p=openPromise(t);
+  h+='<main class="stack fade" style="margin-top:8px;gap:20px">';
+  h+='<section class="stack-s"><p class="eyebrow">'+MODE_LABEL[t.mode]+' · '+({yours:"Needs you",waiting:"Waiting on them",due:"Needs you",upcoming:"Coming up",done:"Done"}[s])+'</p><h1 class="h1">'+esc(t.title)+'</h1><p class="muted">Your plan before any advice: “'+esc(t.baseline)+'”</p></section>';
+
+  if(S.view.panel==="hold"&&p)return h+holdCard(t,p,"HOLD THIS UP")+'<button class="btn block" data-a="panel" data-p="">Close</button></main>';
+
+  if(t.safety&&s!=="done")h+='<section class="safety"><p class="h3">Safety first</p><p style="margin-top:6px">Keep it switched off and don’t try any checks yourself. Get a qualified engineer.</p></section>';
+
+  /* the one next step */
+  if(s==="done"){
+    h+='<section class="sheet stack-s"><p class="eyebrow">Finished</p><p class="h3">'+esc(t.outcome||"Done")+'</p></section>';
+  }else if(t.mode==="fix"&&t.fix.step!=="done"){
+    h+=fixStep(t);
+  }else if(t.mode==="renew"&&t.renew.step!=="done"){
+    h+=renewStep(t);
+  }else if(p){
+    h+=promiseCard(t,p);
+  }else if(t.mode==="renew"&&S.view.panel==="renewed"){
+    h+=renewedForm(t);
+  }else if(t.mode==="renew"&&S.view.panel!=="call"&&S.view.panel!=="promise"){
+    h+=renewCard(t);
+  }else if(t.fix&&t.fix.decision==="replace"&&!t.call&&S.view.panel!=="call"){
+    h+='<section class="sheet stack"><p class="eyebrow">Your decision</p><h2 class="h2">Replace it</h2><p>When the new one is in, mark this finished.</p><button class="btn primary block" data-a="panel" data-p="done">Mark it finished</button><button class="link" data-a="decide-again">Change my mind</button></section>';
+  }else if(S.view.panel==="promise"){
+    h+=promiseForm(t);
+  }else if(S.view.panel==="call"||!t.call){
+    h+=callForm(t);
+  }else{
+    h+=callCard(t);
+  }
+
+  if(S.view.panel==="done")h+=doneForm(t);
+  var m=t.promises.filter(function(x){return x.status==="missed"});
+  if(m.length){h+='<section class="stack-s"><h2 class="h3">Promises they didn’t keep</h2>';m.forEach(function(x){h+='<p class="missed"><s>'+esc(x.said)+'</s><br><span class="mono">'+esc(whenText(x))+(x.ref?" · "+esc(x.ref):"")+'</span> · '+esc(x.party||"")+'</p>'});h+='</section>'}
+
+  if(t.mode==="fix"&&t.fix.step==="done"&&s!=="done")h+='<section class="stack-s"><button class="btn block" data-a="summary">'+(S.view.panel==="summary"?"Hide the summary":"Summary to send a repairer")+'</button>'+(S.view.panel==="summary"?'<textarea class="copybox" id="sumtext" readonly>'+esc(repairerSummary(t))+'</textarea><button class="btn primary block" data-a="copy-summary">Copy summary</button>':"")+'</section>';
+
+  h+='<section class="stack-s"><h2 class="h3">What’s happened so far</h2><ol class="thread">';
+  t.events.slice().reverse().forEach(function(e){h+='<li><time datetime="'+e.at+'">'+stampLabel(e.at)+'</time><span>'+esc(e.label)+'</span></li>'});
+  h+='</ol></section>';
+
+  h+='<section class="stack-s"><hr class="cut">';
+  h+='<button class="btn block" data-a="share">'+(t.shareToken?"Copy the helper link again":"Copy a link for someone helping you")+'</button>';
+  h+='<p class="muted" style="font-size:16px">They see this task only, and it updates as you do. They can’t change anything, and they don’t see your plan or the rest of your list.</p>';
+  if(t.shareToken)h+='<button class="link" data-a="unshare" style="text-align:left">Switch the helper link off</button>';
+  if(S.view.copyText)h+='<textarea class="copybox" id="copyfallback" readonly>'+esc(S.view.copyText)+'</textarea><p class="muted" style="font-size:15px">Copy this by hand. Your browser blocked the copy button.</p>';
+  if(s!=="done"&&S.view.panel!=="done")h+='<button class="link" data-a="panel" data-p="done">Mark this finished</button>';
+  h+='</section></main>';
+  return h;
+}
+
+function fixStep(t){
+  var f=t.fix,d=S.draft,order=["what","who","bought","checks","decide"];
+  var skip=function(st){if(st==="bought")return f.responsible&&f.responsible!=="me";if(st==="checks")return t.safety||f.item!=="Washing machine"||f.responsible!=="me"||!(CHECKS[f.fault]||[]).length;return false};
+  var steps=order.filter(function(s){return !skip(s)}),idx=steps.indexOf(f.step);
+  var h='<section class="sheet stack"><div class="steps" aria-hidden="true">';
+  steps.forEach(function(s,i){h+='<span class="'+(i<=idx?"on":"")+'"></span>'});
+  h+='</div>';
+  if(f.step==="what"){
+    var item=d.item!==undefined?d.item:(f.item||"Washing machine"),fault=d.fault!==undefined?d.fault:f.fault;
+    h+='<form class="stack" data-f="what"><h2 class="h2">What is it, and what’s it doing?</h2>';
+    h+='<div class="chips">'+["Washing machine","Something else"].map(function(x){var on=x==="Washing machine"?item==="Washing machine":item!=="Washing machine";return '<button type="button" class="chip" data-a="d" data-k="item" data-v="'+(x==="Washing machine"?"Washing machine":"")+'" aria-pressed="'+on+'">'+x+'</button>'}).join("")+'</div>';
+    if(item!=="Washing machine")h+='<label class="f">What is it?<input type="text" id="f-item" name="item" value="'+esc(item)+'" placeholder="Fridge, boiler, laptop…"></label>';
+    else h+='<div class="stack-s"><span style="font-weight:600">What’s happening?</span><div class="chips">'+FAULTS.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="fault" data-v="'+x[0]+'" aria-pressed="'+(fault===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+    h+='<label class="f">Anything else? <span class="hint">Brand, model, error code, noises.</span><textarea id="f-detail" name="detail" rows="2">'+esc(d.detail!==undefined?d.detail:(f.detail||""))+'</textarea></label>';
+    h+='<div class="stack-s"><span style="font-weight:600">Is anything burning, smoking or sparking, or is there water near the plug or socket?</span><div class="row"><button type="button" class="btn danger" data-a="unsafe">Yes</button><button type="submit" class="btn primary" style="flex:1">No, carry on</button></div></div>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='</form>';
+  }else if(f.step==="who"){
+    var r=d.responsible!==undefined?d.responsible:f.responsible;
+    h+='<form class="stack" data-f="who"><h2 class="h2">Whose job is it to fix it?</h2><div class="chips">'+WHO.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="responsible" data-v="'+x[0]+'" aria-pressed="'+(r===x[0])+'">'+x[1]+'</button>'}).join("")+'</div>';
+    if(r&&r!=="me"){
+      h+='<label class="f">Who exactly?<span class="hint">A name or company, if you know it.</span><input type="text" id="f-party" name="party" value="'+esc(d.party!==undefined?d.party:(f.party||""))+'"></label>';
+      h+='<label class="f">Job or reference number<span class="hint">Only if they’ve already given you one.</span><input type="text" id="f-jobRef" name="jobRef" value="'+esc(d.jobRef!==undefined?d.jobRef:(f.jobRef||""))+'" class="mono" autocomplete="off"></label>';
+    }
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }else if(f.step==="bought"){
+    var a=d.age!==undefined?d.age:f.age,c=d.cover!==undefined?d.cover:f.cover;
+    h+='<form class="stack" data-f="bought"><h2 class="h2">When did you buy it?</h2><div class="chips">'+AGE.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="age" data-v="'+x[0]+'" aria-pressed="'+(a===x[0])+'">'+x[1]+'</button>'}).join("")+'</div>';
+    h+='<label class="f">Where from?<span class="hint">The shop or website. Leave blank if you don’t know.</span><input type="text" id="f-seller" name="seller" value="'+esc(d.seller!==undefined?d.seller:(f.seller||""))+'"></label>';
+    h+='<div class="stack-s"><span style="font-weight:600">Do you have a paid warranty or insurance for it?</span><div class="chips">'+COVER.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="cover" data-v="'+x[0]+'" aria-pressed="'+(c===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }else if(f.step==="checks"){
+    var list=CHECKS[f.fault]||[];
+    h+='<div class="stack-s"><h2 class="h2">Try these safe checks</h2><p class="muted">Switch off at the wall and unplug before each one. Stop if anything looks damaged.</p></div><ol class="stack" style="margin:0;padding:0;list-style:none">';
+    list.forEach(function(c,i){var v=(f.checks||{})[c[0]];
+      h+='<li class="stack-s" style="border-top:1px solid var(--rule);padding-top:14px"><p><span class="mono muted">'+(i+1)+'.</span> '+esc(c[1])+'</p><div class="chips">'+
+      [["fixed","Fixed it"],["not","Still broken"],["skip","Skip"]].map(function(o){return '<button type="button" class="chip" data-a="check" data-k="'+c[0]+'" data-v="'+o[0]+'" aria-pressed="'+(v===o[0])+'">'+o[1]+'</button>'}).join("")+'</div></li>'});
+    h+='</ol><button class="btn primary block" data-a="checks-done">Next</button>';
+  }else if(f.step==="decide"){
+    var ad=advice(t);
+    h+='<div class="stack-s"><p class="eyebrow">Our suggestion</p><h2 class="h2">'+esc(ad.title)+'</h2><p>'+esc(ad.body)+'</p></div>';
+    if(ad.key==="report"){
+      h+='<button class="btn primary block" data-a="decide" data-v="report">Get the report ready</button>';
+    }else{
+      var opts=[["claim","Claim it"],["repair","Book a repair"],["replace","Replace it"]];
+      opts.sort(function(x,y){return (y[0]===ad.key)-(x[0]===ad.key)});
+      opts.forEach(function(o,i){h+='<button class="btn block '+(i===0?"primary":"")+'" data-a="decide" data-v="'+o[0]+'">'+o[1]+'</button>'});
+    }
+    h+='<button class="link" data-a="decide" data-v="fixed">It’s working again</button>';
+  }
+  return h+'</section>';
+}
+
+function renewStep(t){
+  var r=t.renew,d=S.draft,prov=r.kind==="insurance"||r.kind==="other";
+  var steps=["what","when"].concat(prov?["who"]:[]),idx=steps.indexOf(r.step);
+  var h='<section class="sheet stack"><div class="steps" aria-hidden="true">';
+  steps.forEach(function(x,i){h+='<span class="'+(i<=idx?"on":"")+'"></span>'});
+  h+='</div>';
+  if(r.step==="what"){
+    var k=d.kind!==undefined?d.kind:r.kind;
+    h+='<form class="stack" data-f="rwhat"><h2 class="h2">What needs renewing?</h2><div class="chips">'+RKINDS.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="kind" data-v="'+x[0]+'" aria-pressed="'+(k===x[0])+'">'+x[1]+'</button>'}).join("")+'</div>';
+    if(k==="visa"){var v=d.visa!==undefined?d.visa:r.visa;
+      h+='<div class="stack-s"><span style="font-weight:600">Which visa?</span><div class="chips">'+VISAS.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="visa" data-v="'+x[0]+'" aria-pressed="'+(v===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+      h+='<p class="note">Sorted only asks what it needs for your next step. It doesn’t need your visa number or immigration history.</p>'}
+    if(k==="insurance"||k==="other")h+='<label class="f">'+(k==="insurance"?"Which insurance?":"What is it?")+'<span class="hint">'+(k==="insurance"?"Car, home, phone, pet…":"A subscription, membership, contract…")+'</span><input type="text" id="f-rwhat" name="what" value="'+esc(d.what!==undefined?d.what:(r.what||""))+'"></label>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }else if(r.step==="when"){
+    var info=rinfo(r),unk=d.unknown!==undefined?d.unknown:r.expiryUnknown;
+    h+='<form class="stack" data-f="rwhen"><h2 class="h2">When does it run out?</h2>';
+    if(!unk)h+='<label class="f">Date it ends<input type="date" id="f-expiry" name="expiry" value="'+esc(d.expiry!==undefined?d.expiry:(r.expiry||""))+'"></label>';
+    h+='<div class="chips"><button type="button" class="chip" data-a="d" data-k="unknown" data-v="'+(unk?"":"1")+'" aria-pressed="'+(!!unk)+'">I don’t know the date</button></div>';
+    if(unk||info)h+='<p class="note">'+(info?"Where to find it: "+esc(info.where):"It’s usually on your renewal letter, policy or account.")+(info&&info.whereUrl?' <a href="'+info.whereUrl+'" target="_blank" rel="noopener noreferrer">Check on GOV.UK ↗</a>':"")+(unk?" You can add the date later.":"")+'</p>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }else if(r.step==="who"){
+    var via=d.via!==undefined?d.via:(r.via||"email");
+    h+='<form class="stack" data-f="rwho"><h2 class="h2">Who do you renew it with?</h2>';
+    h+='<label class="f">Company<span class="hint">As it appears on your letter, contract or account.</span><input type="text" id="f-provider" name="provider" value="'+esc(d.provider!==undefined?d.provider:(r.provider||""))+'"></label>';
+    h+='<div class="stack-s"><span style="font-weight:600">How do you usually deal with them?</span><div class="chips">'+VIA.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="via" data-v="'+x[0]+'" aria-pressed="'+(via===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+    if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+    h+='<button class="btn primary block" type="submit">Next</button></form>';
+  }
+  return h+'</section>';
+}
+
+function renewCard(t){
+  var r=t.renew,info=rinfo(r),rp=rphase(r),sbd=startBy(r),h='';
+  var head=rp==="upcoming"?"Start by "+fmtDay(sbd):rp==="now"?"Start now":rp==="expired"?"It has run out":"Add the date it ends";
+  h+='<section class="'+(rp==="now"||rp==="expired"?"promise pink":rp==="upcoming"?"sheet":"promise")+' stack" style="padding:18px">';
+  h+='<div class="stack-s"><p class="eyebrow">'+esc(rname(r))+'</p><h2 class="h2">'+esc(head)+'</h2>'+(r.expiry?'<p class="mono">Ends '+esc(fmtDay(dayEnd(r.expiry)))+'</p>':"")+'</div>';
+  if(rp==="upcoming")h+='<p>Nothing to do yet. This moves to the top of your list on '+esc(fmtDay(sbd))+'.</p>';
+  if(rp==="unknown")h+='<form class="row" data-f="rdate" style="align-items:flex-end"><label class="f" style="flex:1 1 12em">Date it ends<input type="date" id="f-expiry2" name="expiry"></label><button class="btn" type="submit">Save</button></form>';
+  if(r.applied)h+='<p class="note">You’ve applied. '+(openPromise(t)?"":"Add when it should arrive, so Sorted can check it did.")+'</p>';
+  h+='</section>';
+
+  h+='<section class="sheet stack">';
+  if(info){
+    h+='<div class="stack-s"><p class="h3">Use the official page</p><a class="btn primary block" href="'+info.url+'" target="_blank" rel="noopener noreferrer">Open the official page ↗</a>'+(info.extra?'<a class="link" href="'+info.extra[0]+'" target="_blank" rel="noopener noreferrer">'+esc(info.extra[1])+' ↗</a>':"")+'</div>';
+    if(info.need.length)h+='<div class="stack-s"><p style="font-weight:600">You’ll need</p><ul class="stack-s" style="margin:0;padding-left:1.1em">'+info.need.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul></div>';
+    if(info.note)h+='<p class="note">'+esc(info.note)+'</p>';
+    h+='<div class="check"><span class="tag">Only use GOV.UK</span><p>Renew through the official site above. Other sites may charge extra. Don’t follow renewal links in texts or emails you weren’t expecting.</p></div>';
+  }else{
+    h+='<div class="stack-s"><p class="h3">Renew with '+esc(r.provider||"them")+'</p><p>Use the account, letter or contract you already have. '+(r.kind==="insurance"?"Getting quotes three to four weeks before it renews often costs less than leaving it to the last minute.":"Check the price before it renews automatically.")+'</p></div>';
+    if(t.call)h+='<p class="note">'+esc(ch(t.call.via).card)+' is ready: '+esc(t.call.ask)+'</p>';
+    h+='<button class="btn '+(t.call?"":"primary ")+'block" data-a="panel" data-p="call">'+(t.call?"Edit what to ask":"Get in touch with "+esc(r.provider||"them"))+'</button>';
+    if(t.call)h+='<button class="btn primary block" data-a="panel" data-p="promise">'+ch(t.call.via).log+'</button>';
+  }
+  if(r.kind==="visa"){
+    var ref=localRef(t.id);
+    h+='<div class="stack-s"><label class="f">Your '+(r.visa==="student"?"CAS":r.visa==="skilled"?"certificate of sponsorship":"reference")+' number <span class="hint">Optional. Stays on this phone only. It isn’t saved to Sorted’s servers or shown to helpers.</span><input type="text" id="f-localref" class="mono" autocomplete="off" value="'+esc(ref)+'"></label><button class="btn" data-a="save-localref">Keep it on this phone</button></div>';
+    h+='<p class="muted" style="font-size:16px">Sorted doesn’t give immigration advice. For advice, speak to your university’s international student team or a regulated immigration adviser.</p>';
+  }
+  h+='<div class="row eq">'+(r.applied?"":'<button class="btn" data-a="applied">I’ve applied</button>')+'<button class="btn" data-a="panel" data-p="renewed">It’s renewed</button></div>';
+  if(r.applied&&!openPromise(t))h+='<button class="btn block" data-a="panel" data-p="promise">When should it arrive?</button>';
+  return h+'</section>';
+}
+
+function renewedForm(t){
+  var d=S.draft,keep=d.keep===undefined?true:d.keep;
+  var h='<section class="sheet stack"><form class="stack" data-f="renewed"><h2 class="h2">Renewed. Nice.</h2>';
+  h+='<label class="f">When does the new one end?<span class="hint">Optional. Add it and Sorted will bring it back next time.</span><input type="date" id="f-newexp" name="newexp" value="'+esc(d.newexp||"")+'"></label>';
+  h+='<button type="button" data-a="d" data-k="keep" data-v="'+(keep?"":"1")+'" role="checkbox" aria-checked="'+(!!keep)+'" style="display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left"><span aria-hidden="true" style="flex:none;width:28px;height:28px;border:2px solid var(--ink);border-radius:4px;display:grid;place-items:center;font-weight:800;'+(keep?"background:var(--ink);color:var(--paper)":"background:var(--sheet)")+'">'+(keep?"✓":"")+'</span><span>Remind me next time</span></button>';
+  if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+  h+='<button class="btn primary block" type="submit">Mark it done</button><button class="btn block" type="button" data-a="panel" data-p="">Not yet</button></form></section>';
+  return h;
+}
+
+function callForm(t){
+  var d=S.draft,m=recentMiss(t),def=callDefaults(t,t.fix&&t.fix.decision);
+  var who=d.who!==undefined?d.who:(t.call?t.call.who:def.who),ask=d.ask!==undefined?d.ask:(t.call&&!m?t.call.ask:def.ask),via=d.via!==undefined?d.via:(t.call?t.call.via:(t.renew&&t.renew.via)||"phone");
+  var h='<section class="sheet stack"><div class="stack-s"><p class="eyebrow">'+(m?"Chasing a missed promise":ch(via).prep)+'</p><h2 class="h2">'+(m?"Follow it up":"Who are you contacting?")+'</h2></div><form class="stack" data-f="call">';
+  h+='<label class="f">Who<input type="text" id="f-who" name="who" value="'+esc(who)+'" placeholder="The company, landlord or office"></label>';
+  h+='<div class="stack-s"><span style="font-weight:600">How</span><div class="chips">'+VIA.map(function(x){return '<button type="button" class="chip" data-a="d" data-k="via" data-v="'+x[0]+'" aria-pressed="'+(via===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+  h+='<label class="f">What to ask for<textarea id="f-ask" name="ask" rows="6">'+esc(ask)+'</textarea></label>';
+  h+=checkPanel(via);
+  if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+  h+='<button class="btn primary block" type="submit">Save</button>'+(t.call?'<button class="btn block" type="button" data-a="panel" data-p="">Cancel</button>':"")+'</form></section>';
+  return h;
+}
+var CH={
+  phone:{prep:"Get the call ready",card:"Your call card",say:"Say this",before:"Ask them before you hang up",tag:"Check the number",check:"Get the number from their official website, your account, or paperwork you already have. Don’t use a number from a text, email or letter you weren’t expecting.",none:"Nothing agreed yet",noneLog:"Called {who}. Nothing agreed yet.",log:"Log what they said",ready:"Call ready",next:"make the call, then log what they say"},
+  email:{prep:"Get the email ready",card:"Your email",say:"Write this",before:"Ask them to confirm in their reply",tag:"Check the address",check:"Use the email address on their official website, your account, or paperwork you already have. Don’t reply to an email or text you weren’t expecting.",none:"No reply yet",noneLog:"Emailed {who}. No reply yet.",log:"Log their reply",ready:"Email ready",next:"send the email, then log their reply"},
+  account:{prep:"Get the message ready",card:"Your message",say:"Write this",before:"Ask them to confirm in their reply",tag:"Use the real app",check:"Go through their official app or website, or an account you already use. Don’t follow a link from a text or email you weren’t expecting.",none:"No reply yet",noneLog:"Messaged {who}. No reply yet.",log:"Log their reply",ready:"Message ready",next:"send the message, then log their reply"},
+  letter:{prep:"Get the letter ready",card:"Your letter",say:"Write this",before:"Ask them to reply in writing with",tag:"Check the address",check:"Use the postal address on their official website or paperwork you already have.",none:"No reply yet",noneLog:"Wrote to {who}. No reply yet.",log:"Log their reply",ready:"Letter ready",next:"send the letter, then log their reply"}
+};
+function ch(via){return CH[via]||CH.phone}
+function checkPanel(via){var c=ch(via);return '<div class="check"><span class="tag">'+c.tag+'</span><p>'+c.check+'</p></div>'}
+
+function callCard(t){
+  var c=t.call,w=ch(c.via);
+  var h='<section class="sheet stack"><div class="stack-s"><p class="eyebrow">'+w.card+'</p><h2 class="h2">'+esc(c.who)+'</h2><p class="muted">By '+esc(label(VIA,c.via).toLowerCase())+'</p></div>';
+  h+='<div class="stack-s"><p style="font-weight:600">'+w.say+'</p><p class="note">'+esc(c.ask)+'</p></div>';
+  h+='<div class="stack-s"><p style="font-weight:600">Have ready</p><ul class="stack-s" style="margin:0;padding-left:1.1em">'+haveReady(t).map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul></div>';
+  h+=checkPanel(c.via);
+  h+='<div class="stack-s"><p style="font-weight:600">'+w.before+'</p><ul class="stack-s" style="margin:0;padding-left:1.1em"><li>What exactly will happen?</li><li>Which day, and what time window?</li><li>A reference or job number</li></ul></div>';
+  h+='<button class="btn primary block" data-a="panel" data-p="promise">'+w.log+'</button>';
+  h+='<div class="row eq"><button class="btn" data-a="no-promise">'+w.none+'</button><button class="btn" data-a="panel" data-p="call">Edit</button></div>';
+  return h+'</section>';
+}
+
+function promiseForm(t){
+  var d=S.draft,f=t.fix||{};
+  var rn=t.mode==="renew"&&t.renew&&t.renew.applied&&!t.call;
+  var h='<section class="sheet stack"><h2 class="h2">'+(rn?"When should it arrive?":"What did they say?")+'</h2><form class="stack" data-f="promise">';
+  h+='<label class="f">They said<span class="hint">In their words, if you can.</span><textarea id="f-said" name="said" rows="2" placeholder="'+(rn?"New passport by post":"An engineer will come to replace the pump")+'">'+esc(d.said!==undefined?d.said:(rn?"New "+rname(t.renew).toLowerCase()+" arrives":""))+'</textarea></label>';
+  h+='<label class="f">Who said it<input type="text" id="f-party2" name="party" value="'+esc(d.party!==undefined?d.party:(t.call?t.call.who:(rn?(t.renew.kind==="visa"?"UKVI":t.renew.kind==="tv"?"TV Licensing":["mot"].indexOf(t.renew.kind)>=0?"MOT centre":"GOV.UK"):"")))+'"></label>';
+  var when=d.when||(rn?"by":"slot");
+  h+='<div class="stack-s"><span style="font-weight:600">When?</span><div class="chips">'+[["slot","A day and time"],["by","By a day"],["none","They didn’t give a date"]].map(function(x){return '<button type="button" class="chip" data-a="d" data-k="when" data-v="'+x[0]+'" aria-pressed="'+(when===x[0])+'">'+x[1]+'</button>'}).join("")+'</div></div>';
+  if(when!=="none")h+='<label class="f">'+(when==="by"?"By which day?":"Which day")+'<input type="date" id="f-date" name="date" value="'+esc(d.date||"")+'"></label>';
+  if(when==="slot")h+='<div class="pair"><label class="f">From<span class="hint">Optional</span><input type="time" id="f-from" name="from" value="'+esc(d.from||"")+'"></label><label class="f">Until<span class="hint">Optional</span><input type="time" id="f-to" name="to" value="'+esc(d.to||"")+'"></label></div>';
+  if(when==="none")h+='<p class="note">That’s fine. It stays under Needs you until you get a date from them.</p>';
+  h+='<label class="f">Reference or job number<input type="text" id="f-ref" name="ref" class="mono" autocomplete="off" value="'+esc(d.ref!==undefined?d.ref:(f.jobRef||""))+'"></label>';
+  if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+  h+='<button class="btn primary block" type="submit">Save the promise</button><button class="btn block" type="button" data-a="panel" data-p="">Cancel</button></form></section>';
+  return h;
+}
+
+function promiseCard(t,p){
+  var ph=phase(p),hot=ph!=="later"&&ph!=="nodate",nd=ph==="nodate";
+  var h='<section class="promise'+(nd?" white":hot?" pink":"")+'"><div class="promise-head"><div class="stack-s"><p class="eyebrow">'+(nd?"Needs you":hot?"Come back to this":"They promised")+'</p><h2 class="h2">'+esc(phaseTitle(p))+'</h2></div>'+(p.ref?'<span class="ref">'+esc(p.ref)+'</span>':"")+'</div>';
+  h+='<div class="promise-body"><p class="h3">'+esc(p.party||"Them")+'</p><p class="mono">'+esc(whenText(p))+'</p><p>'+esc(p.said)+'</p></div>';
+  h+='<div class="promise-foot">';
+  if(!p.dueAt){
+    h+='<p>They didn’t give a date, so Sorted can’t tell when to check. Ask them for one.</p>'+
+      '<button class="btn primary block" data-a="ask-date">Ask them for a date</button><div class="row eq"><button class="btn" data-a="kept">It happened</button><button class="btn" data-a="missed">It didn’t</button></div>';
+  }else if(ph==="later"){
+    h+='<p>Nothing to do until then. This moves to the top of your list the day before.</p><p class="muted" style="font-size:16px">Sorted can’t send alerts yet. Open it the day before.</p>';
+    h+='<button class="link" data-a="panel" data-p="hold" style="text-align:left">Show this to someone</button>';
+  }else if(ph==="check"){
+    h+='<p>The time has passed. Tell Sorted what happened.</p><button class="btn primary block" data-a="kept">Yes, it happened</button><button class="btn block" data-a="missed">No, it didn’t happen</button>';
+  }else{
+    h+='<button class="btn primary block" data-a="panel" data-p="hold">Show this</button><div class="row eq"><button class="btn" data-a="kept">It happened</button><button class="btn" data-a="missed">It didn’t</button></div><p class="muted" style="font-size:16px">Opening this doesn’t count as it happening.</p>';
+  }
+  return h+'</div></section>';
+}
+
+function holdCard(t,p,eyebrow){
+  return '<section class="hold"><p class="eyebrow">'+eyebrow+'</p><p class="who">'+esc(p.party||"Them")+'</p><p class="big">'+esc(whenText(p))+'</p><p class="big">'+esc(p.said)+'</p>'+(t.fix&&t.fix.item?'<p>'+esc(t.fix.item)+(t.fix.fault?" · "+esc(label(FAULTS,t.fix.fault)):"")+'</p>':"")+(p.ref?'<p class="refbig">'+esc(p.ref)+'</p>':"")+'</section>';
+}
+
+function doneForm(t){
+  var d=S.draft;
+  return '<section class="sheet stack"><form class="stack" data-f="done"><label class="f"><span class="h3">How did it end?</span><span class="hint">For example: pump replaced, working again.</span><textarea id="f-outcome" name="outcome" rows="2">'+esc(d.outcome||"")+'</textarea></label>'+(d.err?'<p class="err">'+esc(d.err)+'</p>':"")+'<button class="btn primary block" type="submit">Mark it done</button><button class="btn block" type="button" data-a="panel" data-p="">Not yet</button></form></section>';
+}
+
+/* --- your data --- */
+function viewData(){
+  var h=topbar('<button class="link" data-a="home">← All tasks</button>');
+  h+='<main class="stack fade" style="margin-top:8px"><h1 class="h1">Your data</h1>';
+  h+='<section class="sheet stack-s"><p class="h3">Signed in as</p><p class="mono" style="word-break:break-all">'+esc(S.user?S.user.email:"")+'</p><p class="mono muted">'+S.tasks.length+' task'+(S.tasks.length===1?"":"s")+'</p><button class="btn" data-a="signout">Sign out</button></section>';
+  h+=privacyBlock();
+  h+='<section class="sheet stack"><div class="stack-s"><p class="h3">A copy of your data</p><p>Copy everything Sorted holds about your tasks.</p></div><button class="btn primary block" data-a="export">Copy all my tasks</button>';
+  if(S.view.copyText)h+='<textarea class="copybox" id="copyfallback" readonly>'+esc(S.view.copyText)+'</textarea>';
+  h+='</section>';
+  h+='<section class="sheet stack"><p class="h3">Delete everything</p>';
+  if(S.view.confirm)h+='<p>This deletes your account and all '+S.tasks.length+' tasks, on every device. You can’t undo it.</p><div class="row eq"><button class="btn danger" data-a="wipe">Delete everything</button><button class="btn" data-a="wipe-cancel">Keep it</button></div>';
+  else h+='<button class="btn block" data-a="wipe-ask">Delete my account and tasks</button>';
+  h+='</section></main>';
+  return h;
+}
+
+function privacyBlock(){
+  return '<section class="sheet stack-s"><p class="h3">How your data is handled</p>'+
+  '<p>Sorted is a small research pilot run by Baldwin Thompson-Addo. It keeps your email address and the tasks you add, stored on servers in London.</p>'+
+  '<p>Only you see your tasks in the app. The person running the pilot can read them to learn how Sorted is used, and won’t share them with anyone else. If you send a helper link, that person sees that one task until you switch the link off.</p>'+
+  '<p>Tasks you haven’t touched for 90 days are deleted automatically. You can copy or delete everything at any time from “Your data”. Visa reference numbers stay on your phone and are never sent to Sorted.</p>'+
+  '<p class="muted" style="font-size:16px">Please don’t add bank details, medical information or anything you wouldn’t want a researcher to read.</p></section>';
+}
+var HERO_ART='<svg class="hero-art" viewBox="0 0 480 320" role="img" aria-label="A washing machine, a calendar with one day circled, and a phone showing a list of tasks"><rect x="186" y="34" width="150" height="138" rx="8" class="k" transform="translate(6 6)"/><rect x="186" y="34" width="150" height="138" rx="8" class="s o"/><path d="M186 42a8 8 0 0 1 8-8h134a8 8 0 0 1 8 8v22H186z" style="fill:var(--carbon)" class="o"/><rect x="214" y="24" width="8" height="22" rx="4" class="s o"/><rect x="300" y="24" width="8" height="22" rx="4" class="s o"/><g class="k" opacity=".5"><rect x="200" y="80" width="14" height="10" rx="2"/><rect x="224" y="80" width="14" height="10" rx="2"/><rect x="248" y="80" width="14" height="10" rx="2"/><rect x="272" y="80" width="14" height="10" rx="2"/><rect x="296" y="80" width="14" height="10" rx="2"/><rect x="200" y="102" width="14" height="10" rx="2"/><rect x="224" y="102" width="14" height="10" rx="2"/><rect x="272" y="102" width="14" height="10" rx="2"/><rect x="296" y="102" width="14" height="10" rx="2"/><rect x="200" y="124" width="14" height="10" rx="2"/><rect x="224" y="124" width="14" height="10" rx="2"/><rect x="248" y="124" width="14" height="10" rx="2"/></g><rect x="248" y="102" width="14" height="10" rx="2" style="fill:var(--pink-edge)"/><ellipse cx="255" cy="107" rx="16" ry="13" fill="none" style="stroke:var(--pink-edge)" stroke-width="3" transform="rotate(-8 255 107)"/><rect x="34" y="84" width="156" height="206" rx="12" class="k" transform="translate(7 7)"/><rect x="34" y="84" width="156" height="206" rx="12" class="s o"/><line x1="34" y1="122" x2="190" y2="122" class="l"/><rect x="48" y="96" width="44" height="14" rx="3" style="fill:var(--done)" class="o"/><circle cx="150" cy="103" r="8" class="s o"/><circle cx="172" cy="103" r="5" class="k"/><circle cx="112" cy="200" r="54" style="fill:var(--done)" class="o"/><circle cx="112" cy="200" r="40" style="fill:var(--carbon-soft)" class="o"/><clipPath id="hdrum"><circle cx="112" cy="200" r="40"/></clipPath><path clip-path="url(#hdrum)" d="M60 208q26-14 52 0t52 0v60H60z" style="fill:var(--carbon)" opacity=".85"/><circle cx="112" cy="200" r="40" class="l"/><path d="M92 184q8-10 22-11" fill="none" style="stroke:var(--sheet);stroke-width:4;stroke-linecap:round"/><rect x="300" y="104" width="118" height="200" rx="18" class="k" transform="translate(7 7)"/><rect x="300" y="104" width="118" height="200" rx="18" class="k o"/><rect x="309" y="116" width="100" height="176" rx="10" style="fill:var(--paper)"/><rect x="344" y="121" width="30" height="5" rx="2.5" class="k"/><g class="o" stroke-width="2"><rect x="316" y="136" width="86" height="34" rx="4" class="s"/><rect x="316" y="178" width="86" height="34" rx="4" style="fill:var(--yellow)"/><rect x="316" y="220" width="86" height="34" rx="4" style="fill:var(--pink)"/><rect x="316" y="262" width="86" height="22" rx="4" style="fill:var(--done)"/></g><g class="k"><rect x="323" y="144" width="52" height="5" rx="2.5"/><rect x="323" y="155" width="34" height="4" rx="2" opacity=".45"/><rect x="323" y="186" width="46" height="5" rx="2.5"/><rect x="323" y="197" width="40" height="4" rx="2" opacity=".45"/><rect x="323" y="228" width="56" height="5" rx="2.5"/><rect x="323" y="239" width="30" height="4" rx="2" opacity=".45"/><rect x="323" y="270" width="40" height="5" rx="2.5" opacity=".5"/></g><path d="M384 268l5 5 9-10" class="l" stroke-width="2.5"/></svg>';
+function viewSignIn(){
+  var d=S.draft;
+  var h='<header class="bar"><span class="mark">sorted<b>.</b></span></header><main class="stack fade" style="margin-top:8px;gap:22px">';
+  h+='<section class="hero"><p class="eyebrow">Fix it · Renew it · Follow it up</p><h1 class="h1">Life gets messy.<br><em>Sorted keeps up.</em></h1><p class="lede">One calm place to work out what to do, keep track of what people promise, and come back when it matters.</p>'+(d.sent?"":'<a class="btn primary" href="#signin" style="align-self:flex-start">Get something sorted ↓</a>'+HERO_ART)+'</section>';
+  if(d.sent){
+    h+='<section class="sheet stack"><p class="h2">Check your email</p><p>We sent a sign-in link to <span class="mono" style="word-break:break-all">'+esc(d.email)+'</span>. Open it on this phone and tap the link.</p><p class="muted" style="font-size:16px">Nothing there after a few minutes? Look in junk mail, then try again.</p><button class="btn block" data-a="resend">Use a different email</button></section>';
+    return h+'</main>';
+  }
+  h+='<form class="sheet stack" id="signin" data-f="signin"><label class="f"><span class="h3">Your email</span><span class="hint">We’ll send a link. No password needed.</span><input type="email" id="f-email" name="email" autocomplete="email" inputmode="email" value="'+esc(d.email||"")+'" style="width:100%;min-height:52px;padding:12px 14px;border:2px solid var(--ink-2);border-radius:6px;background:var(--sheet);font-size:18px"></label>';
+  h+='<button type="button" data-a="consent" role="checkbox" aria-checked="'+(!!d.consent)+'" style="display:flex;gap:12px;align-items:flex-start;background:none;border:0;padding:0;text-align:left"><span aria-hidden="true" style="flex:none;width:28px;height:28px;border:2px solid var(--ink);border-radius:4px;display:grid;place-items:center;font-weight:800;'+(d.consent?"background:var(--ink);color:var(--paper)":"background:var(--sheet)")+'">'+(d.consent?"✓":"")+'</span><span>I’m happy to take part in the Sorted pilot, and I’ve read how my data is handled.</span></button>';
+  h+='<button type="button" class="link" data-a="privacy" style="text-align:left">'+(d.showPrivacy?"Hide":"Read")+' how your data is handled</button>';
+  if(d.showPrivacy)h+=privacyBlock();
+  if(d.err)h+='<p class="err">'+esc(d.err)+'</p>';
+  h+='<button class="btn primary block" type="submit"'+(d.busy?" disabled":"")+'>'+(d.busy?"Sending…":"Send me a sign-in link")+'</button></form>';
+  return h+'</main>';
+}
+
+/* --- shared, read only --- */
+function viewShared(){
+  var c=S.shared;
+  var h='<header class="bar"><span class="mark">sorted<b>.</b></span><a class="link" href="/">My own tasks</a></header><main class="stack fade" style="margin-top:8px">';
+  if(S.sharedLoading)return h+'<p class="muted">Opening the task…</p></main>';
+  if(!c){return h+'<p class="h3">This link doesn’t open a task.</p><p class="muted">It may have been switched off, or cut short when it was sent. Ask for it again.</p></main>'}
+  h+='<p class="shared-banner">Someone sent you this task so you can help. You can look, but not change anything. It updates by itself. Last change: <span class="mono">'+esc(fmtDay(new Date(S.sharedAt||c.s))+", "+fmtTime(new Date(S.sharedAt||c.s)))+'</span>.</p>';
+  h+='<section class="stack-s"><p class="eyebrow">'+(MODE_LABEL[c.m]||"")+'</p><h1 class="h1">'+esc(c.t)+'</h1></section>';
+  var p=c.p?{said:c.p[0],party:c.p[1],dueAt:c.p[2],dueEnd:c.p[3],allDay:!!c.p[4],ref:c.p[5],loggedAt:c.p[6],by:!!c.p[7],status:"open"}:null;
+  if(c.o)h+='<section class="sheet"><p class="eyebrow">Finished</p><p class="h3">'+esc(c.o)+'</p></section>';
+  else if(p)h+=holdCard({fix:{item:c.i,fault:c.f}},p,phase(p)==="check"?"WAS DUE":"THEY PROMISED");
+  var kv=[];
+  if(c.r)kv.push(["Renewing",c.r]);
+  if(c.e)kv.push(["Ends",fmtDay(dayEnd(c.e))]);
+  if(c.i)kv.push(["What it is",c.i+(c.f?", "+label(FAULTS,c.f).toLowerCase():"")]);
+  if(c.d)kv.push(["Details",c.d]);
+  if(c.w)kv.push(["Contact",c.w]);
+  if(c.a)kv.push(["Asking for",c.a]);
+  if(kv.length){h+='<section class="sheet"><dl class="kv">';kv.forEach(function(x){h+='<dt>'+esc(x[0])+'</dt><dd>'+esc(x[1])+'</dd>'});h+='</dl></section>'}
+  if(c.x&&c.x.length){h+='<section class="stack-s"><h2 class="h3">Promises they didn’t keep</h2>';c.x.forEach(function(x){var q={said:x[0],dueAt:x[1],dueEnd:x[2],allDay:!!x[3],ref:x[4],by:!!x[5]};h+='<p class="missed"><s>'+esc(q.said)+'</s><br><span class="mono">'+esc(whenText(q))+(q.ref?" · "+esc(q.ref):"")+'</span></p>'});h+='</section>'}
+  return h+'</main>';
+}
+
+/* ---------- helper link card ---------- */
+function shareCard(t){
+  var f=t.fix||{},p=openPromise(t),c={v:2,s:nowIso(),m:t.mode,t:t.title};
+  if(f.item)c.i=f.item;if(f.fault)c.f=f.fault;if(f.detail)c.d=f.detail;
+  if(t.call){c.w=t.call.who;c.a=t.call.ask}
+  if(t.renew&&t.renew.kind){c.r=rname(t.renew);if(t.renew.expiry)c.e=t.renew.expiry}
+  if(p)c.p=[p.said,p.party||"",p.dueAt||null,p.dueEnd||null,p.allDay?1:0,p.ref||"",p.loggedAt||null,p.by?1:0];
+  var x=t.promises.filter(function(q){return q.status==="missed"}).map(function(q){return [q.said,q.dueAt||null,q.dueEnd||null,q.allDay?1:0,q.ref||"",q.by?1:0]});
+  if(x.length)c.x=x;
+  if(t.board==="done")c.o=t.outcome||"Finished";
+  return c;
+}
+function b64u(bytes){var s="";for(var i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+
+/* ---------- render & events ---------- */
+function render(){
+  var v=S.view,html;
+  if(v.name==="shared")html=viewShared();
+  else if(S.booting)html='<header class="bar"><span class="mark">sorted<b>.</b></span></header><p class="muted" style="margin-top:24px">Opening…</p>';
+  else if(!S.user)html=viewSignIn();
+  else if(v.name==="new")html=viewNew();
+  else if(v.name==="safety")html=viewSafety();
+  else if(v.name==="task")html=viewTask();
+  else if(v.name==="data")html=viewData();
+  else html=viewHome();
+  $("#app").innerHTML=html;
+}
+
+document.addEventListener("input",function(e){
+  var el=e.target;if(!el.name)return;
+  S.draft[el.name]=el.value;
+  if(el.name==="baseline")S.draft.baseline=el.value;
+});
+
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");if(!b)return;
+  var a=b.getAttribute("data-a"),d=S.draft,t=S.view.id?task(S.view.id):null;
+  switch(a){
+    case "home":go({name:"home"});break;
+    case "data":go({name:"data"});break;
+    case "new":S.view={name:"new",mode:b.getAttribute("data-mode")};S.draft={};render();window.scrollTo(0,0);break;
+    case "open":go({name:"task",id:b.getAttribute("data-id"),panel:null});break;
+    case "plan":d.baseline=b.getAttribute("data-v");d.err="";render();break;
+    case "back-title":d.step="title";d.err="";render();break;
+    case "safety-new":S.pendingSafety={title:(d.title||"").trim()};S.view={name:"safety",from:"new",mode:S.view.mode};render();break;
+    case "safe-continue":
+      if(S.view.from==="task"&&task(S.view.id)){var tt=task(S.view.id);tt.safety=true;tt.fix.step="who";log(tt,"Safety stop shown. Told to switch off only if safe and get qualified help.");save();go({name:"task",id:tt.id,panel:null})}
+      else{S.view={name:"new",mode:"fix"};S.draft={step:(S.pendingSafety&&S.pendingSafety.title)?"baseline":"title",title:(S.pendingSafety&&S.pendingSafety.title)||"",baseline:"",safety:true};render()}
+      break;
+    case "d":d[b.getAttribute("data-k")]=b.getAttribute("data-v");d.err="";render();break;
+    case "unsafe":if(t){syncWhat(t);S.view={name:"safety",from:"task",id:t.id};render();window.scrollTo(0,0)}break;
+    case "check":if(t){t.fix.checks[b.getAttribute("data-k")]=b.getAttribute("data-v");t._dirty=true;save();render()}break;
+    case "checks-done":if(t){
+      var fixed=Object.keys(t.fix.checks).some(function(k){return t.fix.checks[k]==="fixed"});
+      var tried=triedList(t);if(tried.length)log(t,"Checks: "+tried.join("; ")+".");
+      if(fixed){t.fix.step="done";t.fix.decision="fixed";t.board="done";t.outcome="Fixed with a safe check";log(t,"Fixed with a safe check. Done.")}
+      else t.fix.step="decide";
+      commit();}break;
+    case "decide":if(t){var v=b.getAttribute("data-v");t.fix.decision=v;t.fix.step="done";
+      if(v==="fixed"){t.board="done";t.outcome="Working again";log(t,"Working again. Done.")}
+      else if(v==="replace"){log(t,"Decided to replace it.");S.view.panel="done";S.draft={outcome:"Replacing it"}}
+      else{log(t,"Decided: "+{claim:"claim it",repair:"book a repair",report:"report it to "+whoName(t)}[v]+".");S.view.panel="call";S.draft={}}
+      save();render();window.scrollTo(0,0);}break;
+    case "decide-again":if(t){t.fix.step="decide";t.fix.decision=null;log(t,"Changed the decision.");commit()}break;
+    case "panel":S.view.panel=b.getAttribute("data-p")||null;S.view.copyText=null;S.draft={};render();break;
+    case "no-promise":if(t){log(t,ch(t.call.via).noneLog.replace("{who}",t.call.who));commit();toast("Logged. Still your move.")}break;
+    case "kept":if(t){var p=openPromise(t);p.status="kept";p.closedAt=nowIso();log(t,"They kept it: "+p.said+".");S.view.panel=t.mode==="renew"?"renewed":"done";S.draft={};commit()}break;
+    case "missed":if(t){var q=openPromise(t);q.status="missed";q.closedAt=nowIso();log(t,"It didn’t happen: "+q.said+" ("+whenText(q)+(q.ref?", ref "+q.ref:"")+").");t.board="yours";S.view.panel="call";S.draft={};commit();window.scrollTo(0,0)}break;
+    case "ask-date":if(t){var pd=openPromise(t);pd.status="replaced";pd.closedAt=nowIso();log(t,"Asked them for a date.");S.view.panel="call";S.draft={ask:"You said: “"+pd.said+"”. Which day will that be, and what time? Please give me a reference too."};commit();window.scrollTo(0,0)}break;
+    case "applied":if(t){t.renew.applied=true;log(t,"Applied to renew "+rname(t.renew).toLowerCase()+".");S.view.panel="promise";S.draft={};commit();window.scrollTo(0,0)}break;
+    case "save-localref":if(t){var lr=$("#f-localref");localRef(t.id,lr?lr.value.trim():"");toast("Kept on this phone only")}break;
+    case "summary":S.view.panel=S.view.panel==="summary"?null:"summary";render();break;
+    case "copy-summary":if(t)copy(repairerSummary(t),"Summary copied");break;
+    case "share":if(t){
+      var fresh=!t.shareToken;
+      if(fresh){var rb=new Uint8Array(24);crypto.getRandomValues(rb);t.shareToken=b64u(rb)}
+      var url=location.origin+"/?share="+t.shareToken;
+      copy(url,"Link copied. Send it to them.");
+      if(fresh){log(t,"Shared with a helper.");save();
+        sb.from("shares").insert({token:t.shareToken,task_id:t.id,card:shareCard(t)}).then(function(r){if(r.error){toast("Couldn’t create the link. Try again.");delete t.shareToken;t._dirty=true;save();render()}})}
+      if(!S.view.copyText)render()}break;
+    case "unshare":if(t&&t.shareToken){sb.from("shares").delete().eq("task_id",t.id).then(function(){});delete t.shareToken;log(t,"Stopped sharing. The old link no longer works.");commit();toast("Link switched off")}break;
+    case "export":copy(JSON.stringify({exported:nowIso(),tasks:S.tasks},null,2),"All tasks copied");break;
+    case "wipe-ask":S.view.confirm=true;render();break;
+    case "wipe-cancel":S.view.confirm=false;render();break;
+    case "wipe":sb.rpc("delete_my_account").then(function(r){if(r.error){toast("Couldn’t delete. Check your connection.");return}try{localStorage.removeItem(cacheKey());Object.keys(localStorage).forEach(function(k){if(k.indexOf("sorted.local.")===0)localStorage.removeItem(k)})}catch(e){}S.tasks=[];sb.auth.signOut().finally(function(){S.user=null;go({name:"home"});toast("Your account and tasks are deleted")})});break;
+    case "signout":sb.auth.signOut().finally(function(){S.user=null;S.tasks=[];go({name:"home"})});break;
+    case "consent":S.draft.consent=!S.draft.consent;S.draft.err="";render();break;
+    case "privacy":S.draft.showPrivacy=!S.draft.showPrivacy;render();break;
+    case "resend":S.draft.sent=false;render();break;
+  }
+});
+
+function syncWhat(t){
+  var d=S.draft,f=t.fix;
+  var item=d.item!==undefined?d.item:(f.item||"Washing machine");
+  f.item=item||f.item||"";if(d.fault!==undefined)f.fault=d.fault;if(d.detail!==undefined)f.detail=d.detail.trim();
+}
+
+document.addEventListener("submit",function(e){
+  e.preventDefault();
+  var form=e.target,k=form.getAttribute("data-f"),d=S.draft,t=S.view.id?task(S.view.id):null;
+  if(k==="signin"){
+    var em=$("#f-email").value.trim();d.email=em;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){d.err="That email doesn’t look right.";render();return}
+    if(!d.consent){d.err="Tick the box to say you’re happy to take part.";render();return}
+    d.err="";d.busy=true;render();
+    sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+"/",data:{pilot_consent_at:nowIso()}}}).then(function(r){
+      d.busy=false;
+      if(r.error){d.err=/rate|many|seconds/i.test(r.error.message)?"Too many links sent. Wait a few minutes and try again.":"Couldn’t send the link. Check the email and try again.";render();return}
+      d.sent=true;render();
+    });
+    return;
+  }
+  if(k==="title"){
+    d.title=$("#f-title").value;
+    if(d.title.trim().length<2){d.err="Give it a short name you’ll recognise.";render();return}
+    if(S.view.mode==="fix"&&looksUnsafe(d.title)){S.pendingSafety={title:d.title.trim()};S.view={name:"safety",from:"new",mode:"fix"};render();window.scrollTo(0,0);return}
+    d.step="baseline";d.err="";render();return;
+  }
+  if(k==="baseline"){
+    var own=$("#f-baseline").value.trim();if(own)d.baseline=own;
+    if(!d.baseline||d.baseline.trim().length<2){d.err="Pick one, or say it in your own words. “Not sure yet” is a fine answer.";render();return}
+    newTask(S.view.mode);return;
+  }
+  if(!t)return;
+  if(k==="what"){
+    var item=d.item!==undefined?d.item:(t.fix.item||"Washing machine");
+    if(item!=="Washing machine"){var iv=$("#f-item");item=iv?iv.value.trim():item}
+    var fault=d.fault!==undefined?d.fault:t.fix.fault;
+    var detail=$("#f-detail").value.trim();
+    if(!item){d.err="Say what it is.";render();return}
+    if(item==="Washing machine"&&!fault){d.err="Pick what it’s doing.";render();return}
+    if(!t.safety&&looksUnsafe(detail,t.title,item)){t.fix.item=item;t.fix.fault=fault||"other";t.fix.detail=detail;save();S.view={name:"safety",from:"task",id:t.id};render();window.scrollTo(0,0);return}
+    t.fix.item=item;t.fix.fault=item==="Washing machine"?fault:"other";t.fix.detail=detail;t.fix.step="who";
+    log(t,"Fault: "+item+(item==="Washing machine"?", "+label(FAULTS,fault).toLowerCase():"")+(detail?". "+detail:"")+".");
+    S.draft={};commit();return;
+  }
+  if(k==="who"){
+    var r=d.responsible!==undefined?d.responsible:t.fix.responsible;
+    if(!r){d.err="Pick one. If you rent, it’s usually your landlord.";render();return}
+    t.fix.responsible=r;
+    if(r!=="me"){var pv=$("#f-party"),jv=$("#f-jobRef");t.fix.party=pv?pv.value.trim():"";t.fix.jobRef=jv?jv.value.trim():"";t.fix.step="decide";
+      log(t,"Someone else fixes it: "+whoName(t)+(t.fix.jobRef?", job "+t.fix.jobRef:"")+".")}
+    else{t.fix.step="bought";log(t,"It’s yours, so you decide: claim, repair or replace.")}
+    S.draft={};commit();return;
+  }
+  if(k==="bought"){
+    var a=d.age!==undefined?d.age:t.fix.age;
+    if(!a){d.err="Pick one. “Not sure” is fine.";render();return}
+    t.fix.age=a;t.fix.cover=(d.cover!==undefined?d.cover:t.fix.cover)||"unsure";t.fix.seller=$("#f-seller").value.trim();
+    var skipChecks=t.safety||t.fix.item!=="Washing machine"||!(CHECKS[t.fix.fault]||[]).length;
+    t.fix.step=skipChecks?"decide":"checks";
+    log(t,(agoText(a)?"Bought "+agoText(a):"Not sure when it was bought")+(t.fix.seller?", from "+t.fix.seller:"")+". Warranty or insurance: "+label(COVER,t.fix.cover).toLowerCase()+".");
+    S.draft={};commit();return;
+  }
+  if(k==="call"){
+    var who=$("#f-who").value.trim(),ask=$("#f-ask").value.trim(),via=d.via||(t.call&&t.call.via)||"phone";
+    if(!who||!ask){d.err="Fill in who, and what to ask for.";render();return}
+    var chasing=!!recentMiss(t);
+    t.call={who:who,ask:ask,via:via};
+    log(t,(chasing?"Follow-up ready: ":ch(via).ready+": ")+who+", by "+label(VIA,via).toLowerCase()+".");
+    S.view.panel=null;S.draft={};commit();window.scrollTo(0,0);return;
+  }
+  if(k==="promise"){
+    var rn2=t.mode==="renew"&&t.renew&&t.renew.applied&&!t.call;
+    var when=d.when||(rn2?"by":"slot"),val=function(id){var el=$(id);return el?el.value:""};
+    var said=$("#f-said").value.trim(),party=$("#f-party2").value.trim(),date=val("#f-date"),from=when==="slot"?val("#f-from"):"",to=when==="slot"?val("#f-to"):"",ref=$("#f-ref").value.trim();
+    d.said=said;d.party=party;d.date=date;d.from=from;d.to=to;d.ref=ref;
+    if(!said){d.err="Write what they said, in a few words.";render();return}
+    if(when!=="none"&&!date){d.err=when==="by"?"Pick the day they said, or choose “They didn’t give a date”.":"Pick the day, or choose “They didn’t give a date”.";render();return}
+    var dueAt=null,end=null,allDay=false;
+    if(when!=="none"){
+      var ymd=date.split("-").map(Number),start=new Date(ymd[0],ymd[1]-1,ymd[2],0,0,0,0);allDay=!from;
+      if(from){var hm=from.split(":").map(Number);start.setHours(hm[0],hm[1])}
+      if(from&&to){var hm2=to.split(":").map(Number);var e2=new Date(start);e2.setHours(hm2[0],hm2[1]);if(e2>start)end=e2.toISOString()}
+      dueAt=start.toISOString();
+    }
+    var pr={id:uid(),said:said,party:party,dueAt:dueAt,dueEnd:end,allDay:allDay,by:when==="by",ref:ref,status:"open",loggedAt:nowIso()};
+    t.promises.push(pr);t.board=pr.dueAt?"waiting":"yours";
+    log(t,"They said: "+said+(pr.dueAt?", "+whenText(pr).replace(/^By/,"by"):". No date given")+(ref?", ref "+ref:"")+".");
+    S.view.panel=null;S.draft={};commit();window.scrollTo(0,0);return;
+  }
+  if(k==="rwhat"){
+    var kd=d.kind!==undefined?d.kind:t.renew.kind;
+    if(!kd){d.err="Pick one. “Something else” is fine.";render();return}
+    var vs=d.visa!==undefined?d.visa:t.renew.visa;
+    if(kd==="visa"&&!vs){d.err="Pick the visa type. “Another visa” is fine.";render();return}
+    var wi=$("#f-rwhat");
+    t.renew.kind=kd;t.renew.visa=kd==="visa"?vs:null;t.renew.what=wi?wi.value.trim():"";t.renew.step="when";
+    log(t,"Renewing: "+rname(t.renew)+".");S.draft={};commit();return;
+  }
+  if(k==="rwhen"){
+    var unk=d.unknown!==undefined?!!d.unknown:!!t.renew.expiryUnknown,ex=$("#f-expiry");ex=ex?ex.value:"";
+    if(!unk&&!ex){d.err="Add the date, or choose “I don’t know the date”.";render();return}
+    t.renew.expiry=unk?null:ex;t.renew.expiryUnknown=unk;
+    t.renew.step=(t.renew.kind==="insurance"||t.renew.kind==="other")?"who":"done";
+    log(t,unk?"End date not known yet.":"Ends "+fmtDay(dayEnd(ex))+". Start by "+fmtDay(startBy(t.renew))+".");
+    S.draft={};commit();return;
+  }
+  if(k==="rwho"){
+    var pv2=$("#f-provider").value.trim();
+    if(!pv2){d.err="Add who you renew it with. Check your letter or account.";render();return}
+    t.renew.provider=pv2;t.renew.via=d.via||"email";t.renew.step="done";
+    log(t,"Renews with "+pv2+".");S.draft={};commit();return;
+  }
+  if(k==="rdate"){
+    var ex2=$("#f-expiry2").value;if(!ex2)return;
+    t.renew.expiry=ex2;t.renew.expiryUnknown=false;log(t,"Ends "+fmtDay(dayEnd(ex2))+". Start by "+fmtDay(startBy(t.renew))+".");commit();return;
+  }
+  if(k==="renewed"){
+    var ne=$("#f-newexp").value,keep=d.keep===undefined?true:!!d.keep;
+    t.board="done";t.outcome="Renewed"+(ne?", now ends "+fmtDay(dayEnd(ne)):"");
+    var op=openPromise(t);if(op){op.status="kept";op.closedAt=nowIso()}
+    log(t,"Renewed."+(ne?" New end date "+fmtDay(dayEnd(ne))+".":""));
+    if(keep&&ne){
+      var nt={id:uid(),mode:"renew",title:t.title,baseline:"Carried over from last time",created:nowIso(),updatedAt:nowIso(),board:"yours",safety:false,fix:null,
+        renew:{step:"done",kind:t.renew.kind,visa:t.renew.visa,what:t.renew.what,provider:t.renew.provider,via:t.renew.via,expiry:ne},call:null,promises:[],outcome:"",events:[],sharedAt:null};
+      log(nt,"Kept for next time. Ends "+fmtDay(dayEnd(ne))+".");S.tasks.unshift(nt);
+    }
+    S.view.panel=null;S.draft={};commit();toast(keep&&ne?"Done. Sorted will remind you next time.":"Done");return;
+  }
+  if(k==="done"){
+    var out=$("#f-outcome").value.trim();
+    if(!out){d.err="A few words is enough.";render();return}
+    t.board="done";t.outcome=out;log(t,"Finished: "+out);S.view.panel=null;S.draft={};commit();return;
+  }
+});
+
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&S.user){var a=document.activeElement;if(!a||!/INPUT|TEXTAREA/.test(a.tagName))render()}});
+/* keep time-based states honest while the page stays open */
+setInterval(function(){if(S.view.name==="home"||S.view.name==="task"){var a=document.activeElement;if(!a||!/INPUT|TEXTAREA/.test(a.tagName))render()}},60000);
+
+/* ---------- boot ---------- */
+function setUser(u){
+  var id=u?u.id:null;
+  if(S.user&&id===S.user.id){S.booting=false;return}
+  S.user=u||null;
+  if(!u){S.tasks=[];S.booting=false;render();return}
+  S.tasks=cacheRead();S.booting=false;render();
+  if(/access_token|error_description/.test(location.hash))try{history.replaceState(null,"",location.pathname)}catch(e){}
+  sb.from("tasks").select("data").order("updated_at",{ascending:false}).then(function(r){
+    if(r.error){offline(true);return}
+    offline(false);
+    var dirty=S.tasks.filter(function(t){return t._dirty});
+    S.tasks=r.data.map(function(x){return x.data});
+    dirty.forEach(function(t){var i=S.tasks.findIndex(function(y){return y.id===t.id});if(i>=0)S.tasks[i]=t;else S.tasks.unshift(t)});
+    cacheWrite();save();
+    if(S.view.name==="home"||S.view.name==="task")render();
+  });
+}
+function loadShared(token){
+  sb.rpc("get_share",{p_token:token}).then(function(r){
+    S.sharedLoading=false;
+    var row=r.data&&r.data[0];
+    S.shared=row?row.card:null;S.sharedAt=row?row.updated_at:null;render();
+  });
+}
+function boot(){
+  var token=new URLSearchParams(location.search).get("share");
+  if(token){
+    S.view={name:"shared"};S.sharedLoading=true;render();
+    loadShared(token);
+    setInterval(function(){if(!document.hidden)loadShared(token)},30000);
+    return;
+  }
+  render();
+  sb.auth.onAuthStateChange(function(ev,session){setUser(session?session.user:null)});
+  sb.auth.getSession().then(function(r){setUser(r.data.session?r.data.session.user:null)});
+}
+boot();
+})();
+</script>
+
+</body>
+</html>

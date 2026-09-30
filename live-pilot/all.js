@@ -1,0 +1,2 @@
+const {execSync}=require('child_process');
+for(const f of ['build.js','build7.js','build8.js','build9.js','build10.js','build11.js','build12.js','build13.js','build14.js','build15.js','build16.js','build17.js','build18.js','build19.js','build20.js','build21.js','build22.js','build23.js','build24.js','build25.js','build26.js','build27.js'])execSync('node '+f,{stdio:'inherit'});

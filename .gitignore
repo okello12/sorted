@@ -1,6 +1,5 @@
 node_modules
 .vercel
-.grok
-dist
 *.log
-screenshots
+# built output: run `node all.js` to regenerate
+public/index.html

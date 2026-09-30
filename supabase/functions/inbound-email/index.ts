@@ -8,6 +8,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // Failures and rejections are logged to ops_errors as a kind and a time only (no addresses, no content).
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+const FORWARDING_OFF = true;
+
 async function oops(kind: string) { try { await sb.from("ops_errors").insert({ source: "inbound", kind }); } catch { /* never block mail on logging */ } }
 async function secret(name: string): Promise<string | null> {
   const { data } = await sb.rpc("sorted_secret", { p_name: name });
@@ -32,6 +34,8 @@ const strip = (html: string) => html.replace(/<style[\s\S]*?<\/style>/gi, "").re
 
 async function handle(req: Request): Promise<Response> {
   if (req.method !== "POST") return new Response("ok");
+  // Forwarding is switched off for the pilot: nothing is read, fetched or stored.
+  if (FORWARDING_OFF) return Response.json({ ignored: "forwarding_off" });
   const body = await req.text();
   const v = await verify(req, body);
   if (v !== "ok") { await oops(v); return new Response("bad signature", { status: 401 }); }

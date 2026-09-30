@@ -1,7 +1,7 @@
 # Sorted pilot
 
 This repository is the code behind **https://sorted-pilot.vercel.app** as deployed on 29 September 2026 (release v27).
-The earlier Grok-built prototype is kept under the git tag `grok-prototype`.
+The earlier Grok-built prototype is kept on the branch `grok-prototype`.
 
 ## How the site is built
 

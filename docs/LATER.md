@@ -191,6 +191,35 @@ When it is applied, also:
   history needs `git filter-repo` and a force push to both branches. Baldwin's call.
 - **The new security headers** (`vercel.json`) are tested in Chromium. Check screenshots and PDFs once on a real iPhone.
 
+## Lessons from Things 3 (looked at 2 October 2026)
+
+Things 3 (Cultured Code) is an iPhone to-do app: £9.99 one-off, 4.8 from about 4,300 UK ratings, No. 2 in Productivity.
+It tracks what **you** have to do. Sorted tracks what **someone else** owes you, so we copy its habits, not its scope.
+
+| | Things 3 | Sorted |
+|---|---|---|
+| Core object | Your to-do | Their promise: who, what, by when, reference |
+| Home | Today, Upcoming, Anytime, Someday | Needs you, Waiting, Done |
+| Getting things in | Quick Entry anywhere, share sheet, Siri, widgets, Mail to Things | Type, paste, screenshot or PDF, inside the page only |
+| Dates | "When" (when you'll do it) and "Deadline" kept apart | Their due time, plus Sorted's check-in after it |
+| When it slips | Nothing happens; it moves to overdue | Asks if it happened, drafts the chase quoting their words |
+| Sharing | None | Helper link and nudges |
+| Platforms | Apple only, separate purchases | Any phone with a browser |
+| Price | One-off, no subscription | Free pilot; per-case price idea (item 10) |
+
+**Worth borrowing.**
+- **Capture from anywhere.** Things is a daily habit because adding takes two seconds from any app. Sorted can get part of
+  this on iPhone without a native app: an Apple Shortcut in the share sheet that opens
+  `sorted-pilot.vercel.app/#new=<text>`. The text goes in the fragment (after `#`), which browsers never send to the
+  server, so it can't land in Vercel's logs. The page fills the case box and waits for the person to press Start;
+  it never creates a case by itself. Small to build; needs the Shortcut published and a line in the help text.
+- **Restraint.** Things shows few lists and little chrome. Keep Home to three states.
+- **One-off price as a reference.** People pay £10 once for calm and reliability, so a per-case price must feel clearly
+  worth more than a whole to-do app.
+
+**Not borrowing.** Projects, areas, tags, checklists, repeating to-dos. They turn Sorted into a to-do list, which the
+pilot rules already rule out.
+
 ## Smaller follow-ups noticed along the way
 
 - **Measuring the card.** Since v38 a confirmed suggestion's `promise_created` step carries `src` = `sentence` or

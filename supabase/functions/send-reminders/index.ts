@@ -40,12 +40,12 @@ async function send(key: string, from: string, to: string, subject: string, text
 // Wording for each kind of reminder. "Move" = something the person said they would do; otherwise it is someone else's promise.
 function copy(kind: string, move: boolean) {
   if (move) {
-    if (kind === "start") return { subject: "Your Sorted reminder: due tomorrow", heading: "Something you planned to do is due tomorrow", intro: "One of your tasks in Sorted has something for you to do by tomorrow. Open it to see what, and mark it done when you have." };
-    if (kind === "after") return { subject: "Your Sorted task: did you get it done?", heading: "Did you get it done?", intro: "The time you set for one of your tasks has passed. Open it and mark it done, or pick a new time." };
-    return { subject: "Your Sorted reminder", heading: "Something you planned to do is due", intro: "One of your tasks in Sorted has something for you to do. Open it to see what, and mark it done when you have." };
+    if (kind === "start") return { subject: "Your Sorted reminder: due tomorrow", heading: "Something you planned to do is due tomorrow", intro: "One of your cases in Sorted has something for you to do by tomorrow. Open it to see what, and mark it done when you have." };
+    if (kind === "after") return { subject: "Your Sorted case: did you get it done?", heading: "Did you get it done?", intro: "The time you set for one of your cases has passed. Open it and mark it done, or pick a new time." };
+    return { subject: "Your Sorted reminder", heading: "Something you planned to do is due", intro: "One of your cases in Sorted has something for you to do. Open it to see what, and mark it done when you have." };
   }
-  if (kind === "after") return { subject: "Your Sorted task: did it happen?", heading: "Did it happen?", intro: "The time for one of your tasks has passed. Open it and tell Sorted what happened, so it knows what to do next." };
-  return { subject: "Your Sorted reminder", heading: "Something you're waiting on is coming up", intro: "One of your tasks in Sorted is due soon. Open it to see the details and what to have ready." };
+  if (kind === "after") return { subject: "Your Sorted case: did it happen?", heading: "Did it happen?", intro: "The time for one of your cases has passed. Open it and tell Sorted what happened, so it knows what to do next." };
+  return { subject: "Your Sorted reminder", heading: "Something you're waiting on is coming up", intro: "One of your cases in Sorted is due soon. Open it to see the details and what to have ready." };
 }
 
 Deno.serve(async (req: Request) => {
@@ -74,8 +74,8 @@ Deno.serve(async (req: Request) => {
   for (const h of pend ?? []) {
     const yes = `${SITE}/?helper=yes&h=${h.token}`;
     const intro = `${h.inviter_name} is using Sorted to keep track of something they're waiting on, and has already sent you a link to it. They'd like Sorted to email you a short nudge when it's due, so you can check in with them.`;
-    const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the task is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the task is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
+    const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
+    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
     const r = await send(key, from, h.email, `${h.inviter_name} asked Sorted to keep you in the loop`, text, hb);
     if (r.ok) { await sb.from("helpers").update({ invite_sent_at: new Date().toISOString() }).eq("task_id", h.task_id).eq("token", h.token); invites++; }
   }
@@ -109,8 +109,8 @@ Deno.serve(async (req: Request) => {
     const link = `${SITE}/?task=${encodeURIComponent(r.task_id)}&src=email`;
     const c = copy(r.kind, isMove);
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
-    const text = `${c.heading}\n\n${c.intro}\n\nOpen your task: ${link}\n\nYou're getting this because you use Sorted and have email reminders on for this task. The details stay in the app, not in this email. To stop them, open the task and turn email reminders off.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, "Open your task", link, `You're getting this because you use Sorted and have email reminders on for this task. The details stay in the app, not in this email. To stop them, open the task and turn email reminders off.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
+    const text = `${c.heading}\n\n${c.intro}\n\nOpen your case: ${link}\n\nYou're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, "Open your case", link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
     const res = await send(key, from, email, c.subject, text, hb, { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
     if (!res.ok) { failed++; await sb.from("reminders").update({ cancel_reason: `send failed: ${res.err}` }).eq("id", r.id); continue; }
     await sb.from("reminders").update({ sent_at: new Date().toISOString(), provider_id: res.id ?? null }).eq("id", r.id);

@@ -8,7 +8,7 @@ with sync_playwright() as p:
     b=p.chromium.launch(); ctx=b.new_context(viewport={'width':390,'height':844})
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE+'/tests/mock.js', content_type='application/javascript'))
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
-    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e)))
     for where in ['','#start','#signin','#privacy']:
         pg.goto('about:blank'); pg.goto('https://sorted.test/'+where); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)

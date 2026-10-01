@@ -22,7 +22,7 @@ with sync_playwright() as p:
     b=p.chromium.launch(); ctx=b.new_context(viewport={'width':390,'height':844},timezone_id='Europe/London')
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE+'/tests/mock.js', content_type='application/javascript'))
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
-    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e)))
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
     # unrelated duration doesn't back-date
@@ -72,4 +72,16 @@ with sync_playwright() as p:
     ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks"))==n0-1 and 'Case deleted' in pg.inner_text('#toast'),'delete: case removed')
     ok(pg.locator('h1').count()>=1,'Home has a page heading')
     b.close()
+
+# v38: the database library's fingerprint matches the exact npm file; Google Fonts is gone; step source
+import hashlib, base64, re
+PAGE=open(HERE+'/public/index.html',encoding='utf8').read()
+lib=open(HERE+'/tests/node_modules/@supabase/supabase-js/dist/umd/supabase.js','rb').read()
+want='sha384-'+base64.b64encode(hashlib.sha384(lib).digest()).decode()
+m=re.search(r'supabase-js@([0-9.]+)/dist/umd/supabase.js" integrity="([^"]+)"',PAGE)
+ok(m and m.group(2)==want,'supabase-js integrity matches the npm package')
+ok(m and m.group(1)==json.load(open(HERE+'/tests/node_modules/@supabase/supabase-js/package.json'))['version'],'test copy of supabase-js is the same version as the page')
+ok('fonts.googleapis' not in PAGE and 'fonts.gstatic' not in PAGE and 'Google Fonts' not in PAGE,'no Google Fonts left in the page or the notice')
+ok(all(os.path.exists(HERE+'/public'+u) for u in re.findall(r'url\((/fonts/[^)]+)\)',PAGE)) and PAGE.count('@font-face')==5,'every self-hosted font file exists')
+ok('src:sp.fromMsg?"message":"sentence"' in PAGE,'step record says where a confirmed suggestion came from')
 print('ERRORS',errs); print('FAILS',fails)

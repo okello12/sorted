@@ -11,7 +11,7 @@ def setup(b):
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE+'/tests/mock.js', content_type='application/javascript'))
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
     ctx.route('https://sorted.test/art/**', lambda r: r.fulfill(path=HERE+'/public/art/'+r.request.url.split('/art/')[1], content_type='image/webp'))
-    ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html'))
+    ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html'))
     pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e))); return pg
 def fresh(pg):
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)

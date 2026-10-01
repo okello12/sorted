@@ -31,7 +31,7 @@ with sync_playwright() as p:
     ctx=b.new_context(viewport={'width':390,'height':844})
     ctx.route('https://cdn.jsdelivr.net/**', cdn)
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
-    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e)))
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
     # 1 a message finds its case

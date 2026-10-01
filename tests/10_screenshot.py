@@ -20,7 +20,7 @@ with sync_playwright() as p:
     ctx=b.new_context(viewport={'width':390,'height':844})
     ctx.route('https://cdn.jsdelivr.net/**', cdn)
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
-    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+    ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     up=[]; ctx.on('request', lambda rq: up.append(rq.url) if rq.method=='POST' and 'sorted.test' not in rq.url else None)
     pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e)))
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear()"); pg.reload(); wait(pg,800); print('ERR0',errs, hits, pg.inner_text('body')[:300]); pg.click('[data-a=anon-start]'); wait(pg)

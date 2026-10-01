@@ -12,7 +12,7 @@ with sync_playwright() as p:
         ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE+'/tests/mock.js', content_type='application/javascript'))
         ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
         ctx.route('https://wa.me/**', lambda r: (wa.append(r.request.url), r.fulfill(body='wa')))
-        ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+        ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE+'/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
         pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e)))
         pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear()"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
         pg.click('[data-a=example]'); wait(pg); pg.click('.slip-open'); wait(pg)

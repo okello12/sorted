@@ -164,9 +164,9 @@ sorted-pilot.vercel.app before charging anyone.
 `supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered three times and cancelled at
 approval each time, so it has **not** been applied.
 
-On 2 October Baldwin chose the reliability part. Its apply step was cancelled again, so it is saved as
-`supabase/parked/04_reliability_v39.sql` to run in the Supabase SQL editor. Then deploy
-`supabase/functions/send-reminders/index.v8.ts` as `send-reminders` (it uses the claim functions, so not before). Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
+On 2 October Baldwin chose the reliability part and ran `supabase/parked/04_reliability_v39.sql` himself in the SQL
+editor. `send-reminders` v8 (claims reminders and helper invites before sending) went live straight after.
+Still waiting: helper protections, the tidy-ups (forwarding addresses, grants, indexes, policies) and idle-account deletion. Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
 
 What it does:
 - **Helper emails.** A log and a suppression list, so one case can't be used to email a stranger repeatedly, and

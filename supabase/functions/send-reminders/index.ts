@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// v8: claims reminders and helper invites in the database before sending (needs the reliability fixes of 2 Oct 2026).
 // Called every 10 minutes by pg_cron (and straight away after a helper invite).
 // Emails never contain task details: only a link.
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -70,27 +71,26 @@ Deno.serve(async (req: Request) => {
 
   // 1. Helper invitations (double opt-in). Sent once; only within a day of the request.
   let invites = 0;
-  const { data: pend } = await sb.from("helpers").select("task_id,email,inviter_name,token,invited_at")
-    .eq("status", "pending").is("invite_sent_at", null).gte("invited_at", new Date(nowMs - 86400000).toISOString()).limit(20);
-  for (const h of pend ?? []) {
+  // Claimed in the database first (invite_sent_at set), so two runs at once can't send the same invite.
+  const { data: pend } = await sb.rpc("claim_helper_invites", { p_limit: 20 });
+  for (const h of (pend ?? []) as any[]) {
     const yes = `${SITE}/?helper=yes&h=${h.token}`;
     const intro = `${h.inviter_name} is using Sorted to keep track of something they're waiting on, and has already sent you a link to it. They'd like Sorted to email you a short nudge when it's due, so you can check in with them.`;
     const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
     const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
     const r = await send(key, from, h.email, `${h.inviter_name} asked Sorted to keep you in the loop`, text, hb);
-    if (r.ok) { await sb.from("helpers").update({ invite_sent_at: new Date().toISOString() }).eq("task_id", h.task_id).eq("token", h.token); invites++; }
+    if (r.ok) invites++;
+    else await sb.from("helpers").update({ invite_sent_at: null }).eq("task_id", h.task_id).eq("token", h.token);  // try again next run
   }
 
   // 2. Due reminders.
-  const { data: due, error } = await sb.from("reminders")
-    .select("id,task_id,user_id,kind,promise_id,send_at")
-    .is("sent_at", null).is("cancelled_at", null)
-    .gte("send_at", staleBefore).lte("send_at", now)
-    .order("send_at").limit(50);
-  if (error) return Response.json({ error: error.message }, { status: 500 });
+  // Claimed first (claimed_at set) so two runs at once can't send the same email. An unfinished claim can be
+  // taken again after 5 minutes, so a failed send is retried while it is still fresh.
+  const { data: due, error } = await sb.rpc("claim_due_reminders", { p_limit: 50 });
+  if (error) return Response.json({ error: "claim failed" }, { status: 500 });
 
   let sent = 0, cancelled = 0, failed = 0, nudged = 0;
-  for (const r of due ?? []) {
+  for (const r of (due ?? []) as any[]) {
     const cancel = async (reason: string) => { await sb.from("reminders").update({ cancelled_at: new Date().toISOString(), cancel_reason: reason }).eq("id", r.id); cancelled++; };
     const { data: opt } = await sb.from("email_optouts").select("user_id").eq("user_id", r.user_id).maybeSingle();
     if (opt) { await cancel("unsubscribed"); continue; }

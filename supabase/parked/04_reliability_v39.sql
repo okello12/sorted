@@ -1,5 +1,4 @@
--- Reliability fixes (2 October 2026). Chosen by Baldwin; the apply step from Claude's session came back "cancelled",
--- so this is ready to paste into the Supabase SQL editor (project boxrwcuhxmimayaxzywu) and run as one script.
+-- Reliability fixes (2 October 2026). APPLIED: run by Baldwin in the Supabase SQL editor on 2 October 2026.
 -- Safe to run more than once. It changes structure only; it reads no case content.
 -- After it has run, deploy send-reminders v8 (supabase/functions/send-reminders/index.v8.ts) so the claim step is used.
 

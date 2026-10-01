@@ -221,6 +221,12 @@ It tracks what **you** have to do. Sorted tracks what **someone else** owes you,
 - **One-off price as a reference.** People pay £10 once for calm and reliability, so a per-case price must feel clearly
   worth more than a whole to-do app.
 
+**The best clue on its App Store page.** A UK reviewer made their own "Waiting for" area in Things by hand. Things has
+no idea of another person's outstanding obligation, so users bolt one on. That state is Sorted's whole product.
+
+**Positioning.** Things answers "What do I need to do?" Sorted answers "What's happening with that problem?" The relief is
+specific: you don't have to keep remembering whether they got back to you.
+
 **Not borrowing.** Projects, areas, tags, checklists, repeating to-dos. They turn Sorted into a to-do list, which the
 pilot rules already rule out.
 

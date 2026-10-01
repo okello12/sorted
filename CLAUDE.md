@@ -14,6 +14,9 @@ Rate: do people come back to the same case when a promise falls due?
 - **No person running the pilot reads case content.** Never select case content (`tasks.data`, `inbound_items.body`,
   `shares.card`) from the database. Counts, timestamps and definitions only. Only `send-reminders` and the retention
   jobs touch `tasks.data`, automatically. The privacy notice promises this.
+- **Not a to-do app.** Sorted is not where your tasks live. It is where an unresolved problem lives when somebody else
+  owes you the next move. No areas, projects, tags, checklists or repeating to-dos. Your own moves exist only inside a
+  case, in service of the promise (the "Remind me to do something" link on a case).
 - **Sorted proposes, the person confirms.** Nothing about a case changes without a tap from its owner.
 - **Keep advice thin and honest.** Say what Sorted doesn't know (the benefits and housing notes are the pattern). No legal advice.
 - **Secrets live in Supabase Vault.** Read them by name. Never paste keys into code, chat or commits.

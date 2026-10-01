@@ -60,7 +60,9 @@ After deploying, commit and push to both `live-pilot` and `main` on okello12/sor
 - The page runs against `tests/mock.js`, a stand-in for Supabase that keeps its database in localStorage, so tests never touch real data.
 - The screenshot and PDF readers are served from `tests/node_modules`, the same versions the live site loads from jsDelivr.
 - Every test file must end with `ERRORS []` and `FAILS []`.
-- Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale.
+- Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale. All tests run on London time
+  (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
+- `14_promise_stress.py` holds the sentences from the live stress tests. Add new false promises there.
 
 ## Pinned versions
 
@@ -96,7 +98,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Feature | Location |
 |---|---|
 | Reading the first sentence: company, reference, item, how long | `caseFacts()` and `PARTIES`, `BENEFITS`, `ITEMS` (build30 to build32) |
-| Promise from a sentence | `suggestPromise()` (build33) |
+| Promise from a sentence | `suggestPromise()` (build33, rules tightened in build39: `PNEG`, `PTENT`, `PINFO`, `PDAY`, `pWhenOk`, `pTwo`, `pNamed`) |
 | Promise from a pasted message | `sugFromMessage()` (build34) |
 | The card | `sugCard()` and the `sug-yes`, `sug-edit` and `sug-no` actions |
 | Screenshots and photos | `readPicture()` and `readImage()` (Tesseract, on the phone) |
@@ -105,5 +107,6 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Chasing message wording | `callDefaults()` |
 | The case page's single next step | `viewTask()` |
 | Deleting one case | `case-del` action (build37) |
+| "Sorted can't see what needs sorting" | `caseSignal()`, `vagueBlock()` (build39) |
 | Accessibility pass after each render | `a11yPass()` (build37) |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

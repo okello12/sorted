@@ -2,6 +2,7 @@
 # Run from the repository root:  sh tests/run.sh
 # Needs Python 3 with Playwright (chromium) and Node. Builds the page, then runs every walkthrough against it.
 set -e
+export TZ=Europe/London   # the app's users are in the UK; see tests/dates.py
 node all.js >/dev/null
 [ -d tests/node_modules ] || (cd tests && npm ci --omit=optional --ignore-scripts --silent)
 mkdir -p tests/out

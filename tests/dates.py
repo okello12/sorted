@@ -1,5 +1,8 @@
 # Dates relative to today, so the tests never go stale.
-import datetime
+# Sorted's users are in the UK, so the tests run on London time: Python's "today" and the browser's "today" must be the
+# same day, or a run near midnight on a UTC machine compares two different days.
+import datetime, os, time
+os.environ['TZ']='Europe/London'; time.tzset()
 _MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]   # the app's en-GB short months
 def ahead(n):
     d=datetime.date.today()+datetime.timedelta(days=n)

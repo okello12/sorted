@@ -1,4 +1,5 @@
 import os, json, datetime
+import sys; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__))); import dates  # London time
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]
 def ok(c,m):

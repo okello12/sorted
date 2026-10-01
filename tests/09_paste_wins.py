@@ -1,4 +1,6 @@
 import os, json
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+from dates import A4,A5,A6,A10
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]
 def ok(c,m):
@@ -34,12 +36,12 @@ with sync_playwright() as p:
     ok(pg.locator('#f-ask').count()==1 and pg.locator('form[data-f=what]').count()==0,'repair: chase, no appliance questions')
     # 3 future promise: short title
     T3="British Gas said the engineer will come on Friday morning"; start(pg,T3); pg.click('[data-a=sug-yes]'); wait(pg)
-    t=task(pg,T3); print('  title:',t['title']); ok(t['title'].startswith('British Gas · ') and 'Oct' in t['title'],'confirmed promise gets a short title')
+    t=task(pg,T3); print('  title:',t['title']); ok(t['title'].startswith('British Gas · ') and len(t['title'])<30,'confirmed promise gets a short title')
     # 4 paste a message into that case: new date replaces the old
     pg.click('[data-a=panel][data-p=paste]'); wait(pg)
-    pg.fill('#f-paste',"Hi Baldwin, your engineer visit has been moved to Monday 5 October between 12pm and 4pm. Your reference is BG-55123. Thanks, British Gas"); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
+    pg.fill('#f-paste',"Hi Baldwin, your engineer visit has been moved to "+A4["long"]+" between 12pm and 4pm. Your reference is BG-55123. Thanks, British Gas"); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
     c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | '))
-    ok('5 Oct' in c and '12:00' in c and 'BG-55123' in c,'pasted message read: new date, time and reference')
+    ok(A4['short'] in c and '12:00' in c and 'BG-55123' in c,'pasted message read: new date, time and reference')
     pg.click('[data-a=sug-yes]'); wait(pg); t=task(pg,T3)
     ok([x['status'] for x in t['promises']]==['replaced','open'] and t['promises'][1]['ref']=='BG-55123','new promise replaces the old one')
     # 5 a case started from a pasted message

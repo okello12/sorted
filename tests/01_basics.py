@@ -23,7 +23,7 @@ with sync_playwright() as p:
     # landing touch targets
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear()"); pg.reload(); wait(pg,300)
     hs=pg.evaluate("[...document.querySelectorAll('footer a')].map(a=>Math.round(a.getBoundingClientRect().height))"); ok(min(hs)>=44,'footer links are 44px+: %s'%hs)
-    ok(pg.evaluate("document.getElementById('toast').getAttribute('role')")=='status','toasts are announced')
+    ok(pg.evaluate("document.getElementById('sr-live').getAttribute('role')")=='status' and pg.evaluate("document.getElementById('toast').getAttribute('aria-hidden')")=='true','toasts are announced once, by the live region')
     fresh(pg)
     eh=pg.evaluate("Math.round(document.querySelector('[data-a=example]').getBoundingClientRect().height)"); ok(eh>=44,'example link is 44px+: %d'%eh)
     # scope: renewals and to-dos are not their own modes

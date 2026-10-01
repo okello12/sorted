@@ -1,5 +1,5 @@
 -- Sorted pilot: database snapshot of project boxrwcuhxmimayaxzywu (Supabase, eu-west-2 London)
--- Taken 30 September 2026 from the live project. Structure only: no rows, no secrets.
+-- Taken 30 September 2026 from the live project; access, constraints, indexes and policies added 1 October 2026 (v37 audit). Structure only: no rows, no secrets.
 -- Secrets (Resend keys, webhook secret, cron secret, sender address, inbound domain) live in Supabase Vault
 -- and are read by name through public.sorted_secret(); they are never in this repository.
 
@@ -321,3 +321,55 @@ begin new.updated_at := now(); return new; end $function$;
 --     and coalesce(u.last_sign_in_at, u.created_at) < now() - interval '30 days'
 --     and not exists (select 1 from public.tasks t where t.user_id = u.id
 --                     and (t.updated_at > now() - interval '30 days' or public.sorted_case_live(t.data)))
+
+-- ============================================================================
+-- Access, constraints, indexes, triggers and policies (read from catalogue tables, 1 October 2026)
+-- ============================================================================
+
+-- Table grants to app roles. RLS is on for every table, so these grants only matter where a policy allows.
+-- Narrowing them is part of supabase/parked/03_audit_fixes_v37.sql (not applied).
+--   tasks, shares, reminders:   anon and authenticated: all privileges
+--   inbound_items:              authenticated: all privileges
+--   email_optouts:              authenticated: select
+
+-- Functions executable by app roles (everything else is service role or definer-internal only)
+--   anon + authenticated: get_share(text), helper_respond(text,text), report_auth_error(text)
+--   authenticated only:   claim_carry(text,jsonb), delete_my_account(), email_reminders_ready(), invite_helper(text,text,text),
+--                         is_pilot_admin(), my_inbound_address(), pilot_health(), pilot_metrics(boolean), remove_helper(text), stash_carry()
+--   Not executable by app roles: sorted_secret, sorted_kick_reminders, shares_drop_helper, sorted_case_live.
+
+-- Constraints (beyond primary keys)
+--   helpers: email 5-254 chars; inviter_name 1-40 chars; status in (pending, confirmed, stopped); token unique;
+--            task_id -> tasks on delete cascade; user_id -> auth.users on delete cascade
+--   inbound_addresses: token unique; user_id -> auth.users cascade
+--   inbound_items: user_id -> auth.users cascade
+--   ops_errors: kind <= 40 chars; source in (auth, inbound)
+--   pilot_events: name in (case_started, baseline_action_recorded, promise_created, email_added_at_promise,
+--                 promise_due_return, outcome_kept, outcome_missed, outcome_rescheduled, chase_used,
+--                 new_promise_after_miss, case_closed, recap_copied, second_case_started);
+--                 case_id and promise_id <= 40 chars; props <= 1000 bytes
+--   reminders: kind in (before, after, start); unique (task_id, kind, send_at); task_id -> tasks cascade; user_id cascade
+--   shares: token >= 24 chars; task_id unique; task_id -> tasks cascade; user_id cascade
+--   tasks: id 8-64 chars; user_id -> auth.users cascade
+--   email_optouts: user_id -> auth.users cascade
+
+-- Indexes (beyond primary keys and unique constraints)
+--   inbound_items_user  (user_id, received_at desc)
+--   ops_errors_at       (source, at desc)
+--   pilot_events_actor  (actor, at);  pilot_events_case (case_id)
+--   reminders_due_idx   (send_at) where sent_at is null and cancelled_at is null
+--   shares_user_idx     (user_id);  tasks_user_idx (user_id)
+
+-- Triggers
+--   shares: shares_drop_helper after delete (removes the helper for that case); shares_touch before update
+--   tasks:  tasks_touch before update (touch_updated_at)
+
+-- Row level security policies (all "to authenticated"; anonymous sign-ins are authenticated users)
+--   tasks:          read, add, change, delete where user_id = (select auth.uid())
+--   shares:         read, change, delete own; add only for a task you own
+--   reminders:      select, delete own; insert only for a task you own (uses auth.uid() directly)
+--   inbound_items:  read, mark (update), delete own
+--   helpers:        read own
+--   email_optouts:  read own
+--   pilot_events:   insert where actor = auth.uid(); no read policy (admins read through pilot_metrics)
+--   pilot_admins, pilot_carry, ops_errors, inbound_addresses: no policies (reachable only through definer functions)

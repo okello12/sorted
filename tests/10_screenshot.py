@@ -1,4 +1,6 @@
 import os, json
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+from dates import A4,A5,A6,A10
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); O=HERE+'/tests/node_modules/'; errs=[]; fails=[]; hits=[]
 def ok(c,m):
@@ -14,7 +16,7 @@ def cdn(r):
 with sync_playwright() as p:
     b=p.chromium.launch()
     # make a realistic SMS screenshot
-    sp=b.new_page(viewport={'width':390,'height':300}); sp.set_content('<body style="margin:0;background:#fff;font-family:Arial"><div style="margin:20px;padding:14px 16px;background:#e9e9eb;border-radius:18px;font-size:17px;line-height:1.35;color:#111;max-width:320px">British Gas: Your engineer visit is booked for Tuesday 6 October between 8am and 12pm. Your reference is BG-77120. Reply STOP to opt out.</div></body>'); sp.screenshot(path=HERE+'/tests/out/sms.png'); sp.close()
+    sp=b.new_page(viewport={'width':390,'height':300}); sp.set_content('<body style="margin:0;background:#fff;font-family:Arial"><div style="margin:20px;padding:14px 16px;background:#e9e9eb;border-radius:18px;font-size:17px;line-height:1.35;color:#111;max-width:320px">British Gas: Your engineer visit is booked for '+A5['long']+' between 8am and 12pm. Your reference is BG-77120. Reply STOP to opt out.</div></body>'); sp.screenshot(path=HERE+'/tests/out/sms.png'); sp.close()
     ctx=b.new_context(viewport={'width':390,'height':844})
     ctx.route('https://cdn.jsdelivr.net/**', cdn)
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
@@ -31,7 +33,7 @@ with sync_playwright() as p:
     if pg.locator('[data-a=safe-continue]').count(): pg.click('[data-a=safe-continue]'); wait(pg)
     pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg)
     c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | '))
-    ok('6 Oct' in c and '08:00' in c and 'BG-77120' in c,'promise proposed from the screenshot')
+    ok(A5['short'] in c and '08:00' in c and 'BG-77120' in c,'promise proposed from the screenshot')
     print('  cdn files:',sorted(set(hits)))
     print('  posts to other hosts:',[u for u in up if 'jsdelivr' in u])
     ok(not any('jsdelivr' in u for u in up),'picture not sent anywhere')

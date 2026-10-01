@@ -1,4 +1,6 @@
 import os, json
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+from dates import A4,A5,A6,A10
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); O=HERE+'/tests/node_modules/'; errs=[]; fails=[]
 def ok(c,m):
@@ -24,7 +26,7 @@ def tasks(pg): return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).
 with sync_playwright() as p:
     b=p.chromium.launch()
     # files: a typed letter PDF and a scanned one
-    lp=b.new_page(); lp.set_content('<body style="font-family:Arial;padding:40px;font-size:15px"><p>Thames Water</p><p>Dear customer,</p><p>Thank you for reporting the leak. An engineer will visit on Wednesday 7 October between 1pm and 5pm.</p><p>Your job reference is TW-448812.</p><p>Yours faithfully</p></body>'); lp.pdf(path=HERE+'/tests/out/letter.pdf'); lp.set_viewport_size({'width':800,'height':600}); lp.screenshot(path=HERE+'/tests/out/letter.png'); lp.close()
+    lp=b.new_page(); lp.set_content('<body style="font-family:Arial;padding:40px;font-size:15px"><p>Thames Water</p><p>Dear customer,</p><p>Thank you for reporting the leak. An engineer will visit on '+A6['long']+' between 1pm and 5pm.</p><p>Your job reference is TW-448812.</p><p>Yours faithfully</p></body>'); lp.pdf(path=HERE+'/tests/out/letter.pdf'); lp.set_viewport_size({'width':800,'height':600}); lp.screenshot(path=HERE+'/tests/out/letter.png'); lp.close()
     import base64; ip=b.new_page(); ip.set_content('<body style="margin:0"><img style="width:100%%" src="data:image/png;base64,%s"></body>'%base64.b64encode(open(HERE+'/tests/out/letter.png','rb').read()).decode()); ip.pdf(path=HERE+'/tests/out/scan.pdf'); ip.close()
     ctx=b.new_context(viewport={'width':390,'height':844})
     ctx.route('https://cdn.jsdelivr.net/**', cdn)
@@ -35,10 +37,10 @@ with sync_playwright() as p:
     # 1 a message finds its case
     compose(pg,"British Gas said the engineer will come on Friday morning"); plan(pg); pg.click('[data-a=sug-yes]'); wait(pg)
     n0=len(tasks(pg))
-    compose(pg,"British Gas: Your engineer visit has been moved to Monday 5 October between 12pm and 4pm. Ref BG-55123.")
+    compose(pg,"British Gas: Your engineer visit has been moved to "+A4["long"]+" between 12pm and 4pm. Ref BG-55123.")
     m=pg.inner_text('main'); ok('This looks like it’s about your' in m and pg.locator('form[data-f=case] [type=submit]').count()==0,'match offered instead of Start')
     pg.click('[data-a=match-add]'); wait(pg)
-    c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; ok('5 Oct' in c and 'BG-55123' in c,'added: new date proposed in that case')
+    c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; ok(A4['short'] in c and 'BG-55123' in c,'added: new date proposed in that case')
     pg.click('[data-a=sug-yes]'); wait(pg)
     t=[x for x in tasks(pg) if x['title'].startswith('British Gas')][0]
     ok(len(tasks(pg))==n0 and [q['status'] for q in t['promises']]==['replaced','open'],'no new case; old date replaced')
@@ -77,10 +79,10 @@ with sync_playwright() as p:
         pg.set_input_files('input[data-ocr=f-case]', HERE+'/tests/out/'+f)
         pg.wait_for_function("(()=>{var t=document.getElementById('ocr-status').textContent;return t.startsWith('Done')||t.startsWith('Sorted couldn')})()", timeout=120000)
         st=pg.inner_text('#ocr-status'); tx=pg.input_value('#f-case'); print('  '+label+':',st[:40],'|',tx[:150].replace('\n',' / '))
-        ok(st.startswith('Done') and 'TW-448812' in tx.replace(' ','') and '7 October' in tx,label+' read on the phone')
+        ok(st.startswith('Done') and 'TW-448812' in tx.replace(' ','') and A6['dm'] in tx,label+' read on the phone')
     pg.click('form[data-f=case] button[type=submit]'); wait(pg)
     if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
     plan(pg); c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | ')[:220])
-    ok('7 Oct' in c and '13:00' in c and 'TW-448812' in c,'letter becomes a proposed promise')
+    ok(A6['short'] in c and '13:00' in c and 'TW-448812' in c,'letter becomes a proposed promise')
     b.close()
 print('ERRORS',errs); print('FAILS',fails)

@@ -4,6 +4,7 @@
   "dependencies": {
     "tesseract.js": "5.1.1",
     "@tesseract.js-data/eng": "1.0.0",
-    "pdfjs-dist": "3.11.174"
+    "pdfjs-dist": "3.11.174",
+    "tesseract.js-core": "5.1.1"
   }
 }

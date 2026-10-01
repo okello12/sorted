@@ -1,6 +1,6 @@
 # Sorted: parked work
 
-Written 1 October 2026, at release v36. This is the list of things we decided to build later, why each one waits,
+Written 1 October 2026, at release v36. Updated at v37 after the full audit. This is the list of things we decided to build later, why each one waits,
 and what is already prepared. Read this before starting any of them.
 
 ## The rule for every new feature
@@ -48,7 +48,12 @@ new date as the promise, the same card used for pasted messages (v34).
 
 **To switch on.**
 1. Apply the SQL.
-2. In `supabase/functions/inbound-email`, add a branch for `case-` addresses. Keep the personal `log-` branch behind `FORWARDING_OFF`.
+2. In `supabase/functions/inbound-email`:
+   - Verify the webhook signature first, for every message.
+   - Move the `FORWARDING_OFF` check inside the `log-` branch, after the signature check. Today it returns before
+     anything else, which would also block `case-` replies.
+   - Loop over every address in `to` and `cc`, not just the first `to`, because a reply-all can list the case address anywhere.
+   - Add the branch for `case-` addresses.
 3. Build the app side:
    - Fetch `case_reply_address` when a case opens.
    - Add `cc=` to the mailto.
@@ -149,6 +154,38 @@ SORTED is a crowded name:
 
 Get a UK trade mark search by an attorney before spending on brand. getsorted.uk was registered earlier. Move off
 sorted-pilot.vercel.app before charging anyone.
+
+## Backend fixes waiting for approval (v37 audit)
+
+`supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered twice and cancelled at
+approval both times, so it has **not** been applied. Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
+
+What it does:
+- **Helper emails.** A log and a suppression list, so one case can't be used to email a stranger repeatedly, and
+  someone who says no is never emailed again (`invite_helper`, `helper_respond`).
+- **Caps.** Per-case reminder limit, per-account step record limit, and a size limit on `tasks.data`.
+- **No double sends.** `claimed_at` with `claim_due_reminders` and `claim_helper_invites`, so two cron runs can't send the same email.
+- **Robustness.** `try_ts()`, so one malformed date can't break `sorted_case_live` and the retention job.
+- **Clean-up.**
+  - Revokes `my_inbound_address` and empties `inbound_addresses`.
+  - Narrows table grants and revokes `net` access from app roles.
+  - Caps `report_auth_error` per kind.
+- **Speed.** `(select auth.uid())` in policies, and indexes on `helpers.user_id` and `reminders.user_id`.
+- **Retention.**
+  - `pilot-carry-cleanup`.
+  - `sorted-idle-accounts`: deletes email accounts idle for 12 months, except pilot admins. The notice would need a line before this runs.
+
+`send-reminders` would need a small change to use the claim functions once this is applied.
+
+## Residual risks we chose to accept for the pilot
+
+- **supabase-js has no integrity hash.** The hash couldn't be verified from the build machine, and a wrong hash would
+  break the site. Fix: self-host it, or add the hash from a machine that can reach jsDelivr.
+- **Google Fonts** is loaded from Google, which sees visitors' IP addresses (the notice says so). Self-hosting removes it.
+- **pdf.js 3.11.174** has a known flaw that `isEvalSupported:false` blocks. Upgrade to pdf.js 4 or later when there is time.
+- **An old personal email address is still in git history.** It was removed from the current files. Removing it from
+  history needs `git filter-repo` and a force push to both branches. Baldwin's call.
+- **The new security headers** (`vercel.json`) are tested in Chromium. Check screenshots and PDFs once on a real iPhone.
 
 ## Smaller follow-ups noticed along the way
 

@@ -5,3 +5,7 @@ node_modules
 public/index.html
 tests/node_modules/
 tests/out/
+.env*
+.DS_Store
+__pycache__/
+supabase/.temp/

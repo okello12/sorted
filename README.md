@@ -1,6 +1,6 @@
 # Sorted pilot
 
-This repository is the code behind **https://sorted-pilot.vercel.app** (release v36, 1 October 2026).
+This repository is the code behind **https://sorted-pilot.vercel.app** (release v37, 1 October 2026).
 Start with `CLAUDE.md` (how it's built, tested and deployed) and `docs/LATER.md` (parked work and why).
 The earlier Grok-built prototype is kept on the branch `grok-prototype`.
 
@@ -11,8 +11,8 @@ to it in order, and checks the result against a fingerprint so a wrong step fail
 `feat*.js` hold larger blocks of code that some layers insert. `h/*.bin` are the parts of an early hero image.
 
 ```
-node all.js          # runs build.js, build7.js … build36.js in order
-# → public/index.html, sha1 35b20af9067754120a6c26345454a35ab85d74f7 for v36
+node all.js          # runs build.js, build7.js … build37.js in order
+# → public/index.html, sha1 bcb902ed24eed8dd7a7c91add6944e216b7e3529 for v37
 sh tests/run.sh      # builds, then runs every walkthrough test
 ```
 
@@ -21,9 +21,12 @@ Vercel runs the same command (`node all.js`, output directory `public`). `public
 ## Backend (Supabase, London)
 
 - `supabase/schema_snapshot.sql`: tables, access rules, functions and scheduled jobs, copied from the live
-  project on 30 September 2026. Structure only. No rows and no secrets.
+  project on 1 October 2026, with grants, constraints, indexes and policies. Structure only. No rows and no secrets.
 - `supabase/functions/`: the three edge functions as deployed: `send-reminders` (runs every 10 minutes),
-  `inbound-email` (Resend webhook for forwarded emails) and `email-stop` (one-click unsubscribe).
+  `inbound-email` (Resend webhook for forwarded emails, switched off since v28) and `email-stop` (one-click unsubscribe).
+
+`supabase/parked/` holds database changes that are written but not applied, including the backend
+half of the v37 audit (`03_audit_fixes_v37.sql`), which is waiting for approval.
 
 Keys and addresses live in Supabase Vault and are read by name. The Supabase key in the page is the public
 publishable key, which is safe to ship because every table is protected by row level security.

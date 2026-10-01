@@ -17,6 +17,7 @@ async function stopToken(u: string, cron: string): Promise<string> {
   const s = new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode("stop:" + u)));
   return Array.from(s).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
 }
+function eq(a: string, b: string) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // A plain, well-formed service email: short intro, one button, the link written out, and who sends it.
@@ -31,7 +32,7 @@ async function send(key: string, from: string, to: string, subject: string, text
     body: JSON.stringify({ from, to: [to], subject, text, html: htmlBody, headers }),
   });
   const body = await res.text();
-  if (!res.ok) { console.log("resend error", res.status, body); return { ok: false, err: `${res.status} ${body.slice(0, 200)}` }; }
+  if (!res.ok) { console.log("resend error", res.status); return { ok: false, err: String(res.status) }; }  // status only: the body can contain the address
   let id: string | undefined; try { id = JSON.parse(body).id; } catch { /* ignore */ }
   console.log("resend ok", id);
   return { ok: true, id };
@@ -50,7 +51,7 @@ function copy(kind: string, move: boolean) {
 
 Deno.serve(async (req: Request) => {
   const cron = await secret("sorted_cron_secret");
-  if (!cron || req.headers.get("x-cron-secret") !== cron) return new Response("forbidden", { status: 403 });
+  if (!cron || !eq(req.headers.get("x-cron-secret") || "", cron)) return new Response("forbidden", { status: 403 });
 
   const nowMs = Date.now();
   const now = new Date(nowMs).toISOString();

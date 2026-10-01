@@ -1,4 +1,6 @@
 import os, json
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+from dates import A4,A5,A6,A10
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]
 def ok(c,m):
@@ -32,9 +34,9 @@ with sync_playwright() as p:
     t=task(pg,T2); ok(t['promises'][0]['status']=='open' and t['board']=='waiting','future: promise held, case waiting')
     pg.goto('https://sorted.test/'); wait(pg,400); m=pg.inner_text('main'); ok('Waiting' in m,'home shows it under Waiting')
     # edit -> promise form prefilled
-    T3="Amazon told me the refund would be paid by 5 October"; start(pg,T3)
+    T3="Amazon told me the refund would be paid by "+A10["dm"]; start(pg,T3)
     pg.click('[data-a=sug-edit]'); wait(pg)
-    ok(pg.input_value('#f-said')=='The refund would be paid by 5 October' and pg.input_value('#f-party2')=='Amazon' and pg.input_value('#f-date')=='2026-10-05','edit: promise form prefilled')
+    ok(pg.input_value('#f-said')=='The refund would be paid by '+A10['dm'] and pg.input_value('#f-party2')=='Amazon' and pg.input_value('#f-date')==A10['iso'],'edit: promise form prefilled')
     # no -> dismissed
     T4="Sky charged me twice and said they'd refund it within 5 working days"; start(pg,T4)
     print('  card before:',pg.locator('.sug').count()); pg.click('[data-a=sug-no]'); wait(pg,1500); print('  card after:',pg.locator('.sug').count()); print('  keys:',sorted(task(pg,T4).keys()))

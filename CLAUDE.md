@@ -11,8 +11,9 @@ Rate: do people come back to the same case when a promise falls due?
 
 ## Rules that don't bend
 
-- **Nobody running the pilot reads cases.** Never select case content (`tasks.data`, `inbound_items.body`, share cards)
-  from the database. Counts, timestamps and definitions only. The privacy notice promises this.
+- **No person running the pilot reads case content.** Never select case content (`tasks.data`, `inbound_items.body`,
+  `shares.card`) from the database. Counts, timestamps and definitions only. Only `send-reminders` and the retention
+  jobs touch `tasks.data`, automatically. The privacy notice promises this.
 - **Sorted proposes, the person confirms.** Nothing about a case changes without a tap from its owner.
 - **Keep advice thin and honest.** Say what Sorted doesn't know (the benefits and housing notes are the pattern). No legal advice.
 - **Secrets live in Supabase Vault.** Read them by name. Never paste keys into code, chat or commits.
@@ -42,6 +43,12 @@ Deploys go through the Vercel API (`create_deployment`):
 - New layers go inline.
 - Settings: `buildCommand: node all.js`, `outputDirectory: public`, `framework: null`, `target: production`.
 
+Files a deploy needs: `all.js`, `build*.js`, `feat*.js`, `index.src.html`, `h/*.bin`, `public/art/*`, `vercel.json`,
+`package.json`. Tests, docs and `supabase/` are not deployed.
+
+`vercel.json` holds the security headers, including the Content Security Policy. If the page starts loading anything
+from a new origin (a script, font, API or image host), add it to the CSP there and rerun `tests/13_csp.py`.
+
 If a layer's fingerprint check fails, the deploy fails rather than shipping something untested.
 
 After deploying, commit and push to both `live-pilot` and `main` on okello12/sorted.
@@ -53,6 +60,17 @@ After deploying, commit and push to both `live-pilot` and `main` on okello12/sor
 - The page runs against `tests/mock.js`, a stand-in for Supabase that keeps its database in localStorage, so tests never touch real data.
 - The screenshot and PDF readers are served from `tests/node_modules`, the same versions the live site loads from jsDelivr.
 - Every test file must end with `ERRORS []` and `FAILS []`.
+- Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale.
+
+## Pinned versions
+
+The screenshot and PDF readers load fixed versions with integrity hashes. Change them together, in three places:
+- the page: `OCRV` (Tesseract 5.1.1, build35) and `PDFV` (pdf.js 3.11.174, build36); English data `@tesseract.js-data/eng` 1.0.0;
+- `tests/package.json` and `tests/package-lock.json`;
+- the routes in the tests that serve those files.
+
+`isEvalSupported:false` in `pdfToText()` must never be removed. It is what protects pdf.js 3 from CVE-2024-4367.
+Upgrading to pdf.js 4 or later is the longer-term fix (it ships as ES modules, so the loader changes).
 
 ## Backend
 
@@ -63,7 +81,8 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Edge functions | `send-reminders` (every 10 minutes from pg_cron), `inbound-email` (off since v28), `email-stop` |
 | Step records | `pilot_events` (a fixed step name, IDs and a time) |
 | Metrics | `pilot_metrics()` and `pilot_health()`, admin only |
-| Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; shares 90 days; step records 12 months |
+| Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; step records 12 months |
+| Waiting for approval | `supabase/parked/03_audit_fixes_v37.sql`, the backend half of the v37 audit (see `docs/LATER.md`) |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
 | Parked changes | `supabase/parked/`, written but not applied |
 
@@ -80,3 +99,6 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Matching a message to an existing case | `matchCase()` (build36) |
 | Chasing message wording | `callDefaults()` |
 | The case page's single next step | `viewTask()` |
+| Deleting one case | `case-del` action (build37) |
+| Accessibility pass after each render | `a11yPass()` (build37) |
+| Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

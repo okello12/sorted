@@ -216,7 +216,7 @@ It tracks what **you** have to do. Sorted tracks what **someone else** owes you,
   this on iPhone without a native app: an Apple Shortcut in the share sheet that opens
   `sorted-pilot.vercel.app/#new=<text>`. The text goes in the fragment (after `#`), which browsers never send to the
   server, so it can't land in Vercel's logs. The page fills the case box and waits for the person to press Start;
-  it never creates a case by itself. Small to build; needs the Shortcut published and a line in the help text.
+  it never creates a case by itself. Built in v40; the Shortcut steps are in `docs/SHARE_SHORTCUT.md`.
 - **Restraint.** Things shows few lists and little chrome. Keep Home to three states.
 - **One-off price as a reference.** People pay £10 once for calm and reliability, so a per-case price must feel clearly
   worth more than a whole to-do app.

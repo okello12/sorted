@@ -112,4 +112,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Deleting one case | `case-del` action (build37) |
 | "Sorted can't see what needs sorting" | `caseSignal()`, `vagueBlock()` (build39) |
 | Accessibility pass after each render | `a11yPass()` (build37) |
+| Share into Sorted (`/#new=<text>`, the Apple Shortcut) | `grabShared()` (build40); setup in `docs/SHARE_SHORTCUT.md` |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

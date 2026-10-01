@@ -43,7 +43,7 @@ Deploys go through the Vercel API (`create_deployment`):
 - New layers go inline.
 - Settings: `buildCommand: node all.js`, `outputDirectory: public`, `framework: null`, `target: production`.
 
-Files a deploy needs: `all.js`, `build*.js`, `feat*.js`, `index.src.html`, `h/*.bin`, `public/art/*`, `vercel.json`,
+Files a deploy needs: `all.js`, `build*.js`, `feat*.js`, `index.src.html`, `h/*.bin`, `public/art/*`, `public/fonts/*`, `vercel.json`,
 `package.json`. Tests, docs and `supabase/` are not deployed.
 
 `vercel.json` holds the security headers, including the Content Security Policy. If the page starts loading anything
@@ -68,6 +68,11 @@ The screenshot and PDF readers load fixed versions with integrity hashes. Change
 - the page: `OCRV` (Tesseract 5.1.1, build35) and `PDFV` (pdf.js 3.11.174, build36); English data `@tesseract.js-data/eng` 1.0.0;
 - `tests/package.json` and `tests/package-lock.json`;
 - the routes in the tests that serve those files.
+
+The database library (`@supabase/supabase-js` 2.117.2, build38) also has an integrity hash. To change its version, update
+the URL and hash in a new layer and the version in `tests/package.json`; `12_audit_fixes.py` checks the hash against the
+npm file. Tests swap in `tests/mock.js` for it, so `run.sh` serves a copy of the page without that one hash
+(`tests/out/index.html`). The fonts are served from `public/fonts/`, so nothing loads from Google.
 
 `isEvalSupported:false` in `pdfToText()` must never be removed. It is what protects pdf.js 3 from CVE-2024-4367.
 Upgrading to pdf.js 4 or later is the longer-term fix (it ships as ES modules, so the loader changes).

@@ -1,6 +1,6 @@
 # Sorted: parked work
 
-Written 1 October 2026, at release v36. Updated at v37 after the full audit. This is the list of things we decided to build later, why each one waits,
+Written 1 October 2026, at release v36. Updated at v38 after the full audit. This is the list of things we decided to build later, why each one waits,
 and what is already prepared. Read this before starting any of them.
 
 ## The rule for every new feature
@@ -157,8 +157,8 @@ sorted-pilot.vercel.app before charging anyone.
 
 ## Backend fixes waiting for approval (v37 audit)
 
-`supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered twice and cancelled at
-approval both times, so it has **not** been applied. Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
+`supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered three times and cancelled at
+approval each time, so it has **not** been applied. Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
 
 What it does:
 - **Helper emails.** A log and a suppression list, so one case can't be used to email a stranger repeatedly, and
@@ -175,13 +175,13 @@ What it does:
   - `pilot-carry-cleanup`.
   - `sorted-idle-accounts`: deletes email accounts idle for 12 months, except pilot admins. The notice would need a line before this runs.
 
-`send-reminders` would need a small change to use the claim functions once this is applied.
+When it is applied, also:
+- switch `send-reminders` to `claim_helper_invites` and `claim_due_reminders` (reset `invite_sent_at` to null if a send fails);
+- add two lines to the notice: a stopped helper's address is kept as a one-way hash so they're never emailed again, and an
+  account with an email but no cases is deleted after 12 months without a sign-in.
 
 ## Residual risks we chose to accept for the pilot
 
-- **supabase-js has no integrity hash.** The hash couldn't be verified from the build machine, and a wrong hash would
-  break the site. Fix: self-host it, or add the hash from a machine that can reach jsDelivr.
-- **Google Fonts** is loaded from Google, which sees visitors' IP addresses (the notice says so). Self-hosting removes it.
 - **pdf.js 3.11.174** has a known flaw that `isEvalSupported:false` blocks. Upgrade to pdf.js 4 or later when there is time.
 - **An old personal email address is still in git history.** It was removed from the current files. Removing it from
   history needs `git filter-repo` and a force push to both branches. Baldwin's call.
@@ -189,9 +189,8 @@ What it does:
 
 ## Smaller follow-ups noticed along the way
 
-- **New steps aren't measured separately.** v33 to v36 record a confirmed suggestion as an ordinary "promise added".
-  To measure whether the card helps, add step names such as `promise_from_sentence` and `promise_from_message` to the
-  allowed list in the database and send them from `sug-yes`.
+- **Measuring the card.** Since v38 a confirmed suggestion's `promise_created` step carries `src` = `sentence` or
+  `message` in `props`. `pilot_metrics()` doesn't split by it yet.
 - **Checks still to do on real phones.**
   - Reading screenshots and PDFs over mobile data (first use downloads about 4 MB).
   - "Open in your email app" on iPhone.

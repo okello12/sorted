@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "description": "Test helpers: the same reader files the live site loads from jsDelivr, served locally during tests",
+  "dependencies": {
+    "tesseract.js": "5.1.1",
+    "@tesseract.js-data/eng": "1.0.0",
+    "pdfjs-dist": "3.11.174"
+  }
+}

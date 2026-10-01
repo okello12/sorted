@@ -3,3 +3,5 @@ node_modules
 *.log
 # built output: run `node all.js` to regenerate
 public/index.html
+tests/node_modules/
+tests/out/

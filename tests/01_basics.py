@@ -1,0 +1,69 @@
+import os, json, datetime
+from playwright.sync_api import sync_playwright
+HERE=os.path.abspath('.'); errs=[]; fails=[]
+def ok(c,m):
+    print(('PASS ' if c else 'FAIL ')+m)
+    if not c: fails.append(m)
+def wait(pg,ms=350): pg.wait_for_timeout(ms)
+PAST="""(title)=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var t=db.tasks.find(x=>x.data.title.indexOf(title)===0).data;var p=t.promises[t.promises.length-1];var d=new Date(Date.now()-864e5);d.setHours(14,0,0,0);var e=new Date(d);e.setHours(17);p.dueAt=d.toISOString();p.dueEnd=e.toISOString();localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}"""
+def setup(b):
+    ctx=b.new_context(viewport={'width':390,'height':844})
+    ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE+'/tests/mock.js', content_type='application/javascript'))
+    ctx.route('https://fonts.googleapis.com/**', lambda r: r.fulfill(body='', content_type='text/css'))
+    ctx.route('https://sorted.test/art/**', lambda r: r.fulfill(path=HERE+'/public/art/'+r.request.url.split('/art/')[1], content_type='image/webp'))
+    ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE+'/public/index.html', content_type='text/html'))
+    pg=ctx.new_page(); pg.on('pageerror',lambda e: errs.append(str(e))); return pg
+def fresh(pg):
+    pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
+def compose(pg,text):
+    if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); wait(pg,100)
+    pg.fill('#f-case',text); pg.click('form[data-f=case] button'); wait(pg,250)
+with sync_playwright() as p:
+    b=p.chromium.launch(); pg=setup(b)
+    # landing touch targets
+    pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear()"); pg.reload(); wait(pg,300)
+    hs=pg.evaluate("[...document.querySelectorAll('footer a')].map(a=>Math.round(a.getBoundingClientRect().height))"); ok(min(hs)>=44,'footer links are 44px+: %s'%hs)
+    ok(pg.evaluate("document.getElementById('toast').getAttribute('role')")=='status','toasts are announced')
+    fresh(pg)
+    eh=pg.evaluate("Math.round(document.querySelector('[data-a=example]').getBoundingClientRect().height)"); ok(eh>=44,'example link is 44px+: %d'%eh)
+    # scope: renewals and to-dos are not their own modes
+    compose(pg,'Renew my passport'); m=pg.inner_text('main'); ok('When does it run out' not in m and 'passport' not in m.lower().split('renew my passport')[-1][:0],'passport does not open the renewals menu')
+    ok('What were you planning to do next?' in m or 'Who' in m or 'Call' in m,'goes down the general path: '+m[:80].replace('\n',' | '))
+    pg.click('[data-a=home]'); wait(pg,200)
+    compose(pg,'Submit the bursary documents by Friday'); ok(pg.locator('form[data-f=move]').count()==0,'bursary sentence is not turned into a to-do')
+    # a real case with a promise, then reschedule
+    pg.goto('https://sorted.test/'); wait(pg,300)
+    compose(pg,'Refund from Currys hasn’t arrived')
+    pg.click('button.chip:has-text("Call someone")'); pg.click('text=Start this case'); wait(pg,200)
+    pg.fill('#f-who','Currys'); pg.click('form[data-f=call] button[type=submit]'); wait(pg,200)
+    pg.click('text=Log what they said'); pg.fill('#f-said','The engineer will come Tuesday afternoon, ref CR-7781'); wait(pg,100); pg.click('[data-a=use-sug]'); pg.click('text=Save the promise'); wait(pg)
+    if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,150)
+    anon=pg.inner_text('main'); 
+    pg.evaluate(PAST,'Currys refund'); pg.reload(); wait(pg,400)
+    m=pg.inner_text('main'); ok('only this phone can open your cases' in m and 'saved on Sorted’s servers' in m and 'only on this phone.' not in m,'no-email banner says where cases are')
+    pg.click('.slip-open'); wait(pg,300)
+    f=pg.inner_text('.promise-foot'); ok('They came' in f and 'Nobody came' in f and 'Yes, it happened' not in f,'case screen uses the same words as Home')
+    ok('Your plan before any advice' not in pg.inner_text('main'),'no research line under the title')
+    pg.click('.promise [data-a=rebook]'); wait(pg,250)
+    ok(pg.input_value('#f-said')=='' and pg.locator('.suggest').count()==0,'reschedule starts clean: no old wording, no guessed date')
+    nd=(datetime.date.today()+datetime.timedelta(days=3))
+    for part,v in [('d',nd.day),('m',nd.month),('y',nd.year)]: pg.select_option('select[data-dp=f-date][data-part=%s]'%part,str(v))
+    pg.fill('#f-from','09:00'); pg.fill('#f-to','12:00'); pg.click('text=Save the promise'); wait(pg)
+    t=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.find(x=>x.data.title.indexOf('Currys refund')===0).data")
+    ok([x['status'] for x in t['promises']]==['replaced','open'] and t['promises'][1]['said']==t['promises'][0]['said'],'empty wording keeps the original promise, new date saved')
+    # share: logged only after the link exists; unshare
+    pg.evaluate("navigator.clipboard&&(navigator.clipboard.writeText=()=>Promise.resolve())")
+    pg.click('[data-a=share]'); wait(pg,300)
+    t=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb'))"); ok(len(t['shares'])==1,'share row created')
+    ok('Shared with a helper' in pg.inner_text('main'),'logged once the link exists')
+    pg.click('[data-a=unshare]'); wait(pg,300)
+    ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).shares"))==0 and 'Link switched off' in pg.inner_text('#toast'),'switching off confirmed after delete')
+    ok(pg.evaluate("document.activeElement&&document.activeElement!==document.body"),'focus is not lost after a re-render: '+pg.evaluate("document.activeElement.tagName+'.'+(document.activeElement.className||'')"))
+    # kept path: one thing to do
+    pg.click('[data-a=home]'); wait(pg,200); pg.evaluate("localStorage.removeItem('__admin')")
+    pg2=setup(b); fresh(pg2); pg2.click('[data-a=example]'); wait(pg2,300); pg2.click('.slip-open'); wait(pg2,300)
+    pg2.click('.promise [data-a=kept]'); wait(pg2,300); m=pg2.inner_text('main')
+    ok('Log what they said' not in m and 'Nothing agreed yet' not in m and 'Edit the call' not in m and pg2.locator('form[data-f=done], [data-f=done]').count()+m.count('Mark it done')>0,'after "They came": only finishing is on screen')
+    pg2.screenshot(path=HERE+'/tests/out/v24-kept.png',full_page=True)
+    b.close()
+print('ERRORS',errs); print('FAILS',fails)

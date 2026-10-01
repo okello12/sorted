@@ -151,6 +151,10 @@ Needs: pilot pass, item 11, terms, a refund policy, Stripe checkout, and a suppo
 SORTED is a crowded name:
 - Sorted Holdings Limited (parcel delivery software, sorted.com) has SORTED marks covering software.
 - There is a Sorted AI reminders app.
+- **Sorted³ - Calendar Notes Tasks** (StaySorted Limited) is on the UK App Store: a calendar, tasks and notes app, free
+  with a £14.99 PRO upgrade, 4.7 from 902 ratings, last updated October 2024. It is the closest clash: same store,
+  same category (Productivity), overlapping purpose (tasks and reminders). Shipping an iPhone app called "Sorted"
+  next to it is the riskiest version of this name. Whether StaySorted holds registered marks is for the attorney's search.
 
 Get a UK trade mark search by an attorney before spending on brand. getsorted.uk was registered earlier. Move off
 sorted-pilot.vercel.app before charging anyone.

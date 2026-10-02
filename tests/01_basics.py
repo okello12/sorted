@@ -63,11 +63,14 @@ with sync_playwright() as p:
     open_fold(pg,'.case56-sharing'); pg.click('[data-a=unshare]'); wait(pg,300)
     ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).shares"))==0 and 'Link switched off' in pg.inner_text('#toast'),'switching off confirmed after delete')
     ok(pg.evaluate("document.activeElement&&document.activeElement!==document.body"),'focus is not lost after a re-render: '+pg.evaluate("document.activeElement.tagName+'.'+(document.activeElement.className||'')"))
-    # kept path: one thing to do, now stored under the compact More fold.
+    # kept path: the existing flow opens the finish form immediately; the collapsed More route is the fallback when it is closed later.
     pg.click('[data-a=home]'); wait(pg,200); pg.evaluate("localStorage.removeItem('__admin')")
     pg2=setup(b); fresh(pg2); pg2.click('[data-a=example]'); wait(pg2,300); pg2.click('.slip-open'); wait(pg2,300)
-    pg2.click('.promise [data-a=kept]'); wait(pg2,300); open_fold(pg2,'.case56-more'); m=pg2.inner_text('main')
-    ok('Log what they said' not in m and 'Nothing agreed yet' not in m and 'Edit the call' not in m and pg2.locator('[data-a=panel][data-p=done]').count()>0,'after "They came": only finishing is on screen')
+    pg2.click('.promise [data-a=kept]'); wait(pg2,300)
+    if pg2.locator('.case56-more').count(): open_fold(pg2,'.case56-more')
+    m=pg2.inner_text('main')
+    finish=pg2.locator('form[data-f=done], [data-a=panel][data-p=done]').count()>0
+    ok('Log what they said' not in m and 'Nothing agreed yet' not in m and 'Edit the call' not in m and finish,'after "They came": finishing is the only next action')
     pg2.screenshot(path=HERE+'/tests/out/v24-kept.png',full_page=True)
     b.close()
 print('ERRORS',errs); print('FAILS',fails)

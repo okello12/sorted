@@ -1,0 +1,40 @@
+name: QA v56 fast
+on:
+  push:
+    branches: [case-detail-redesign-v56]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build
+        run: node all.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Prepare test page
+        run: |
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          node tests/make_reader.js
+      - name: Run affected tests
+        run: |
+          python3 tests/01_basics.py
+          python3 tests/03_whatsapp_share.py
+          python3 tests/21_case_detail56.py
+      - name: Upload preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: case56-fast-preview
+          path: tests/out/case56-light.png
+          if-no-files-found: ignore

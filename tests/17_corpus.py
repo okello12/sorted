@@ -75,6 +75,14 @@ with sync_playwright() as p:
     badq = [t2 for t2, r in zip(corpus.PCN_NOT, rq) if r]
     ok(not badq, 'not parking notices: %d/%d left alone' % (len(rq) - len(badq), len(rq)))
     for t2 in badq: print('   read as a notice: %s' % t2)
+    # v66: hand-offs
+    HO = "(xs)=>xs.map(function(t){var r=window.__read.hoRead({promises:[],facts:{party:'Currys'},events:[]},t);return r?r.to:null})"
+    hy = pg.evaluate(HO, [x for x, _ in corpus.HO_YES]); badh = [(x, w, g) for (x, w), g in zip(corpus.HO_YES, hy) if g != w]
+    ok(not badh, 'hand-offs: %d/%d read right' % (len(hy) - len(badh), len(hy)))
+    for x, w, g in badh: print('   hand-off: %s -> %r (wanted %r)' % (x, g, w))
+    hn = pg.evaluate(HO, corpus.HO_NOT); badn = [(x, g) for x, g in zip(corpus.HO_NOT, hn) if g]
+    ok(not badn, 'not hand-offs: %d/%d left alone' % (len(hn) - len(badn), len(hn)))
+    for x, g in badn: print('   false hand-off: %s -> %r' % (x, g))
     total = len(nots) + len(my) + len(mn) + len(corpus.YES) + len(corpus.MSG_YES) + len(corpus.MSG_NOT)
     print('  corpus size: %d sentences and messages' % total)
     b.close()

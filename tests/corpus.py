@@ -201,3 +201,18 @@ PCN_NOTICES.append(("WEST BERKSHIRE COUNCIL PENALTY CHARGE NOTICE PCN: WB1234567
    {"kind": "council", "issuer": "West Berkshire Council", "ref": "WB12345678", "title": "West Berkshire PCN · WB12345678"}))
 PCN_NOTICES.append(("London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Location: Lordship Lane SE22 The penalty charge is £130.",
    {"kind": "council", "ref": "SK12345678", "place": "Lordship Lane SE22", "amount": "£130"}))
+
+# Hand-offs (v66): the case is with Currys; who does the message say has it now?
+HO_YES = [
+  ("Hi, we've passed your case to DPD, who will contact you about the redelivery.", "DPD"),
+  ("This is the manufacturer's responsibility, not ours.", "the manufacturer"),
+  ("You will need to contact Samsung directly about the repair.", "Samsung"),
+  ("Your complaint has been transferred to our partner Knowhow Repairs.", "Knowhow Repairs"),
+  ("It's now a matter for the courier.", "the courier"),
+  ("Please get in touch with Evri directly about the missing parcel.", "Evri"),
+]
+HO_NOT = [
+  "Please contact us directly if you have any questions.", "We have passed your feedback to the team.",
+  "Your refund will be paid by Friday.", "It's not our responsibility to collect it.",
+  "We've passed this to Currys' returns team.", "Please speak to your bank.",
+]

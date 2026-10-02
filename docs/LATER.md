@@ -33,7 +33,7 @@ around the due date. Most items below should wait for that result.
 | 13 | Organisation memory | Not started | Item 7's privacy decision; enough real cases |
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
-| 16 | "Passed between companies" | Not started | Pilot result |
+| 16 | "Passed between companies" | Done in v66: proposed from a message, confirmed, shown on the case and quoted in the next message | |
 | 17 | Formal cases: parking, then debt, then court admin | Release 1 of 6 done in v60: case facts with a source, confirmed by the person | Releases 2 to 6 below; the boundary checks before debt and court |
 | 18 | Case assistant (reads, explains, drafts) | Not started | A privacy decision: today nothing leaves the phone except what you save |
 
@@ -216,7 +216,7 @@ start box) is kept in the history with where it came from, even when it has no d
 **Intake, next slices (in order).**
 1. ~~Show evidence lines in the case as their own small block ("What they sent")~~ Done in v52.
 2. ~~Share straight into a chosen case from the Shortcut~~ Done in v53: a shared message asks "Where does this go?", with the likely case first.
-3. Let the person correct which case a message belongs to after it was added.
+3. ~~Let the person correct which case a message belongs to~~ Done in v66: "Wrong case? Move it", to another case or a new one.
 4. Only then, keeping original files (see below).
 
 **Still to do.** Keep the original files (today only the text is kept, and only up to 300 characters), mark each

@@ -25,6 +25,7 @@ with sync_playwright() as p:
     w=pg.inner_text('.home44-section')
     ok('Waiting' in w and 'British Gas' in w,'Waiting section names the held case')
     ok('You can put this down until' in pg.inner_text('main'),'Waiting state gives permission to stop thinking about it')
+    pg.screenshot(path=HERE+'/tests/out/home44.png',full_page=True)
     # Mobile enlargement must not force horizontal page scrolling.
     pg.evaluate("document.documentElement.style.fontSize='200%'"); wait(pg); d=pg.evaluate("({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})")
     ok(d['sw']<=d['cw']+3,'200 percent text has no horizontal page overflow')

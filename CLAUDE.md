@@ -67,6 +67,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `27_pack.py` checks the adviser pack's sections, saved questions, copy, the downloaded file and print view.
 - `26_response.py` checks replies: acknowledgement changes nothing, a rejection is proposed with their reasons and the point they skipped, cancellation finishes, "No" leaves it.
 - `25_builder.py` checks the challenge builder writes only what was ticked and confirmed, flags missing evidence, and keeps the sent text.
 - `24_routes.py` checks the official pages for each kind of notice, stage and region.
@@ -136,4 +137,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Official routes (release 3) | `RT` registry and `RT_CHECKED` (build62): kind of notice, stage, region (London by borough name or TfL, England and Wales, Scotland and Northern Ireland folded), official link, purpose. `rtFor()` picks them, `rtBlock()` shows "Where to do it". Hand-checked; recheck every link before changing `RT_CHECKED`. Never generated |
 | Challenge builder (release 4) | `BD_GROUNDS`, `BD_EVID`, `bdDraft()` (writes only from ticked reasons, the person's own words and confirmed facts; returns what it used), `bdCheck()` (completeness, never a chance of winning), `bdPanel()` (`pkbuild`, `pkdraft`) (build63). Answers kept in `t.pk.build`; "I've sent it" carries the exact text into the proof form |
 | Response reader (release 5) | `rsRead()` classifies a reply (rejected, cancelled, acknowledgement) with `RS_NO`, `RS_YES`, `RS_ACK`; pulls their reasons; compares with `t.pk.build` (`RS_TOPIC`) to list points their reply skips; spots a re-offered reduced price. `rsIn()` proposes it as `t.pk.resp`, `rsCard()` asks, `rs-yes` moves the stage, `rsBlock()` keeps it on the case (build64). Decision letters skip the notice reader unless they are a Notice to Owner or Keeper (`RS_NOTICE`) |
+| Adviser pack and export (release 6) | `packData()`, `packText()`, `packView()`, `packLink()` (build65): summary, dates, what happened in order, what they say, what you say, evidence, your questions (`t.packQs`). Copy, download as a .txt made on the phone, or print (print CSS shows only `.pack-doc`). Works for every case |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

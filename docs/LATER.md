@@ -284,7 +284,8 @@ engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), i
    when you say you've sent it.
 5. ~~Response reader~~ Done in v64: a reply is read for what kind of decision it is, their reasons, what it skips
    from your challenge and evidence, and a re-offered reduced price; proposed, then confirmed, then the stage moves.
-6. Adviser pack: summary, chronology, deadlines, evidence and questions, as one page to copy or download.
+6. ~~Adviser pack~~ Done in v65, for every case: summary, dates, what happened in order, what they say, what you
+   say, evidence and your questions; copy, download, or print and save as PDF. Also item 15's export page.
 AI is for extraction, classification, explanation and drafting only, and waits for item 18's privacy decision.
 Releases 1 to 4 work on the phone without it.
 

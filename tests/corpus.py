@@ -199,3 +199,5 @@ PCN_NOTICES.append(("CAMDEN COUNCIL PENALTY CHARGE NOTICE PCN Number: CU98765432
    {"kind": "council", "issuer": "Camden Council", "ref": "CU98765432", "vrm": "LK70 XYZ", "when": "28 Sep 2026", "amount": "£160", "title": "Camden PCN · CU98765432"}))
 PCN_NOTICES.append(("WEST BERKSHIRE COUNCIL PENALTY CHARGE NOTICE PCN: WB12345678 Vehicle: AB12 CDE Penalty charge: £70",
    {"kind": "council", "issuer": "West Berkshire Council", "ref": "WB12345678", "title": "West Berkshire PCN · WB12345678"}))
+PCN_NOTICES.append(("London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Location: Lordship Lane SE22 The penalty charge is £130.",
+   {"kind": "council", "ref": "SK12345678", "place": "Lordship Lane SE22", "amount": "£130"}))

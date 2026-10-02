@@ -1,0 +1,26 @@
+name: QA volume only
+on:
+  push:
+    branches: [qa-rigorous-20261002]
+  workflow_dispatch:
+
+jobs:
+  volume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - run: |
+          node all.js >/dev/null
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+      - run: python tests/18_volume_state.py

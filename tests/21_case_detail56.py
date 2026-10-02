@@ -1,4 +1,4 @@
-import os
+import os, datetime
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]
 def ok(c,m):
@@ -29,25 +29,34 @@ with sync_playwright() as p:
     pg.locator('.case56-more > summary').click(); wait(pg,100)
     ok(pg.locator('.case56-more [data-p=done]').is_visible(),'finish action remains available under More')
 
-    # Turn the example row into a legacy driving-licence renewal like the real pilot case.
+    # Create a real move through the product so the legacy-renewal test uses the production data shape.
+    pg.click('[data-a=panel][data-p=move]'); wait(pg,120)
+    pg.fill('#f-mwhat','Remind to apply for it')
+    due=datetime.date.today()+datetime.timedelta(days=22)
+    for part,v in [('d',due.day),('m',due.month),('y',due.year)]: pg.select_option('select[data-dp=f-mdate][data-part=%s]'%part,str(v))
+    pg.click('form[data-f=move] button[type=submit]'); wait(pg,350)
+    ok(pg.locator('.case56-next').count()==1,'real move renders in the compact Next card')
+
+    # Convert that same case to the legacy driving-licence renewal shape while preserving the real move.
     pg.evaluate("""()=>{
       var db=JSON.parse(localStorage.getItem('__mockdb')),row=db.tasks.find(x=>x.data&&x.data.example),t=row.data;
       t.example=false;t.title='My driving licence';t.mode='renew';t.board='yours';t.promises=[];t.call=null;t.fix=null;
       t.renew={kind:'licence',step:'done',expiry:'2026-04-25',applied:false,provider:'DVLA',how:'self'};
-      t.moves=[{id:'mv56',what:'Remind to apply for it',dueAt:'2026-10-24T00:00:00.000Z',dueEnd:null,allDay:true,status:'open',loggedAt:'2026-09-28T12:00:00.000Z'}];
       t.events=[
+        {at:'2026-09-30T08:10:00.000Z',label:'Application date confirmed for 24 Oct.'},
         {at:'2026-09-30T08:00:00.000Z',label:'Tapped add to Google Calendar.'},
         {at:'2026-09-30T07:50:00.000Z',label:'Email reminders on (the default). You can turn them off.'},
         {at:'2026-09-28T12:00:00.000Z',label:'Your move: Remind to apply for it (by Sat 24 Oct).'},
+        {at:'2026-09-28T11:58:00.000Z',label:'Ends Sat 25 Apr. Start by Thu 26 Mar.'},
         {at:'2026-09-28T11:55:00.000Z',label:'Renewing: Driving licence.'},
         {at:'2026-09-28T11:50:00.000Z',label:'Started. Before any advice, the plan was: “I need to apply for it”'}
       ];
       localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k));
     }""")
-    pg.reload(); wait(pg,450)
+    pg.reload(); wait(pg,500)
     main=pg.inner_text('main')
     ok('My driving licence' in main,'legacy renewal keeps its familiar case title')
-    ok(pg.locator('.case56-next').count()==1,'own action is one compact Next card')
+    ok(pg.locator('.case56-next').count()==1,'own action stays as one compact Next card')
     nxt=pg.inner_text('.case56-next')
     ok('Next' in nxt and 'Remind to apply for it' in nxt and 'Your move' not in nxt,'next card removes repeated Your move labels')
     ok(pg.locator('.case56-next [data-a=move-done]').is_visible(),"I've applied action remains prominent")
@@ -57,17 +66,18 @@ with sync_playwright() as p:
     official=pg.inner_text('.case56-official')
     ok('Renew on GOV.UK' in official and 'Open GOV.UK' in official,'official route is the main renewal guidance')
     ok(not pg.locator('.case56-official .case56-fold').evaluate('(x)=>x.open'),'extra GOV.UK guidance is collapsed')
-    ok(pg.locator('.case56-official [data-a=applied]').is_visible() and pg.locator('.case56-official [data-p=renewed]').is_visible(),'renewal outcome buttons remain available')
+    ok(pg.locator('.case56-official [data-a=applied]').count()==0 and pg.locator('.case56-official [data-p=renewed]').is_visible(),'lower renewal card does not duplicate the primary apply action')
 
-    # Only meaningful events should be visible before Full history is expanded.
+    # Only meaningful case events should be visible before Full history is expanded.
     timeline=pg.locator('#case56-timeline').locator('xpath=ancestor::section[1]')
     txt=timeline.inner_text()
-    ok('Your move: Remind to apply for it' in txt,'timeline keeps the meaningful user action')
-    ok('Tapped add to Google Calendar' not in txt and 'Email reminders on' not in txt and 'Before any advice' not in txt,'timeline hides system noise by default')
+    ok('Application date confirmed for 24 Oct.' in txt,'timeline keeps a meaningful case update')
+    hidden=['Tapped add to Google Calendar','Email reminders on','Your move:','Ends Sat 25 Apr','Before any advice','Renewing:']
+    ok(all(x not in txt for x in hidden),'timeline hides system and already-presented state noise by default')
     ok(timeline.locator('details.case56-fold').count()==1 and not timeline.locator('details.case56-fold').evaluate('(x)=>x.open'),'full audit history is retained but collapsed')
     timeline.locator('details.case56-fold > summary').click(); wait(pg,80)
     txt2=timeline.inner_text()
-    ok('Tapped add to Google Calendar' in txt2 and 'Email reminders on' in txt2,'full history still contains the audit trail')
+    ok('Tapped add to Google Calendar' in txt2 and 'Email reminders on' in txt2 and 'Your move:' in txt2,'full history still contains the audit trail')
 
     # Mobile enlargement must not cause sideways scrolling.
     pg.evaluate("document.documentElement.style.fontSize='200%'"); wait(pg,120)

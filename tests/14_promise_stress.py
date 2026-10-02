@@ -37,6 +37,31 @@ with sync_playwright() as p:
                   ("No one has promised anything. I want to call Currys on Friday.","nobody promised"),
                   ("The engineer will come at 5","no day, and no am or pm")]:
         t=start(pg,T); ok(t is not None and not t.get('sugP'),'not a promise (%s): %s'%(why,T))
+    # 2 October rigorous test: 7 that slipped through in v40, and the 19 it listed as correctly rejected
+    for T in ["They said if the part arrives, the engineer may come tomorrow.",
+              "They promised nothing and told me to call tomorrow.",
+              "Currys said the shop closes tomorrow at 6pm.",
+              "British Gas said appointments are available tomorrow.",
+              "They said please call tomorrow.",
+              "They said check back tomorrow.",
+              "They said we'll be open tomorrow.",
+              "I promised myself I'd call Currys tomorrow.","I said I would call British Gas tomorrow.","I need to call Currys tomorrow.",
+              "My plan is to email Amazon tomorrow.","They said maybe the engineer will come tomorrow.","They said the engineer might come tomorrow.",
+              "They said hopefully the refund arrives tomorrow.","No one has promised anything. I want to call Currys tomorrow.",
+              "Nobody promised a date; I will chase tomorrow.","They never promised a date.","Refunds usually take five working days.",
+              "A refund can take five working days.","The website says delivery takes three days.","The email says I should contact them by tomorrow.",
+              "I told the landlord I'd be home tomorrow.","Currys did not promise the refund tomorrow.","Currys refused to promise a date.",
+              "There is no guarantee the refund arrives tomorrow.","They wouldn't give me a date for the engineer"]:
+        t=start(pg,T); ok(t is not None and not t.get('sugP'),'not a promise: %s'%T)
+    # and 12 clear promises that must still be heard
+    F=ahead(18)['dm']
+    for T in ["Currys promised a refund by tomorrow, order 445566","British Gas said the engineer will come tomorrow morning, ref BG-2231",
+              "The landlord promised the boiler will be fixed by "+F,"Amazon said the refund will be paid within 5 working days",
+              "John Lewis promised a replacement tomorrow","EE said the credit will be applied within 3 days",
+              "Sky said the engineer will come tomorrow between 8 and 12","Aviva said they will call me back tomorrow afternoon",
+              "DWP said the payment will be made by "+F,"BA promised the refund within 10 working days",
+              "Vodafone confirmed the credit will show by Friday","The letting agent said the plumber will come on Thursday at 10am"]:
+        t=start(pg,T); ok(t is not None and t.get('sugP') and not t['sugP'].get('past'),'promise heard: %s'%T)
     # still promises
     r=sug(pg,"Currys promised a refund within 14 days, three weeks ago, order 88421")
     ok(r and r['past'] and r['ref']=='88421','passed Currys promise, with its reference')

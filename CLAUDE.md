@@ -65,7 +65,8 @@ After deploying, commit and push to both `live-pilot` and `main` on okello12/sor
 - Every test file must end with `ERRORS []` and `FAILS []`.
 - Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale. All tests run on London time
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
-- `14_promise_stress.py` holds the sentences from the live stress tests. Add new false promises there.
+- `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones). Add new ones there.
+  The rule: no commitment from another party, no promise card. Instructions, information, conditionals and maybes are not commitments.
 
 ## Pinned versions
 
@@ -102,7 +103,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Feature | Location |
 |---|---|
 | Reading the first sentence: company, reference, item, how long | `caseFacts()` and `PARTIES`, `BENEFITS`, `ITEMS` (build30 to build32) |
-| Promise from a sentence | `suggestPromise()` (build33, rules tightened in build39: `PNEG`, `PTENT`, `PINFO`, `PDAY`, `pWhenOk`, `pTwo`, `pNamed`) |
+| Promise from a sentence | `suggestPromise()` (build33, rules tightened in build39 and build43: `PNEG`, `PTENT`, `PTMSG`, `PINFO`, `PIMP`, `PDAY`, `pWhenOk`, `pTwo`, `pNamed`) |
 | Promise from a pasted message | `sugFromMessage()` (build34) |
 | The card | `sugCard()` and the `sug-yes`, `sug-edit` and `sug-no` actions |
 | Screenshots and photos | `readPicture()` and `readImage()` (Tesseract, on the phone) |

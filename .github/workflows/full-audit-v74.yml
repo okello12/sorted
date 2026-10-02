@@ -1,0 +1,115 @@
+name: Full audit v74
+on:
+  push:
+    branches: [audit-v74-20261002]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build current release
+        run: |
+          set -eux
+          node all.js
+          echo "commit=$(git rev-parse HEAD)" | tee audit-summary.txt
+          echo "build_sha1=$(sha1sum public/index.html | awk '{print $1}')" | tee -a audit-summary.txt
+
+      - name: Install browser runtime
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Run complete regression and stress suite
+        run: |
+          set -o pipefail
+          sh tests/run.sh | tee full-test.log
+          count=$(ls tests/[0-9]*.py | wc -l)
+          echo "test_files=$count" | tee -a audit-summary.txt
+          if grep -E 'FAILS \[[^]]+\]|ERRORS \[[^]]+\]' full-test.log; then
+            echo "Non-empty failure/error list found" >&2
+            exit 1
+          fi
+
+      - name: Scan generated client for obvious server-side secrets
+        run: |
+          set -eux
+          if grep -Eiq 'SUPABASE_SERVICE_ROLE|service_role_key|sb_secret_[A-Za-z0-9_-]{8,}|sk_(live|test)_[A-Za-z0-9_-]{8,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' public/index.html; then
+            echo 'Potential server-side secret found in generated client' >&2
+            exit 1
+          fi
+          echo 'client_secret_scan=clean' | tee -a audit-summary.txt
+
+      - name: Verify production serves this exact main build
+        run: |
+          set -eux
+          curl --fail --retry 4 --retry-delay 2 -sS https://sorted-pilot.vercel.app/ -o /tmp/live.html
+          local_sha=$(sha1sum public/index.html | awk '{print $1}')
+          live_sha=$(sha1sum /tmp/live.html | awk '{print $1}')
+          echo "production_sha1=$live_sha" | tee -a audit-summary.txt
+          test "$local_sha" = "$live_sha"
+          curl --fail --retry 3 -sSI https://sorted-pilot.vercel.app/ > /tmp/headers.txt
+          grep -qi '^content-type:.*text/html' /tmp/headers.txt
+          echo 'production_parity=exact' | tee -a audit-summary.txt
+
+      - name: Live mobile and desktop browser smoke
+        run: |
+          python3 - <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json
+
+          result=[]
+          with sync_playwright() as p:
+              browser=p.chromium.launch()
+              for width,height,name,scheme in [
+                  (390,844,'mobile-light','light'),
+                  (390,844,'mobile-dark','dark'),
+                  (1440,1000,'desktop-light','light'),
+              ]:
+                  ctx=browser.new_context(viewport={'width':width,'height':height}, color_scheme=scheme)
+                  page=ctx.new_page()
+                  page_errors=[]
+                  console_errors=[]
+                  page.on('pageerror', lambda e, arr=page_errors: arr.append(str(e)))
+                  page.on('console', lambda m, arr=console_errors: arr.append(m.text) if m.type=='error' else None)
+                  response=page.goto('https://sorted-pilot.vercel.app/', wait_until='networkidle', timeout=60000)
+                  assert response and response.status == 200, (name, response.status if response else None)
+                  title=page.title()
+                  body=page.locator('body').inner_text().strip()
+                  dims=page.evaluate('''() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, h: document.documentElement.scrollHeight})''')
+                  assert body, name+' blank body'
+                  assert dims['sw'] <= dims['cw'] + 2, (name, dims)
+                  assert not page_errors, (name, 'page errors', page_errors)
+                  # Console errors can include third-party/browser noise; record rather than fail unless app throws.
+                  page.screenshot(path=f'audit-{name}.png', full_page=True)
+                  result.append({'view':name,'title':title,'dims':dims,'console_errors':console_errors[:10]})
+                  ctx.close()
+              browser.close()
+          open('live-smoke.json','w').write(json.dumps(result,indent=2))
+          print(json.dumps(result,indent=2))
+          PY
+          echo 'live_browser_smoke=pass' | tee -a audit-summary.txt
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sorted-v74-full-audit
+          path: |
+            audit-summary.txt
+            full-test.log
+            live-smoke.json
+            audit-mobile-light.png
+            audit-mobile-dark.png
+            audit-desktop-light.png
+          if-no-files-found: warn

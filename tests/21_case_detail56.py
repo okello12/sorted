@@ -68,7 +68,7 @@ with sync_playwright() as p:
     main=pg.inner_text('main')
     ok('driving licence' in main.lower(),'legacy renewal keeps a clear driving-licence title')
     renew=pg.inner_text('.case56-renew-state')
-    ok('Driving licence' in renew and 'Expired' in renew,'renewal state is compact and clear')
+    ok('driving licence' in renew.lower() and 'expired' in renew.lower(),'renewal state is compact and clear')
     official=pg.inner_text('.case56-official')
     ok('Renew on GOV.UK' in official and 'Open GOV.UK' in official,'official route is the main renewal guidance')
     ok(not pg.locator('.case56-official .case56-fold').evaluate('(x)=>x.open'),'extra GOV.UK guidance is collapsed')

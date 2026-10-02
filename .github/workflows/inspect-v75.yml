@@ -16,24 +16,6 @@ jobs:
         with:
           node-version: '22'
       - name: Build current app
-        run: node all.js >/dev/null
-      - name: Print relevant current functions
         run: |
-          node <<'NODE'
-          const fs=require('fs');
-          const s=fs.readFileSync('public/index.html','utf8');
-          const picks=[
-            ['landing phrase','Life gets messy',7000],
-            ['tagline phrase','They said Tuesday',7000],
-            ['PLANS','var PLANS',5000],
-            ['cfCheck','function cfCheck',8000],
-            ['rsCard','function rsCard',12000],
-            ['viewTask','function viewTask',30000],
-            ['home title','function home54Title',5000]
-          ];
-          for(const [name,key,len] of picks){
-            const i=s.indexOf(key);
-            console.log('\n===== '+name+' @ '+i+' =====');
-            console.log(i<0?'NOT FOUND':s.slice(Math.max(0,i-2000),i+len));
-          }
-          NODE
+          node all.js
+          sha1sum public/index.html

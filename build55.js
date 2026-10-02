@@ -51,6 +51,6 @@ R(`</style>\n\n</head>`,String.raw`/* v55 spotlight refinement */
 </head>`);
 
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='e85685844d0348a06ba6852123ec0cb1100d77dd';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v55 ok',h(s),s.length);

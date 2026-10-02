@@ -34,7 +34,7 @@ around the due date. Most items below should wait for that result.
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Not started | Pilot result |
-| 17 | Formal cases: parking, then debt, then court admin | Not started | Pilot result; the boundary checks below |
+| 17 | Formal cases: parking, then debt, then court admin | Release 1 of 6 done in v60: case facts with a source, confirmed by the person | Releases 2 to 6 below; the boundary checks before debt and court |
 | 18 | Case assistant (reads, explains, drafts) | Not started | A privacy decision: today nothing leaves the phone except what you save |
 
 ## 1. Replies come back into the case
@@ -269,8 +269,20 @@ These are pure Sorted: another party, a reference, deadlines, evidence, and a co
 - **Process tables.** Council and private parking routes differ (councils: representations, then the tribunal;
   private operators: the operator, then POPLA or the IAS). Each entry needs a source and a review date.
 
-**Order.** Parking first: easy to understand, highly structured, time-sensitive and common. Slice 1 could be typed
-deadlines, the facts block and proof of submission for a council PCN, all on the phone, with no AI.
+**Order.** Parking first: easy to understand, highly structured, time-sensitive and common. One reusable resolution
+engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), in six releases:
+1. ~~Case facts and provenance~~ Done in v60. A parking notice (typed, pasted, shared, a photo or a PDF, all read on
+   the phone) becomes proposed facts, each with where it came from; nothing counts until the person confirms it.
+   A later letter only asks about what is new or different, and shows what it said before.
+2. Parking playbook: stages (notice, challenge sent, waiting, decision, next stage) and typed deadlines, each checked
+   against the notice. Deadlines come from rules and confirmed facts, never from a model.
+3. Official routes: a registry of organisation, case type, stage, official link, purpose and date last checked.
+4. Challenge builder: "What do you want to do?", a short interview, a draft from confirmed facts only, and a
+   completeness check ("You mentioned the sign but haven't added a photo"), never a chance of winning.
+5. Response reader: a reply compared with the case so far, "what changed", and the next stage.
+6. Adviser pack: summary, chronology, deadlines, evidence and questions, as one page to copy or download.
+AI is for extraction, classification, explanation and drafting only, and waits for item 18's privacy decision.
+Releases 1 to 4 work on the phone without it.
 
 ## 18. Case assistant
 

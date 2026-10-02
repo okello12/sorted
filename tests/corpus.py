@@ -156,3 +156,46 @@ TITLES = [
   ("GP surgery won't give me an appointment", "GP surgery won't give me an appointment"),
   ("Currys refund hasn't arrived, order 445566", "Currys refund · 445566"),
 ]
+
+# Parking notices (v60). Each must give exactly these facts; anything not listed must be absent or match.
+PCN_NOTICES = [
+  ("""LONDON BOROUGH OF SOUTHWARK
+PENALTY CHARGE NOTICE
+PCN Number: SK12345678
+Vehicle Registration Mark: AB12 CDE
+Date of contravention: 02/10/2026
+Time: 10:14
+Location: Lordship Lane SE22
+Contravention code: 12 Parked in a residents' or shared use parking place without clearly displaying a permit.
+The penalty charge is £130. If paid within 14 days of the date of this notice, the penalty charge is reduced by 50% to £65.""",
+   {"kind": "council", "issuer": "Southwark Council", "ref": "SK12345678", "vrm": "AB12 CDE", "when": "2 Oct 2026", "time": "10:14",
+    "place": "Lordship Lane SE22", "amount": "£130", "discount": "£65 if paid within 14 days", "title": "Southwark PCN · SK12345678"}),
+  ("Camden Council PENALTY CHARGE NOTICE PCN number: CU98765432 Vehicle registration: LK70 XYZ Date of contravention: 28 September 2026 Time: 14.32 Location: Camden High Street Code: 01 Parked in a restricted street during prescribed hours. Penalty charge: £160 reduced to £80 if paid within 14 days.",
+   {"kind": "council", "issuer": "Camden Council", "ref": "CU98765432", "vrm": "LK70 XYZ", "when": "28 Sep 2026", "time": "14:32",
+    "amount": "£160", "discount": "£80 if paid within 14 days", "title": "Camden PCN · CU98765432"}),
+  ("ParkingEye Ltd PARKING CHARGE NOTICE Notice to Keeper Protection of Freedoms Act 2012 Reference number: 1234567 Vehicle registration: YT19 ABC Car park: Aldi Lewisham Date of event: 14/09/2026 Parking charge amount: £100. Reduced to £60 if paid within 14 days. If you wish to appeal you can do so via POPLA.",
+   {"kind": "private", "issuer": "ParkingEye", "ref": "1234567", "vrm": "YT19 ABC", "when": "14 Sep 2026", "place": "Aldi Lewisham",
+    "amount": "£100", "discount": "£60 if paid within 14 days", "title": "ParkingEye parking charge · 1234567"}),
+  ("Royal Borough of Kensington and Chelsea NOTICE TO OWNER PCN: KC22334455 Vehicle: BD51 SMR Date of notice: 30/09/2026 Date of contravention: 01/09/2026 The penalty charge of £160 remains unpaid. You must pay or make representations within 28 days of the date of service.",
+   {"kind": "council", "issuer": "Kensington and Chelsea Council", "ref": "KC22334455", "vrm": "BD51 SMR", "issued": "30 Sep 2026",
+    "when": "1 Sep 2026", "amount": "£160", "title": "Kensington and Chelsea PCN · KC22334455"}),
+  ("Transport for London Penalty Charge Notice - Bus Lane. PCN number: LB12345678 Vehicle registration mark: GF23 KLM Date: 12 September 2026 Time: 08:03 Location: Old Kent Road. Penalty charge £160, discounted amount £80 if paid within 21 days of the date of service. Pay by 3 October 2026.",
+   {"kind": "council", "issuer": "Transport for London", "ref": "LB12345678", "vrm": "GF23 KLM", "when": "12 Sep 2026", "time": "08:03",
+    "place": "Old Kent Road", "amount": "£160", "discount": "£80 if paid within 21 days", "payby": "3 Oct 2026", "title": "TfL PCN · LB12345678"}),
+  ("Got a parking ticket from Hackney Council, PCN HK11223344, £130, says I wasn't in a bay",
+   {"kind": "council", "issuer": "Hackney Council", "ref": "HK11223344", "amount": "£130", "title": "Hackney PCN · HK11223344"}),
+  ("Euro Car Parks parking charge notice. Charge number: 98765432. Vehicle: KM68 PLO. Site: Westfield Stratford. Date of event: 20/09/2026. Amount due: £100, reduced to £60 if paid within 14 days. Appeals: IAS.",
+   {"kind": "private", "issuer": "Euro Car Parks", "ref": "98765432", "vrm": "KM68 PLO", "when": "20 Sep 2026", "place": "Westfield Stratford",
+    "amount": "£100", "discount": "£60 if paid within 14 days", "title": "Euro Car Parks parking charge · 98765432"}),
+]
+PCN_NOT = [
+  "Currys promised a refund of £130 by Friday, order 445566", "Fixed Penalty Notice for littering, £150, Lambeth Council",
+  "Council tax bill is wrong, account 12345678", "The parking at the hospital is terrible",
+  "British Gas said the engineer will come on Friday, ref BG-4471", "Southwark Council said they'll fix the pothole by Friday",
+  "My parking permit renewal is due next month", "Thames Water charge of £84 is wrong",
+  "Landlord says I owe £130 for a parking space", "I need to pay the congestion charge tomorrow",
+]
+PCN_NOTICES.append(("CAMDEN COUNCIL PENALTY CHARGE NOTICE PCN Number: CU98765432 Vehicle registration: LK70 XYZ Date of contravention: 28/09/2026 Time: 14:32 Location: Camden High Street Penalty charge: £160, reduced to £80 if paid within 14 days.",
+   {"kind": "council", "issuer": "Camden Council", "ref": "CU98765432", "vrm": "LK70 XYZ", "when": "28 Sep 2026", "amount": "£160", "title": "Camden PCN · CU98765432"}))
+PCN_NOTICES.append(("WEST BERKSHIRE COUNCIL PENALTY CHARGE NOTICE PCN: WB12345678 Vehicle: AB12 CDE Penalty charge: £70",
+   {"kind": "council", "issuer": "West Berkshire Council", "ref": "WB12345678", "title": "West Berkshire PCN · WB12345678"}))

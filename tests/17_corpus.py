@@ -59,6 +59,22 @@ with sync_playwright() as p:
     badt = [(x, want, got) for (x, want), got in zip(corpus.TITLES, rt) if got != want]
     ok(not badt, 'case names: %d/%d as expected' % (len(rt) - len(badt), len(rt)))
     for x, want, got in badt: print('   name: %s  ->  %r (wanted %r)' % (x[:60], got, want))
+    # v60: parking notices give exactly the expected facts, and nothing else is read as a notice
+    rp = pg.evaluate("""(xs)=>xs.map(function(t){var r=window.__read,p=r.pcnRead(t),o={};if(!p)return null;
+      Object.keys(p.f).forEach(function(k){o[k]=p.f[k].v});o.kind=p.kind;o.title=r.shortTitle(t,r.caseFacts(t));
+      o.card=!!r.readCase(t,r.caseFacts(t));return o})""", [x for x, _ in corpus.PCN_NOTICES])
+    badp = []
+    for (txt, want), got in zip(corpus.PCN_NOTICES, rp):
+        if not got: badp.append((txt, 'not read')); continue
+        for k, v in want.items():
+            if got.get(k) != v: badp.append((txt, '%s: %r (wanted %r)' % (k, got.get(k), v)))
+        if got['card']: badp.append((txt, 'gave a promise card'))
+    ok(not badp, 'parking notices read right: %d/%d' % (len(rp) - len({t for t, _ in badp}), len(rp)))
+    for t2, why in badp: print('   notice: %s  (%s)' % (t2.replace('\n', ' / ')[:50], why))
+    rq = pg.evaluate("(xs)=>xs.map(function(t){return !!window.__read.pcnRead(t)})", corpus.PCN_NOT)
+    badq = [t2 for t2, r in zip(corpus.PCN_NOT, rq) if r]
+    ok(not badq, 'not parking notices: %d/%d left alone' % (len(rq) - len(badq), len(rq)))
+    for t2 in badq: print('   read as a notice: %s' % t2)
     total = len(nots) + len(my) + len(mn) + len(corpus.YES) + len(corpus.MSG_YES) + len(corpus.MSG_NOT)
     print('  corpus size: %d sentences and messages' % total)
     b.close()

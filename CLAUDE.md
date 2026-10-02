@@ -67,7 +67,8 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
-- `17_corpus.py` runs `tests/corpus.py` (374 sentences and messages, including messy real-world writing with exact
+- `22_case_facts.py` covers parking notices end to end: typed, pasted, a photo read by Tesseract, change, remove, confirm, a later Notice to Owner.
+- `17_corpus.py` runs `tests/corpus.py` (374 sentences and messages, plus parking notices with every expected fact, including messy real-world writing with exact
   date checks) straight through `readCase()`, on a test-only copy of the page that exposes the reader
   (`tests/make_reader.js` writes `tests/out/reader.html`; production is untouched). Add new language there.
   The rule: no commitment from another party, no promise card. Instructions, information, conditionals and maybes are not commitments.
@@ -126,4 +127,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Case names | `shortTitle()`; a message whose first line would be cut off or is a pleasantry is named from the company and topic by `namedTitle()` and `caseTopic()` (build56), and confirming a promise keeps that name |
 | Home display titles | `home54Title()` (build54), also used by the share picker (build56) |
 | Home spotlight question | `home55Question()` (build55); since build56 it also replaces the generic "Did they come?" and "Has the money arrived?" with the wording that fits |
+| Case facts (resolution engine, release 1) | `pcnRead()` reads a parking notice on the phone (council PCN, Notice to Owner, TfL, private charge); `cfIn()` turns it into proposed facts with a source, from `evidence()` and case creation; `cfCheck()` asks "Are they right?", `cfBlock()` shows confirmed Case facts, `cfEdit()` changes or removes one (build60). Stored in `t.cf.f[key]` as `{v, iso, how, src, at, st}` with `st` proposed, confirmed or rejected. `pRec()` strips record lines ("Date of contravention: …") before the promise reader sees them |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

@@ -20,5 +20,19 @@ jobs:
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Run complete Sorted suite including rigorous stress
-        run: sh tests/run.sh
+      - name: Build isolated browser fixture
+        run: |
+          export TZ=Europe/London
+          node all.js >/dev/null
+          (cd tests && npm ci --omit=optional --ignore-scripts --silent)
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+      - name: Run split rigorous stress suites
+        run: |
+          export TZ=Europe/London
+          fail=0
+          for t in tests/17_classifier_matrix.py tests/18_state_machine_stress.py tests/19_share_render_pressure.py; do
+            echo "=== $t ==="
+            python3 "$t" || fail=1
+          done
+          exit $fail

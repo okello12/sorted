@@ -6,6 +6,9 @@ def ok(c,m):
     print(('PASS ' if c else 'FAIL ')+m)
     if not c: fails.append(m)
 def wait(pg,ms=350): pg.wait_for_timeout(ms)
+def open_fold(pg,sel):
+    d=pg.locator(sel)
+    if d.count() and not d.evaluate('(x)=>x.open'): d.locator('summary').click(); wait(pg,80)
 PAST="""(title)=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var t=db.tasks.find(x=>x.data.title.indexOf(title)===0).data;var p=t.promises[t.promises.length-1];var d=new Date(Date.now()-864e5);d.setHours(14,0,0,0);var e=new Date(d);e.setHours(17);p.dueAt=d.toISOString();p.dueEnd=e.toISOString();localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}"""
 def setup(b):
     ctx=b.new_context(viewport={'width':390,'height':844})
@@ -52,19 +55,19 @@ with sync_playwright() as p:
     pg.fill('#f-from','09:00'); pg.fill('#f-to','12:00'); pg.click('text=Save the promise'); wait(pg)
     t=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.find(x=>x.data.title.indexOf('Currys refund')===0).data")
     ok([x['status'] for x in t['promises']]==['replaced','open'] and t['promises'][1]['said']==t['promises'][0]['said'],'empty wording keeps the original promise, new date saved')
-    # share: logged only after the link exists; unshare
+    # share: v56 keeps sharing compact, but the same actions remain behind the fold.
     pg.evaluate("navigator.clipboard&&(navigator.clipboard.writeText=()=>Promise.resolve())")
-    pg.click('[data-a=share]'); wait(pg,300)
+    open_fold(pg,'.case56-sharing'); pg.click('[data-a=share]'); wait(pg,300)
     t=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb'))"); ok(len(t['shares'])==1,'share row created')
     ok('Shared with a helper' in pg.inner_text('main'),'logged once the link exists')
-    pg.click('[data-a=unshare]'); wait(pg,300)
+    open_fold(pg,'.case56-sharing'); pg.click('[data-a=unshare]'); wait(pg,300)
     ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).shares"))==0 and 'Link switched off' in pg.inner_text('#toast'),'switching off confirmed after delete')
     ok(pg.evaluate("document.activeElement&&document.activeElement!==document.body"),'focus is not lost after a re-render: '+pg.evaluate("document.activeElement.tagName+'.'+(document.activeElement.className||'')"))
-    # kept path: one thing to do
+    # kept path: one thing to do, now stored under the compact More fold.
     pg.click('[data-a=home]'); wait(pg,200); pg.evaluate("localStorage.removeItem('__admin')")
     pg2=setup(b); fresh(pg2); pg2.click('[data-a=example]'); wait(pg2,300); pg2.click('.slip-open'); wait(pg2,300)
-    pg2.click('.promise [data-a=kept]'); wait(pg2,300); m=pg2.inner_text('main')
-    ok('Log what they said' not in m and 'Nothing agreed yet' not in m and 'Edit the call' not in m and pg2.locator('form[data-f=done], [data-f=done]').count()+m.count('Mark it done')>0,'after "They came": only finishing is on screen')
+    pg2.click('.promise [data-a=kept]'); wait(pg2,300); open_fold(pg2,'.case56-more'); m=pg2.inner_text('main')
+    ok('Log what they said' not in m and 'Nothing agreed yet' not in m and 'Edit the call' not in m and pg2.locator('[data-a=panel][data-p=done]').count()>0,'after "They came": only finishing is on screen')
     pg2.screenshot(path=HERE+'/tests/out/v24-kept.png',full_page=True)
     b.close()
 print('ERRORS',errs); print('FAILS',fails)

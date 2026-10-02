@@ -34,7 +34,7 @@ around the due date. Most items below should wait for that result.
 | 14 | Family and helper view | Partly there in v70: the helper sees the last update and can add a note the owner keeps or removes | Named people and consent from the person the case is about |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Done in v66: proposed from a message, confirmed, shown on the case and quoted in the next message | |
-| 17 | Formal cases: parking, then debt, then court admin | Release 1 of 6 done in v60: case facts with a source, confirmed by the person | Releases 2 to 6 below; the boundary checks before debt and court |
+| 17 | Formal cases: parking, then debt, then court admin | Parking done in v60 to v65. Since v74 every kind of case uses one playbook format (`PB`); repairs is the second playbook | The boundary checks before debt and court |
 | 18 | Case assistant (reads, explains, drafts) | Built in v68, available to everyone, sends only when tapped | Baldwin: run `06_assistant_v68.sql`, add `anthropic_api_key` to Vault, add a DPIA entry |
 
 ## 1. Replies come back into the case

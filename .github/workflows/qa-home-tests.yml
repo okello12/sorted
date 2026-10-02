@@ -22,3 +22,10 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run full walkthrough suite
         run: sh tests/run.sh
+      - name: Upload v44 home preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home44-preview
+          path: tests/out/home44.png
+          if-no-files-found: ignore

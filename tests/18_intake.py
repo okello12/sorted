@@ -76,9 +76,14 @@ with sync_playwright() as p:
     # 5 shared from another app, then added to the case
     M5 = "Currys: your refund is delayed. It will now be paid by %s. Order 445566." % F3['dm']
     pg.goto('https://sorted.test/?s=2#new=' + urllib.parse.quote(M5)); wait(pg, 600)
-    pg.click('form[data-f=case] button[type=submit]'); wait(pg)
-    ok(pg.locator('[data-a=match-add]').count() == 1, 'shared message: offers to add it to the case')
-    pg.click('[data-a=match-add]'); wait(pg)
+    # v53: a shared message asks where it goes, with the likely case first
+    ok('Where does this go?' in pg.inner_text('main') and pg.locator('form[data-f=case] button[type=submit]').count() == 0, 'v53: shared message asks where it goes, no Start yet')
+    ok('Nothing is saved until you choose where it goes' in pg.inner_text('main'), 'v53: says nothing is saved until you choose')
+    tos = pg.locator('[data-a=share-to]')
+    ok(tos.count() >= 1 and 'Looks like this one' in tos.nth(0).inner_text() and 'Currys' in tos.nth(0).inner_text(), 'v53: the matching case is offered first')
+    ok(pg.locator('.share-pick').bounding_box()['y'] < pg.locator('.home44-intro').bounding_box()['y'] if pg.locator('.home44-intro').count() else True, 'v53: the question sits above the rest of Home')
+    ok(not any('delayed' in l for l in labels(case(pg, T))), 'v53: nothing added before a tap')
+    tos.nth(0).click(); wait(pg)
     t = case(pg, T)
     ok(any(l.startswith('Added a message shared from another app: “Currys') for l in labels(t)), 'shared message: kept, and says it was shared')
     ok(all(len(l) < 260 for l in labels(t)), 'evidence lines are kept short')
@@ -95,5 +100,39 @@ with sync_playwright() as p:
     ok(n == 1, 'v52: the history points to the block instead of repeating the message (%d)' % n)
     ok('It’s under What they sent' in pg.inner_text('main'), 'v52: history line says where to find it')
     pg.locator('.evidence').scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/evidence.png')
+    # v53: a second case, then a share that goes to the case you pick, not the one Sorted guessed
+    pg.click('[data-a=home]'); wait(pg)
+    if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); wait(pg)
+    T2 = "The landlord still hasn't fixed the boiler"
+    pg.fill('#f-case', T2); pg.click('form[data-f=case] button[type=submit]'); wait(pg)
+    if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
+    if pg.locator('[data-a=vague-go]').count(): pg.click('[data-a=vague-go]'); wait(pg)
+    pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg)
+    ok(case(pg, T2) is not None, 'second case made')
+    M6 = "Hi, the plumber can come on %s. Thanks" % F2['dm']
+    pg.goto('https://sorted.test/?s=3#new=' + urllib.parse.quote(M6)); wait(pg, 600)
+    names = [x.strip() for x in pg.locator('[data-a=share-to] .share-t').all_text_contents()]
+    ok(len(names) == 2 and pg.locator('.share-hint').count() == 0, 'v53: no guess when nothing matches, every open case listed: %s' % names)
+    pg.fill('#f-case', M6 + " Ref PL-90")
+    pg.locator('[data-a=share-to]', has_text='landlord').click(); wait(pg)
+    t2 = case(pg, T2)
+    ok(any(l.startswith('Added a message shared from another app: “Hi, the plumber') and 'PL-90' in l for l in labels(t2)), 'v53: goes to the chosen case, with your edits')
+    ok(not any('plumber' in l for l in labels(case(pg, T))), 'v53: the other case is untouched')
+    ok(t2.get('sugP') and pg.locator('.sug').count() == 1, 'v53: its date is proposed, not saved')
+    ok(not t2['promises'] or all(q['status'] != 'open' or 'plumber' not in q.get('said', '') for q in t2['promises']), 'v53: the promise waits for a tap')
+    pg.click('[data-a=sug-no]'); wait(pg)
+    # v53: or start a new case from it
+    M7 = "Amazon: your replacement kettle will arrive on %s." % F1['dm']
+    pg.goto('https://sorted.test/?s=4#new=' + urllib.parse.quote(M7)); wait(pg, 600)
+    n_cases = pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.length")
+    pg.click('[data-a=share-new]'); wait(pg)
+    ok(pg.locator('.share-pick').count() == 0 and pg.locator('form[data-f=case] button[type=submit]').count() == 1, 'v53: Start a new case shows Start')
+    ok('Nothing is saved until you press Start' in pg.inner_text('main'), 'v53: and says so')
+    pg.click('form[data-f=case] button[type=submit]'); wait(pg)
+    ok(pg.locator('[data-a=match-add]').count() == 0 and pg.locator('form[data-f=baseline]').count() == 1, 'v53: no second question about which case')
+    pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg)
+    ok(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.length") == n_cases + 1, 'v53: a new case is made')
+    pg.goto('https://sorted.test/?s=5#new=' + urllib.parse.quote(M6)); wait(pg, 600)
+    pg.locator('.share-pick').scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/share_pick.png')
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

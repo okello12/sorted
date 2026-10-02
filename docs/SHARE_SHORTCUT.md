@@ -15,7 +15,9 @@ it from the address bar as soon as it has read it.
 7. Tap **Done**.
 
 Try it: in Messages or Mail, select the company's message, tap **Share**, then **Add to Sorted**. Sorted opens with the
-message in the box. Check it, take out anything it doesn't need, and press Start.
+message in the box. Check it and take out anything it doesn't need. If you already have open cases, Sorted asks
+"Where does this go?" and puts the case it thinks fits first. Tap a case to add the message there, or tap
+**Start a new case**. Nothing is saved until you tap.
 
 ## Share it with testers
 

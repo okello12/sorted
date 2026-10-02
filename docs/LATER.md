@@ -213,7 +213,7 @@ start box) is kept in the history with where it came from, even when it has no d
 
 **Intake, next slices (in order).**
 1. ~~Show evidence lines in the case as their own small block ("What they sent")~~ Done in v52.
-2. Share straight into a chosen case from the Shortcut (`#new=` plus a case picker) instead of via the start box.
+2. ~~Share straight into a chosen case from the Shortcut~~ Done in v53: a shared message asks "Where does this go?", with the likely case first.
 3. Let the person correct which case a message belongs to after it was added.
 4. Only then, keeping original files (see below).
 

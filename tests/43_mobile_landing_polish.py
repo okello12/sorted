@@ -1,4 +1,4 @@
-# v83/v84: real-device polish — richer scenes, compact returning chooser, opaque sticky chrome, tighter tools.
+# v84: real-device polish — richer scenes, compact returning chooser, opaque sticky chrome, tighter tools, workflow-safe hidden compose hook.
 import os
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]

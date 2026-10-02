@@ -3,6 +3,9 @@
 # Needs Python 3 with Playwright (chromium) and Node. Builds the page, then runs every walkthrough against it.
 set -e
 export TZ=Europe/London   # the app's users are in the UK; see tests/dates.py
+# Makes tests/sitecustomize.py available. It lets pre-v75 walkthroughs open the
+# new top-level case groups before touching controls that used to be always visible.
+export PYTHONPATH="$PWD/tests${PYTHONPATH:+:$PYTHONPATH}"
 node all.js >/dev/null
 [ -d tests/node_modules ] || (cd tests && npm ci --omit=optional --ignore-scripts --silent)
 mkdir -p tests/out

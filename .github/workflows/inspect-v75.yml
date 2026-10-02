@@ -1,0 +1,38 @@
+name: Inspect v75
+
+on:
+  push:
+    branches: [ui-consolidation-v75]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build current app
+        run: node all.js >/dev/null
+      - name: Print relevant current functions
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const s=fs.readFileSync('public/index.html','utf8');
+          const picks=[
+            ['anonNote','function anonNote',5000],
+            ['caseEntry','function caseEntry',12000],
+            ['viewTask','function viewTask',30000],
+            ['promiseCard','function promiseCard',9000],
+            ['home44Row','function home44Row',9000],
+            ['viewHome','function viewHome',18000]
+          ];
+          for(const [name,key,len] of picks){
+            const i=s.indexOf(key);
+            console.log('\n===== '+name+' @ '+i+' =====');
+            console.log(i<0?'NOT FOUND':s.slice(i,i+len));
+          }
+          NODE

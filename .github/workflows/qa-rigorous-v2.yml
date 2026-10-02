@@ -1,0 +1,28 @@
+name: QA rigorous v2
+on:
+  push:
+    branches: [qa-rigorous-20261002]
+  workflow_dispatch:
+
+jobs:
+  rigorous-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Build exact current app
+        run: node all.js >/dev/null
+      - name: Run isolated semantic fuzzing
+        run: python tests/17_semantic_isolated.py
+      - name: Run volume, state and share stress
+        run: python tests/18_volume_state.py

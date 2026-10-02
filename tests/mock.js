@@ -1,6 +1,6 @@
 (function(){
 var DB=JSON.parse(localStorage.getItem("__mockdb")||'{"tasks":[],"shares":[],"reminders":[],"helpers":[],"inbound_items":[]}');
-if(!DB.reminders)DB.reminders=[];if(!DB.pilot_events)DB.pilot_events=[];if(!DB.helpers)DB.helpers=[];if(!DB.inbound_items)DB.inbound_items=[];function persist(){localStorage.setItem("__mockdb",JSON.stringify(DB))}
+if(!DB.reminders)DB.reminders=[];if(!DB.pilot_events)DB.pilot_events=[];if(!DB.helpers)DB.helpers=[];if(!DB.inbound_items)DB.inbound_items=[];if(!DB.case_notes)DB.case_notes=[];function persist(){localStorage.setItem("__mockdb",JSON.stringify(DB))}
 var session=JSON.parse(localStorage.getItem("__mocksession")||"null");
 var listeners=[];window.__otp=[];
 function q(table){
@@ -43,6 +43,8 @@ window.supabase={createClient:function(){
       if(name==="pilot_metrics"){window.__pm=args;return Promise.resolve({data:{people:3,include_admins:args.include_admins,funnel:{started:10,promised:7,matured:5,returned:4,acted:3,closed:2,closers:2,second:1},miss:{missed:2,recovered:1},return_hours_median:5.2,email:{anon_promises:4,emails_added:3},counts:{case_started:{total:10,week:6}}},error:null})}
       if(name==="record_outcome"){var oc=JSON.parse(localStorage.getItem("__outcomes")||"[]");oc.push(args);localStorage.setItem("__outcomes",JSON.stringify(oc));return Promise.resolve({data:null,error:null})}
       if(name==="company_scores"){window.__scoresCalls=(window.__scoresCalls||0)+1;return Promise.resolve({data:JSON.parse(localStorage.getItem("__scores")||"[]"),error:null})}
+      if(name==="case_reply_address")return Promise.resolve({data:localStorage.getItem("__replyOn")==="1"?"case-"+String(args.p_task_id).slice(0,8)+"@inbound.getsorted.uk":null,error:null});
+      if(name==="add_share_note"){var sh=DB.shares.find(r=>r.token===args.p_token);if(!sh)return Promise.resolve({data:"gone",error:null});if(!sh.notes_on)return Promise.resolve({data:"off",error:null});DB.case_notes.push({id:"n"+Date.now(),task_id:sh.task_id,author:args.p_author,body:args.p_body,created_at:new Date().toISOString()});persist();return Promise.resolve({data:"ok",error:null})}
       if(name==="email_reminders_ready")return Promise.resolve({data:localStorage.getItem("__emailReady")==="1",error:null});
       if(name==="delete_my_account"){DB={tasks:[],shares:[],reminders:[],helpers:[],inbound_items:[]};persist();return Promise.resolve({data:null,error:null})}
     },

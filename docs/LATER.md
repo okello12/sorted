@@ -18,11 +18,11 @@ around the due date. Most items below should wait for that result.
 
 | # | Item | Status | Blocked on |
 |---|---|---|---|
-| 1 | Replies come back into the case | Database change written, not applied | Approval to apply it, then about a day of work |
+| 1 | Replies come back into the case | Built in v70: the case's own address in Cc, replies shown in the case as proposals | Baldwin: run `08_replies_notes_v70.sql`, set `case_replies_on` to `yes`, point Resend inbound at `inbound-email` |
 | 2 | Forwarding emails to a personal Sorted address | Switched off since v28; addresses removed 2 Oct 2026 | A check that the forwarder really is the account owner, or drop it in favour of item 1 |
 | 3 | WhatsApp | Not started | Baldwin: Meta business account, verification, a number, running costs |
 | 4 | Share into Sorted from other apps | iPhone done in v40 (Apple Shortcut); Android not started | Android needs an installed app or a manifest (see below) |
-| 5 | Share a case with roles | Database change written, not applied | Accept flow and notice text, after the pilot |
+| 5 | Share a case with roles | Notes from a helper built in v70 (through the helper link, switched on per case); named roles not started | Named roles need an accept flow, after the pilot |
 | 6 | The other party replies inside Sorted | Not started | Proof the consumer side works |
 | 7 | Promise data and a public scoreboard | Built in v69 as in-case company totals (counts only, 5 promises from 3 people) | Baldwin: run `07_scores_v69.sql`; enough real cases; legal review before any public page |
 | 8 | Predictions ("usually 5 days late") | Not started | Item 7 |
@@ -31,13 +31,15 @@ around the due date. Most items below should wait for that result.
 | 11 | Name clearance and own domain | Not started | A UK trade mark search by an attorney (SORTED is crowded) |
 | 12 | Escalation route | Done in v67: 12 sectors, hand-checked 2 Oct 2026, shown folded once a case has gone round | Water's next scheme to recheck |
 | 13 | Organisation memory | Done: your own history in v66, shared channel totals in v69 | Enough real cases |
-| 14 | Family and helper view | Not started | Item 5 (roles), then design |
+| 14 | Family and helper view | Partly there in v70: the helper sees the last update and can add a note the owner keeps or removes | Named people and consent from the person the case is about |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Done in v66: proposed from a message, confirmed, shown on the case and quoted in the next message | |
 | 17 | Formal cases: parking, then debt, then court admin | Release 1 of 6 done in v60: case facts with a source, confirmed by the person | Releases 2 to 6 below; the boundary checks before debt and court |
 | 18 | Case assistant (reads, explains, drafts) | Built in v68, available to everyone, sends only when tapped | Baldwin: run `06_assistant_v68.sql`, add `anthropic_api_key` to Vault, add a DPIA entry |
 
 ## 1. Replies come back into the case
+
+**Done in v70.** `08_replies_notes_v70.sql` replaces `01_case_reply_structure.sql` (don't run 01). `inbound-email` v4 checks the signature first, loops over To and Cc, files `case-` replies by case (20 a day per case) and keeps only the sender's domain. The steps below are kept as the record of the design.
 
 **Goal.** When someone emails a company from a case, the company's reply lands in that case and Sorted offers any
 new date as the promise, the same card used for pasted messages (v34).
@@ -104,6 +106,8 @@ separate app with separate storage. Anyone without an email would lose sight of 
 Revisit when every user has an email account, because cases then sync by account and storage no longer matters.
 
 ## 5. Share a case with roles
+
+**v70.** Notes from a helper work through the existing helper link once the owner switches notes on for that case. They arrive as proposals (`case_notes`, from `08_replies_notes_v70.sql`, which replaces the notes part of `02_case_members.sql`; don't run 02). Named roles below are still to do.
 
 **Prepared.** `supabase/parked/02_case_members.sql`: `case_members` (roles `view` and `note`) and `case_notes`,
 with row level security.

@@ -279,8 +279,9 @@ engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), i
    proof of what was sent, and waiting on them through the usual promise engine.
 3. ~~Official routes~~ Done in v62: a hand-checked registry (council site via GOV.UK, TfL, GOV.UK guides, London
    Tribunals, Traffic Penalty Tribunal, Scotland, Northern Ireland, POPLA, IAS, Citizens Advice), checked 2 Oct 2026.
-4. Challenge builder: "What do you want to do?", a short interview, a draft from confirmed facts only, and a
-   completeness check ("You mentioned the sign but haven't added a photo"), never a chance of winning.
+4. ~~Challenge builder~~ Done in v63: tick what's true (with your own words), a draft from that and confirmed facts
+   only, "Uses 6 confirmed details and 2 things you told Sorted", a completeness check, copy, and the exact text kept
+   when you say you've sent it.
 5. Response reader: a reply compared with the case so far, "what changed", and the next stage.
 6. Adviser pack: summary, chronology, deadlines, evidence and questions, as one page to copy or download.
 AI is for extraction, classification, explanation and drafting only, and waits for item 18's privacy decision.

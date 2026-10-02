@@ -21,6 +21,6 @@ R('.case75-parking-pending p{margin:0}', `.case75-parking-pending p{margin:0}
 .case75-group .case56-fold>summary{min-height:46px;padding:10px 2px}
 .case75-group .note p a.link{display:inline;width:auto;min-height:0;padding:0;border:0;text-decoration:underline}`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='d235608a07c6225cf54afc0f1a386d4509a5042a';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v76 ok',h(s),s.length);

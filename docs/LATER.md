@@ -196,6 +196,31 @@ When it is applied, also:
   history needs `git filter-repo` and a force push to both branches. Baldwin's call.
 - **The new security headers** (`vercel.json`) are tested in Chromium. Check screenshots and PDFs once on a real iPhone.
 
+## Where Sorted fits (use-case map, 2 October 2026)
+
+**Thesis.** Organisations have case-management systems; the individual has screenshots, Notes, email and memory. Sorted is
+the individual's own side of the case: anything unresolved, involving another party, that you may need to wait on,
+remember, prove, chase, escalate or close.
+
+**Heuristics for "this belongs in Sorted".** Someone gave you a reference number. Someone said "3 to 5 working days" or
+"we'll call you back". An appointment was missed. Responsibility moves between organisations (retailer, courier,
+manufacturer). Evidence builds up over time. It might need escalating.
+
+**Already strong today:** refunds, deliveries, repairs and landlords, utilities and telecoms, engineer visits,
+benefits and council chases, missed appointments.
+
+**Good next areas, same machinery:** insurance claims, travel refunds and lost luggage, garages, job applications,
+complaints and escalation (company, then Ombudsman), deposits, marketplace disputes, helping a parent.
+
+**Careful areas.** Health administration, immigration, legal matters, bereavement and fraud recovery fit the shape but
+carry special-category or highly sensitive data. Sorted's notice already asks people to leave health details out.
+Keep these out of the pilot's examples; revisit only with a DPIA and notice changes.
+
+**Out of scope (unchanged).** Groceries, habits, calendar events, medication reminders, birthdays, generic to-dos.
+
+**Ideas that build on what exists:** escalation route (needs care: no legal advice), "organisation memory" for the
+right channel per company, family/helper view (item 5), evidence timeline (screenshots and PDFs already land in the case).
+
 ## Lessons from Things 3 (looked at 2 October 2026)
 
 Things 3 (Cultured Code) is an iPhone to-do app: £9.99 one-off, 4.8 from about 4,300 UK ratings, No. 2 in Productivity.

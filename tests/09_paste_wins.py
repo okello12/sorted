@@ -36,7 +36,7 @@ with sync_playwright() as p:
     ok(pg.locator('#f-ask').count()==1 and pg.locator('form[data-f=what]').count()==0,'repair: chase, no appliance questions')
     # 3 future promise: short title
     T3="British Gas said the engineer will come on Friday morning"; start(pg,T3); pg.click('[data-a=sug-yes]'); wait(pg)
-    t=task(pg,T3); print('  title:',t['title']); ok(t['title'].startswith('British Gas · ') and len(t['title'])<30,'confirmed promise gets a short title')
+    t=task(pg,T3); print('  title:',t['title']); ok(t['title']=='British Gas engineer visit','confirmed promise keeps a short name that says what it is (v55, no date to go stale)')
     # 4 paste a message into that case: new date replaces the old
     pg.click('[data-a=panel][data-p=paste]'); wait(pg)
     pg.fill('#f-paste',"Hi Baldwin, your engineer visit has been moved to "+A4["long"]+" between 12pm and 4pm. Your reference is BG-55123. Thanks, British Gas"); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)

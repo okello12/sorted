@@ -142,3 +142,17 @@ MESSY_NOT = [
   "currys said to ring back fri", "they said engineers r available thurs", "BT said maybe next week",
   "landlord said he'll come thurs if he can", "sky said call em tmrw lol",
 ]
+
+# Case names (v55). A message gets a clear name; a short typed sentence keeps its own words.
+TITLES = [
+  ("Amazon: your replacement kettle will arrive on 9 October.", "Amazon replacement kettle"),
+  ("Your engineer visit is confirmed for Friday between 8am and 12pm. Reference BG-77120. British Gas", "British Gas engineer visit · BG-77120"),
+  ("DPD: your parcel will be delivered tomorrow between 10:00 and 11:00", "DPD delivery"),
+  ("Hi Baldwin, thanks for your patience. We will call you back on Monday about case 88213. Kind regards, EE", "EE callback · 88213"),
+  ("Sky said engineer booked for 14/10 between 8 and 1", "Sky engineer visit"),
+  ("Council tax bill is wrong", "Council tax bill is wrong"),
+  ("Aviva still hasn't paid my claim", "Aviva still hasn't paid my claim"),
+  ("Royal Mail lost my parcel", "Royal Mail lost my parcel"),
+  ("GP surgery won't give me an appointment", "GP surgery won't give me an appointment"),
+  ("Currys refund hasn't arrived, order 445566", "Currys refund · 445566"),
+]

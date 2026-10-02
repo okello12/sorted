@@ -119,4 +119,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Accessibility pass after each render | `a11yPass()` (build37) |
 | Home: spotlight case, Waiting rows, Also open, Done | `viewHome()`, `home44Spot()`, `home44Row()`, `home44Section()` (build44 to build48; the old `viewHomeLegacy()` is unused) |
 | Share into Sorted (`/#new=<text>`, the Apple Shortcut) | `grabShared()` (build40); "Where does this go?" picker `shareBlock()`, `intakeAdd()` (build53); setup in `docs/SHARE_SHORTCUT.md` |
+| Case names | `shortTitle()`; a message whose first line would be cut off or is a pleasantry is named from the company and topic by `namedTitle()` and `caseTopic()` (build56), and confirming a promise keeps that name |
+| Home display titles | `home54Title()` (build54), also used by the share picker (build56) |
+| Home spotlight question | `home55Question()` (build55); since build56 it also replaces the generic "Did they come?" and "Has the money arrived?" with the wording that fits |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

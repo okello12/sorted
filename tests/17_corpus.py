@@ -55,6 +55,10 @@ with sync_playwright() as p:
     mn = pg.evaluate(READ, corpus.MESSY_NOT); bad_n = [(t2, r) for t2, r in zip(corpus.MESSY_NOT, mn) if r]
     ok(not bad_n, 'messy non-promises rejected: %d/%d' % (len(mn) - len(bad_n), len(mn)))
     for t2, r in bad_n: print('   false promise: %s  ->  %s' % (t2, r['said']))
+    rt = pg.evaluate("(xs)=>xs.map(function(t){var r=window.__read;return r.shortTitle(t,r.caseFacts(t))})", [x for x, _ in corpus.TITLES])
+    badt = [(x, want, got) for (x, want), got in zip(corpus.TITLES, rt) if got != want]
+    ok(not badt, 'case names: %d/%d as expected' % (len(rt) - len(badt), len(rt)))
+    for x, want, got in badt: print('   name: %s  ->  %r (wanted %r)' % (x[:60], got, want))
     total = len(nots) + len(my) + len(mn) + len(corpus.YES) + len(corpus.MSG_YES) + len(corpus.MSG_NOT)
     print('  corpus size: %d sentences and messages' % total)
     b.close()

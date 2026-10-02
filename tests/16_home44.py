@@ -21,7 +21,7 @@ with sync_playwright() as p:
     ok('This is the only thing that needs you right now.' in pg.inner_text('main'),'v48: one active case says it is the only thing')
     ok('The rest of your open cases are below' not in pg.inner_text('main'),'v48: no "rest of your cases are below" line')
     spot=pg.inner_text('.home44-spot')
-    ok('Washing machine' in spot and 'Did they come?' in spot,'spotlight explains the case and outcome question')
+    ok('Washing machine' in spot and 'Did they turn up?' in spot,'spotlight explains the case and outcome question')
     ok(pg.locator('.home44-spot [data-a=home-ans]').count()==3,'spotlight exposes the three outcome actions')
     # A future promise should sit quietly in Waiting rather than compete with the spotlight.
     pg.click('[data-a=compose]'); wait(pg); pg.fill('#f-case','British Gas said the engineer will come tomorrow morning, ref BG-44'); pg.click('form[data-f=case] button[type=submit]'); wait(pg); pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg,450); pg.click('[data-a=sug-yes]'); wait(pg,450); pg.click('[data-a=home]'); wait(pg,450)

@@ -62,7 +62,7 @@ with sync_playwright() as p:
     t=[x for x in tasks(pg) if x.get('call') and x['call']['who']=='Virgin Media'][0]
     ok(t['promises'][-1].get('spoke')=='Sarah' and any('spoke to Sarah' in e['label'] for e in t['events']),'spoke-to name kept and logged')
     pg.evaluate("""()=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var x=db.tasks.map(y=>y.data).find(y=>y.call&&y.call.who==='Virgin Media');var p=x.promises[x.promises.length-1];var d=new Date(Date.now()-2*864e5);p.dueAt=d.toISOString();localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}""")
-    pg.goto('https://sorted.test/'); wait(pg,600); pg.locator('.slip', has_text='Virgin').locator('[data-a=open]').first.click(); wait(pg)
+    pg.goto('https://sorted.test/'); wait(pg,600); pg.locator('[data-a=open][data-id="%s"]' % t['id']).first.click(); wait(pg)
     pg.click('[data-a=missed]'); wait(pg); a=pg.input_value('#f-ask'); print('  chase:',a); ok('I was told by Sarah' in a,'chase names who said it')
     # 3 email: open in your email app / copy
     pg.click('[data-k=via][data-v=email]'); wait(pg,150); pg.click('form[data-f=call] button[type=submit]'); wait(pg)

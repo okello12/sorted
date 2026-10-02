@@ -9,8 +9,9 @@ def ok(c, m):
     if not c: fails.append(m)
 def wait(pg, ms=350): pg.wait_for_timeout(ms)
 T0 = datetime.date.today()
+SEP = ','  # Chromium's own date format decides: some versions write "Fri, 2 Oct", newer ones "Fri 2 Oct"; set from the browser below
 def uk(n): return (T0 + datetime.timedelta(days=n)).strftime('%d/%m/%Y')
-def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%a %-d %b') if x.year == T0.year else x.strftime('%a %-d %b %Y')
+def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%a' + SEP + ' %-d %b') if x.year == T0.year else x.strftime('%a' + SEP + ' %-d %b %Y')
 def tasks(pg): return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(y=>y.data)")
 def case(pg, title): return next((x for x in tasks(pg) if x['title'] == title), None)
 def start(pg, text):
@@ -29,6 +30,7 @@ with sync_playwright() as p:
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE + '/tests/mock.js', content_type='application/javascript'))
     ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE + '/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
+    SEP = ',' if ',' in pg.evaluate("new Date(2026,9,2).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})") else ''
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 200); pg.click('[data-a=anon-start]'); wait(pg)
     T = 'Southwark PCN · SK12345678'
     start(pg, "London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Vehicle Registration Mark: AB12 CDE Date of contravention: %s The penalty charge is £130. If paid within 14 days, reduced to £65." % uk(-6))

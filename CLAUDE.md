@@ -67,6 +67,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `24_routes.py` checks the official pages for each kind of notice, stage and region.
 - `23_playbook.py` walks a council case from ticket to tribunal deadline to paid, plus a private charge and a cancelled one, with dates relative to today.
 - `22_case_facts.py` covers parking notices end to end: typed, pasted, a photo read by Tesseract, change, remove, confirm, a later Notice to Owner.
 - `17_corpus.py` runs `tests/corpus.py` (374 sentences and messages, plus parking notices with every expected fact, including messy real-world writing with exact
@@ -130,4 +131,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Home spotlight question | `home55Question()` (build55); since build56 it also replaces the generic "Did they come?" and "Has the money arrived?" with the wording that fits |
 | Case facts (resolution engine, release 1) | `pcnRead()` reads a parking notice on the phone (council PCN, Notice to Owner, TfL, private charge); `cfIn()` turns it into proposed facts with a source, from `evidence()` and case creation; `cfCheck()` asks "Are they right?", `cfBlock()` shows confirmed Case facts, `cfEdit()` changes or removes one (build60). Stored in `t.cf.f[key]` as `{v, iso, how, src, at, st}` with `st` proposed, confirmed or rejected. `pRec()` strips record lines ("Date of contravention: …") before the promise reader sees them |
 | Parking playbook (release 2) | `pkStage()`, `pkDates()` (worked out on the safe side from confirmed facts; a date on the notice or one you set wins), `pkCard()`, `pkPanel()` (sent, rejected, paid, change a date), `pkDatesBlock()` (Dates that matter, What you sent). Waiting on them is an ordinary promise with `src:"parking"`; the "Remind me 2 days before" move has `src:"parking"` and sits inside the card (build61). State in `t.pk`: `stage`, `subs`, `dates`, `rejectedOn`, `rejFrom`, `ntoSeen` |
+| Official routes (release 3) | `RT` registry and `RT_CHECKED` (build62): kind of notice, stage, region (London by borough name or TfL, England and Wales, Scotland and Northern Ireland folded), official link, purpose. `rtFor()` picks them, `rtBlock()` shows "Where to do it". Hand-checked; recheck every link before changing `RT_CHECKED`. Never generated |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

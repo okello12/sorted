@@ -277,7 +277,8 @@ engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), i
 2. ~~Parking playbook~~ Done in v61: stages (notice, challenge sent, waiting, rejected, Notice to Owner, formal
    challenge, appeal, finished), dates that say what they mean, worked out on the safe side from confirmed facts,
    proof of what was sent, and waiting on them through the usual promise engine.
-3. Official routes: a registry of organisation, case type, stage, official link, purpose and date last checked.
+3. ~~Official routes~~ Done in v62: a hand-checked registry (council site via GOV.UK, TfL, GOV.UK guides, London
+   Tribunals, Traffic Penalty Tribunal, Scotland, Northern Ireland, POPLA, IAS, Citizens Advice), checked 2 Oct 2026.
 4. Challenge builder: "What do you want to do?", a short interview, a draft from confirmed facts only, and a
    completeness check ("You mentioned the sign but haven't added a photo"), never a chance of winning.
 5. Response reader: a reply compared with the case so far, "what changed", and the next stage.

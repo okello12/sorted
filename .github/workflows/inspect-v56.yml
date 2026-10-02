@@ -20,13 +20,13 @@ jobs:
           from pathlib import Path
           s=Path('public/index.html').read_text()
           for marker, before, after in [
-            ('function viewTask()',0,18000),
-            ("What's happened so far",3500,5000),
-            ('Email reminders are on',3000,4000),
-            ('Copy the helper link again',2500,4500),
-            ('Use the official page',2500,5000),
-            ('function calBlock(t)',0,4500),
-            ('function renewDone',0,6500),
+            ('function moveCard',0,6500),
+            ('function doIdleCard',0,5000),
+            ('function evidenceBlock',0,6500),
+            ('function helperBlock',0,7500),
+            ('function evRow',0,4500),
+            ('function renewCard(t)',0,9000),
+            ('function promiseCard',0,8000),
           ]:
             i=s.find(marker)
             print('\n\n===== MARKER:',marker,'INDEX',i,'=====')

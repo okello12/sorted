@@ -1,6 +1,6 @@
 # Sorted: parked work
 
-Written 1 October 2026, at release v36. Updated at v38 after the full audit. This is the list of things we decided to build later, why each one waits,
+Written 1 October 2026, at release v36. Updated at v38 after the full audit, and on 2 October 2026 (items 17 and 18). This is the list of things we decided to build later, why each one waits,
 and what is already prepared. Read this before starting any of them.
 
 ## The rule for every new feature
@@ -34,6 +34,8 @@ around the due date. Most items below should wait for that result.
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Not started | Pilot result |
+| 17 | Formal cases: parking, then debt, then court admin | Not started | Pilot result; the boundary checks below |
+| 18 | Case assistant (reads, explains, drafts) | Not started | A privacy decision: today nothing leaves the phone except what you save |
 
 ## 1. Replies come back into the case
 
@@ -230,6 +232,64 @@ who has it now and who said it was someone else's job: "Currys said it's DPD's p
 hand-off ("You told me on 3 October that DPD were responsible"). Uses the existing party detection.
 
 **Needs.** Pilot evidence that hand-offs are common enough to justify it.
+
+## 17. Formal cases: parking, then debt, then court admin
+
+**Goal.** Cases with a notice, a reference, several dates that mean different things, and a formal process: council
+PCNs and private parking charges first, then debts and payment plans, then simple court and tribunal administration.
+These are pure Sorted: another party, a reference, deadlines, evidence, and a cost to losing the thread.
+
+**Design.**
+- **Typed deadlines.** One case holds several dates, each with its meaning: discount ends, challenge deadline, payment
+  due, evidence due, hearing. Each is checked against "Check the official source", never assumed.
+- **A facts block** for these cases only: what it is, reference, amount, stage, next deadline, who has the ball.
+  Read from the notice (photo or PDF, on the phone), shown as "I found these details. Are they right?", and only
+  saved once the person confirms each fact.
+- **Stages, not just promises.** Notice received, challenge sent, waiting, decision, next stage. A rejection letter
+  moves the case to the next stage and makes the new deadline the important thing.
+- **Proof of submission.** What was sent, when, where, the confirmation number and the exact text. The case then
+  waits on them: "Challenge sent 8 Oct, ref ABC123. You can put this down until 5 Nov."
+- **Official route, specific to the case.** The right body's own appeal, payment or complaint page. Hand-written
+  and dated, like the renewals table and item 12, never generated.
+- **Drafts from confirmed facts.** A challenge, dispute or breakdown request built from a fixed template, the facts
+  the person confirmed and the grounds they choose, in their own words. No invented facts.
+- **For your adviser.** A one-page summary, chronology, deadlines, documents and the questions the person wants
+  answered. Takes the evidence timeline (item 15) further.
+- No "Legal" section on Home. The case screen adapts to the kind of case.
+
+**Boundaries to settle before building (to be checked, not assumed).**
+- **Advice.** Sorted organises and drafts what the person decides. It doesn't say whether to pay, challenge, plead
+  or settle, or that an appeal will succeed. High-stakes matters (criminal, family, immigration) get "Sorted can keep
+  your dates and documents together. It can't tell you what legal position to take."
+- **Debt.** Advising someone on their specific debts and recommending a course of action may be FCA-regulated debt
+  counselling. Check with a regulatory lawyer first. Until then Sorted records what was agreed and points to free
+  debt advice (MoneyHelper, StepChange, Citizens Advice); it doesn't suggest a debt solution.
+- **Offence data.** Council PCNs are civil, but court cases can involve criminal offence data, which UK GDPR
+  (Article 10) and the DPA 2018 treat separately. Needs a DPIA entry and notice text before Sorted holds it.
+- **Process tables.** Council and private parking routes differ (councils: representations, then the tribunal;
+  private operators: the operator, then POPLA or the IAS). Each entry needs a source and a review date.
+
+**Order.** Parking first: easy to understand, highly structured, time-sensitive and common. Slice 1 could be typed
+deadlines, the facts block and proof of submission for a council PCN, all on the phone, with no AI.
+
+## 18. Case assistant
+
+**Goal.** An assistant that works inside the case it is in, not a chat bubble: explain a letter in plain English
+("This is a Notice to Owner, a later stage than the ticket"), say what changed, ask the questions that matter,
+list points that may be relevant and let the person confirm which are true, compare a rejection with the original
+challenge ("Their reply doesn't address the receipt you sent"), check a draft for contradictions and missing
+evidence, and write the follow-up when a promised date passes.
+
+**Rule.** Sorted may suggest. The person confirms. It never invents facts, never submits anything on its own, never
+says someone is liable, and never promises an outcome. It separates what the document says from its own reading.
+
+**Needs, in order.**
+1. **A privacy decision.** Today screenshots and PDFs are read on the phone and "Nothing is uploaded". An assistant
+   means sending case content to a model provider. That needs a DPIA, a processor agreement, changes to the notice,
+   and probably a per-case opt-in ("Let Sorted's assistant read this case").
+2. The advice boundary from item 17, built into the prompts and tested against a corpus, like the promise reader.
+3. Item 17's structure first. The assistant is far more useful, and safer, when the case already has confirmed facts,
+   typed deadlines and stages to work from.
 
 ## Backend fixes from the v37 audit (all applied 2 October 2026)
 

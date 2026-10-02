@@ -1,0 +1,21 @@
+name: QA home build
+on:
+  push:
+    branches: [home-redesign-v44]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build current app
+        run: node all.js
+      - name: Upload built page
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-page
+          path: public/index.html

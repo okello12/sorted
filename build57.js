@@ -156,6 +156,6 @@ R(`</style>\n\n</head>`,String.raw`/* v57 case detail: the next move first, the 
 </head>`);
 
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='0557086046447453912f48ad3819dbf5327476b2';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v57 ok',h(s),s.length);

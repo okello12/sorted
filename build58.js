@@ -19,6 +19,6 @@ R(`h+='<div class="row eq case56-renew-actions">'+(r.applied?'':'<button class="
   `h+='<div class="row eq case56-renew-actions">'+(r.applied||hasApplyMove?'':'<button class="btn" data-a="applied">I’ve applied</button>')+'<button class="btn" data-a="panel" data-p="renewed">It’s renewed</button></div>';`);
 
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='148a932ad99218c71b8d8930cd8753352e359ed6';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v58 ok',h(s),s.length);

@@ -50,6 +50,10 @@ fails, the build fails and production stays on the last good deploy.
 from a new origin (a script, font, API or image host), add it to the CSP there and rerun `tests/13_csp.py`.
 
 Work on a branch and merge to `main` when it's ready; keep `live-pilot` level with `main` after each release.
+Only `main` builds on Vercel (`git.deploymentEnabled` in `vercel.json`). Branch pushes and `live-pilot` make no
+preview builds, because the account has a daily build limit and QA pushes used it up on 2 October 2026. Test locally
+with `sh tests/run.sh`, not with preview deploys. If a production build is ever rate-limited, redeploy the `main` commit
+through the Vercel API (`create_deployment` with `gitSource`) once the limit clears, rather than pushing again.
 The old manual route (Vercel API `create_deployment` with files by sha1) still works if Git deploys ever stop.
 
 ## How it is tested

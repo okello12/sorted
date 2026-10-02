@@ -2,6 +2,7 @@
   "buildCommand": "node all.js",
   "outputDirectory": "public",
   "framework": null,
+  "git": { "deploymentEnabled": { "main": true, "*": false, "**": false } },
   "headers": [
     {
       "source": "/(.*)",

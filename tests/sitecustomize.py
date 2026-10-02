@@ -1,32 +1,48 @@
 """Test-only compatibility for the v75 grouped case page.
 
 Older walkthroughs predate the two collapsed top-level case groups. They still
-exercise the same controls, so when those older scripts pause we open only the
-new top-level groups for them. The dedicated v75/v76 walkthrough is excluded;
-it verifies the real collapsed behaviour and opens groups like a user would.
+exercise the same controls, so for those older scripts we reveal the new groups
+before waits/clicks. The dedicated v75/v76 walkthrough is excluded; it verifies
+the real collapsed behaviour and opens groups like a user would.
 """
 import os
 import sys
 
 if os.path.basename(sys.argv[0]) != "37_ui_consolidation.py":
     try:
-        from playwright.sync_api import Page
+        from playwright.sync_api import Page, Locator
 
-        _original_wait_for_timeout = Page.wait_for_timeout
+        _page_wait = Page.wait_for_timeout
+        _page_click = Page.click
+        _locator_click = Locator.click
 
-        def _wait_for_timeout_and_reveal_case_groups(self, timeout):
-            result = _original_wait_for_timeout(self, timeout)
+        def _reveal(page):
             try:
-                self.locator("details.case75-group").evaluate_all(
+                page.locator("details.case75-group").evaluate_all(
                     "(groups) => groups.forEach((group) => { group.open = true; })"
                 )
             except Exception:
-                # Before navigation, or on pages without a case, there is nothing
-                # to reveal. The walkthrough should continue exactly as before.
                 pass
+
+        def _wait(self, timeout):
+            result = _page_wait(self, timeout)
+            _reveal(self)
             return result
 
-        Page.wait_for_timeout = _wait_for_timeout_and_reveal_case_groups
+        def _click(self, selector, *args, **kwargs):
+            _reveal(self)
+            return _page_click(self, selector, *args, **kwargs)
+
+        def _loc_click(self, *args, **kwargs):
+            try:
+                _reveal(self.page)
+            except Exception:
+                pass
+            return _locator_click(self, *args, **kwargs)
+
+        Page.wait_for_timeout = _wait
+        Page.click = _click
+        Locator.click = _loc_click
     except Exception:
-        # Some non-browser helper invocations may start Python without Playwright.
+        # Some helper invocations may start Python without Playwright installed.
         pass

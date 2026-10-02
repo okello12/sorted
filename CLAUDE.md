@@ -11,6 +11,7 @@ Rate: do people come back to the same case when a promise falls due?
 
 ## Rules that don't bend
 
+- **Sorted's assistant sends a case to Anthropic only when the person taps it.** The privacy notice says so. Never call the model from anywhere else, never log what is sent or returned.
 - **No person running the pilot reads case content.** Never select case content (`tasks.data`, `inbound_items.body`,
   `shares.card`) from the database. Counts, timestamps and definitions only. Only `send-reminders` and the retention
   jobs touch `tasks.data`, automatically. The privacy notice promises this.
@@ -67,6 +68,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `30_assistant.py` checks the assistant sends nothing until tapped, says what it sends, never changes the case on its own, and explains errors.
 - `29_escalation.py` checks the next formal step by sector and that it only shows once a case has gone round.
 - `28_case_tools.py` checks moving a message, hand-offs and your history with a company.
 - `27_pack.py` checks the adviser pack's sections, saved questions, copy, the downloaded file and print view.
@@ -101,14 +103,14 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 
 | Area | What's there |
 |---|---|
-| Edge functions | `send-reminders` v8 (every 10 minutes from pg_cron; claims each reminder before sending), `inbound-email` (off since v28), `email-stop` |
+| Edge functions | `case-assistant` v1 (Claude via the Anthropic API; key `anthropic_api_key` and optional `assistant_model` in Vault; 40 a day per person through `assistant_take`; checks the user itself, so verify_jwt is off; stores no case text), `send-reminders` v8 (every 10 minutes from pg_cron; claims each reminder before sending), `inbound-email` (off since v28), `email-stop` |
 | Step records | `pilot_events` (a fixed step name, IDs and a time) |
 | Metrics | `pilot_metrics()` and `pilot_health()`, admin only |
 | Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; email accounts with no cases 12 months without a sign-in (not pilot admins); carry tokens 1 day; step records 12 months |
 | Applied 2 Oct 2026 | `supabase/parked/04_reliability_v39.sql`: safe date parsing in retention, reminder claiming, reminder and case-size caps |
 | Applied 2 Oct 2026 | `supabase/parked/05_remaining_v41.sql`: helper invite log and stop list, forwarding addresses removed, narrower grants, faster policies, carry and idle-account clean-up |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
-| Parked changes | `supabase/parked/`, written but not applied |
+| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works |
 
 ## Where things are in the page code
 
@@ -142,4 +144,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Adviser pack and export (release 6) | `packData()`, `packText()`, `packView()`, `packLink()` (build65): summary, dates, what happened in order, what they say, what you say, evidence, your questions (`t.packQs`). Copy, download as a .txt made on the phone, or print (print CSS shows only `.pack-doc`). Works for every case |
 | Move a message, hand-offs, your history (build66) | `mvPanel()`, `ev-move`, `ev-move-to`, `ev-move-new`, `intakeQuiet()`; hand-offs `HO_RE`, `hoName()`, `hoRead()`, `hoIn()`, `hoCard()`, `hoLine()`, stored in `t.holder` and quoted by `callDefaults()`; `memWith()`, `memBlock()` from your own cases on the phone only |
 | Escalation route (build67) | `XR` table and `XR_CHECKED`: energy, telecoms (6 weeks since Ofcom's change), finance, social housing, letting agents, private landlords, councils, water (CCW only; the next water scheme is in flux), Royal Mail, DWP, HMRC, shops and couriers. `xrFor()` picks the sector, `xrRound()` decides it has gone round, `xrBlock()` shows "If they still don't sort it" folded. Recheck every link and rule before changing `XR_CHECKED` |
+| Sorted's assistant (build68) | `aiContext()` (the case, capped at 9,000 characters), `aiRun()` calls the `case-assistant` edge function only when tapped; `aiPanel()` (`aiexplain`, `aiask`), `aiImproveBox()` in the challenge builder, `aiIntro()` the first-time notice. Nothing in the case changes unless the person uses the text. Tests use `functions.invoke` in `tests/mock.js` (`__aiMode` for errors) |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

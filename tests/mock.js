@@ -44,6 +44,9 @@ window.supabase={createClient:function(){
       if(name==="email_reminders_ready")return Promise.resolve({data:localStorage.getItem("__emailReady")==="1",error:null});
       if(name==="delete_my_account"){DB={tasks:[],shares:[],reminders:[],helpers:[],inbound_items:[]};persist();return Promise.resolve({data:null,error:null})}
     },
+    functions:{invoke:function(name,o){window.__ai=(window.__ai||[]);window.__ai.push({name:name,body:o&&o.body});var mode=localStorage.getItem('__aiMode')||'ok';
+      if(mode!=='ok')return Promise.resolve({data:null,error:{context:{json:function(){return Promise.resolve({error:mode})}}}});
+      var b=o.body;return Promise.resolve({data:{text:b.task==='improve'?'Dear Southwark Council,\n\nImproved: '+b.text.split('\n')[2]:'[assistant '+b.task+'] It says: '+(b.text||b.question).slice(0,60)},error:null})}},
     auth:{
       getSession:function(){return Promise.resolve({data:{session:session}})},
       onAuthStateChange:function(fn){listeners.push(fn);return {data:{subscription:{unsubscribe(){}}}}},

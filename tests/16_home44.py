@@ -16,6 +16,7 @@ with sync_playwright() as p:
     pg.click('[data-a=example]'); wait(pg,450)
     ok(pg.locator('.home44').count()==1,'v44 home renders')
     ok(pg.locator('.home44-spot').count()==1,'one spotlight case is present')
+    ok(pg.locator('h1').count()==1,'v47: exactly one page heading on Home (%d)'%pg.locator('h1').count())
     spot=pg.inner_text('.home44-spot')
     ok('Washing machine' in spot and 'Did they come?' in spot,'spotlight explains the case and outcome question')
     ok(pg.locator('.home44-spot [data-a=home-ans]').count()==3,'spotlight exposes the three outcome actions')
@@ -25,6 +26,7 @@ with sync_playwright() as p:
     w=pg.inner_text('.home44-section')
     ok('Waiting' in w and 'British Gas' in w,'Waiting section names the held case')
     ok('You can put this down until' in pg.inner_text('main'),'Waiting state gives permission to stop thinking about it')
+    ok(pg.locator('h1').count()==1,'v47: still one page heading with a Waiting case')
     pg.screenshot(path=HERE+'/tests/out/home44.png',full_page=True)
     # Mobile enlargement must not force horizontal page scrolling.
     pg.evaluate("document.documentElement.style.fontSize='200%'"); wait(pg); d=pg.evaluate("({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})")

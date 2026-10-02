@@ -1,6 +1,6 @@
 # Sorted pilot
 
-This repository is the code behind **https://sorted-pilot.vercel.app** (release v43, 2 October 2026).
+This repository is the code behind **https://sorted-pilot.vercel.app** (release v47, 2 October 2026).
 Start with `CLAUDE.md` (how it's built, tested and deployed) and `docs/LATER.md` (parked work and why).
 The earlier Grok-built prototype is kept on the branch `grok-prototype`.
 
@@ -11,12 +11,12 @@ to it in order, and checks the result against a fingerprint so a wrong step fail
 `feat*.js` hold larger blocks of code that some layers insert. `h/*.bin` are the parts of an early hero image.
 
 ```
-node all.js          # runs build.js, build7.js … build43.js in order
-# → public/index.html, sha1 523d54d100a27dc509819e2f4197d6061e564b96 for v43
+node all.js          # runs build.js, build7.js … build47.js in order
+# → public/index.html, sha1 074b32a8b976ea666944d5bf258fa9a1a1d878fc for v47
 sh tests/run.sh      # builds, then runs every walkthrough test
 ```
 
-Vercel runs the same command (`node all.js`, output directory `public`). `public/art/` holds the illustrations and `public/fonts/` the lettering (Atkinson Hyperlegible, SIL Open Font License).
+Vercel runs the same command (`node all.js`, output directory `public`) on every push to `main`. `public/art/` holds the illustrations and `public/fonts/` the lettering (Atkinson Hyperlegible, SIL Open Font License).
 
 ## Backend (Supabase, London)
 

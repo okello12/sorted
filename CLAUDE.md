@@ -39,22 +39,18 @@ and test, then pin `EXPECT` to the new sha.
 
 ## How it is deployed
 
-Vercel project `sorted-pilot` (team my-data-vault) is **not** linked to Git. Pushing to GitHub does not deploy.
+Since 2 October 2026 the Vercel project `sorted-pilot` (team my-data-vault) **is linked to GitHub**: every push to `main`
+on okello12/sorted builds and deploys to production (sorted-pilot.vercel.app) automatically. Treat a push to `main` as a
+release. Build and run `sh tests/run.sh` before pushing, and pin `EXPECT` first.
 
-Deploys go through the Vercel API (`create_deployment`):
-- Files already uploaded are referenced by sha1 and size.
-- New layers go inline.
-- Settings: `buildCommand: node all.js`, `outputDirectory: public`, `framework: null`, `target: production`.
-
-Files a deploy needs: `all.js`, `build*.js`, `feat*.js`, `index.src.html`, `h/*.bin`, `public/art/*`, `public/fonts/*`, `vercel.json`,
-`package.json`. Tests, docs and `supabase/` are not deployed.
+Vercel runs `node all.js` with output directory `public` (settings in `vercel.json`). If any layer's fingerprint check
+fails, the build fails and production stays on the last good deploy.
 
 `vercel.json` holds the security headers, including the Content Security Policy. If the page starts loading anything
 from a new origin (a script, font, API or image host), add it to the CSP there and rerun `tests/13_csp.py`.
 
-If a layer's fingerprint check fails, the deploy fails rather than shipping something untested.
-
-After deploying, commit and push to both `live-pilot` and `main` on okello12/sorted.
+Work on a branch and merge to `main` when it's ready; keep `live-pilot` level with `main` after each release.
+The old manual route (Vercel API `create_deployment` with files by sha1) still works if Git deploys ever stop.
 
 ## How it is tested
 
@@ -114,5 +110,6 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Deleting one case | `case-del` action (build37) |
 | "Sorted can't see what needs sorting" | `caseSignal()`, `vagueBlock()` (build39) |
 | Accessibility pass after each render | `a11yPass()` (build37) |
+| Home: spotlight case, Waiting rows, Also open, Done | `viewHome()`, `home44Spot()`, `home44Row()`, `home44Section()` (build44 to build47; the old `viewHomeLegacy()` is unused) |
 | Share into Sorted (`/#new=<text>`, the Apple Shortcut) | `grabShared()` (build40); setup in `docs/SHARE_SHORTCUT.md` |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

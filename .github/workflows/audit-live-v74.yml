@@ -1,0 +1,104 @@
+name: Audit live v74
+on:
+  push:
+    branches: [audit-v74-20261002]
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and prepare
+        run: |
+          node all.js
+          (cd tests && npm ci --omit=optional --ignore-scripts --silent)
+          pip install playwright
+          python -m playwright install --with-deps chromium
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          node tests/make_reader.js
+      - name: Client secret scan
+        run: |
+          ! grep -Eiq 'SUPABASE_SERVICE_ROLE|service_role_key|sb_secret_[A-Za-z0-9_-]{8,}|sk_(live|test)_[A-Za-z0-9_-]{8,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY' public/index.html
+      - name: Exact production parity
+        run: |
+          curl --fail --retry 4 --retry-delay 2 -sS https://sorted-pilot.vercel.app/ -o /tmp/live.html
+          echo local=$(sha1sum public/index.html | awk '{print $1}')
+          echo live=$(sha1sum /tmp/live.html | awk '{print $1}')
+          test "$(sha1sum public/index.html | awk '{print $1}')" = "$(sha1sum /tmp/live.html | awk '{print $1}')"
+      - name: Live browser smoke
+        run: |
+          python3 - <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json
+          out=[]
+          with sync_playwright() as p:
+            b=p.chromium.launch()
+            for w,h,name,scheme in [(390,844,'mobile-light','light'),(390,844,'mobile-dark','dark'),(1440,1000,'desktop-light','light')]:
+              c=b.new_context(viewport={'width':w,'height':h},color_scheme=scheme)
+              pg=c.new_page(); pe=[]; ce=[]
+              pg.on('pageerror',lambda e,a=pe:a.append(str(e)))
+              pg.on('console',lambda m,a=ce:a.append(m.text) if m.type=='error' else None)
+              r=pg.goto('https://sorted-pilot.vercel.app/',wait_until='networkidle',timeout=60000)
+              dims=pg.evaluate('() => ({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,h:document.documentElement.scrollHeight})')
+              assert r and r.status==200,(name,r.status if r else None)
+              assert pg.locator('body').inner_text().strip(),name+' blank'
+              assert dims['sw']<=dims['cw']+2,(name,dims)
+              assert not pe,(name,pe)
+              pg.screenshot(path=f'audit-{name}.png',full_page=True)
+              out.append({'view':name,'dims':dims,'page_errors':pe,'console_errors':ce[:10]})
+              c.close()
+            b.close()
+          print(json.dumps(out,indent=2))
+          open('live-smoke.json','w').write(json.dumps(out,indent=2))
+          PY
+      - name: Diagnose first parking-date scenario
+        run: |
+          python3 - <<'PY'
+          import os,sys,datetime,json
+          sys.path.insert(0,'tests'); import dates
+          from playwright.sync_api import sync_playwright
+          HERE=os.path.abspath('.')
+          T0=datetime.date.today(); N=T0-datetime.timedelta(days=3)
+          text=("London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Vehicle Registration Mark: AB12 CDE "
+                "Date of contravention: %s Time: 10:14 Location: Lordship Lane SE22 Contravention code: 12 Parked without a permit. "
+                "The penalty charge is £130. If paid within 14 days of the date of this notice, the penalty charge is reduced by 50%% to £65." % N.strftime('%d/%m/%Y'))
+          with sync_playwright() as p:
+            b=p.chromium.launch(); c=b.new_context(viewport={'width':390,'height':844},timezone_id='Europe/London')
+            c.route('https://cdn.jsdelivr.net/**',lambda r:r.fulfill(path=HERE+'/tests/mock.js',content_type='application/javascript'))
+            c.route(lambda u:u.startswith('https://sorted.test/'),lambda r:r.fulfill(path=HERE+'/tests/out/index.html',content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+            pg=c.new_page(); pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); pg.wait_for_timeout(200); pg.click('[data-a=anon-start]'); pg.wait_for_timeout(350)
+            pg.goto('https://sorted.test/'); pg.wait_for_timeout(300)
+            if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); pg.wait_for_timeout(250)
+            pg.fill('#f-case',text); pg.click('form[data-f=case] button[type=submit]'); pg.wait_for_timeout(300)
+            if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); pg.wait_for_timeout(250)
+            if pg.locator('[data-a=vague-go]').count(): pg.click('[data-a=vague-go]'); pg.wait_for_timeout(250)
+            pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); pg.wait_for_timeout(400)
+            if pg.locator('[data-a=cf-yes]').count(): pg.click('[data-a=cf-yes]'); pg.wait_for_timeout(350)
+            card=pg.locator('.pk-card').inner_text() if pg.locator('.pk-card').count() else ''
+            db=pg.locator('.pk-dates').inner_text() if pg.locator('.pk-dates').count() else ''
+            tasks=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(x=>x.data)")
+            print('TODAY',T0.isoformat()); print('CARD\n'+card); print('DATES\n'+db); print('CF',json.dumps(tasks[-1].get('cf'),indent=2)); print('PK',json.dumps(tasks[-1].get('pk'),indent=2))
+            open('parking-diag.txt','w').write('TODAY '+T0.isoformat()+'\nCARD\n'+card+'\nDATES\n'+db+'\nCF '+json.dumps(tasks[-1].get('cf'),indent=2)+'\nPK '+json.dumps(tasks[-1].get('pk'),indent=2))
+            pg.screenshot(path='parking-diag.png',full_page=True); b.close()
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sorted-v74-live-audit
+          path: |
+            live-smoke.json
+            audit-mobile-light.png
+            audit-mobile-dark.png
+            audit-desktop-light.png
+            parking-diag.txt
+            parking-diag.png
+          if-no-files-found: warn

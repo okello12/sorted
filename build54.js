@@ -15,28 +15,14 @@ function home54Visual(count){
   return '<span class="home54-visual" aria-hidden="true"><span class="home54-folder"><i></i></span><span class="home54-clock"><i></i><b></b></span><span class="home54-count">'+count+'</span></span>';
 }
 function home44Row(t,kind){`);
-
-// Spotlight and rows use the cleaned display title, while the stored title remains untouched.
 R(`id="home44-spot-title">'+esc(t.title)+'</h2>`,`id="home44-spot-title">'+esc(home54Title(t))+'</h2>`);
 R(`home44-row-title">'+esc(t.title)+'</span>`,`home44-row-title">'+esc(home54Title(t))+'</span>`);
-
-// Secondary active rows do not all need the same "Your move" pill. Keep pills for meaningful distinct states.
 R(`  else badge=s==="upcoming"?"Later":"Your move";`,`  else badge=s==="upcoming"?"Later":"";`);
 R(`'+(note?'<span class="home44-row-note">'+esc(note)+'</span>':'')+'</span><span class="home44-pill">'+esc(badge)+'</span><span class="home44-chevron"`, `'+(note?'<span class="home44-row-note">'+esc(note)+'</span>':'')+'</span>'+(badge?'<span class="home44-pill">'+esc(badge)+'</span>':'<span></span>')+'<span class="home44-chevron"`);
-
-// Give sections their state as a class so Waiting/Done can have their own quiet visual language.
 R(`return '<section class="home44-section"><div class="home44-section-head">`, `return '<section class="home44-section '+kind+'"><div class="home44-section-head">`);
-
-// "Also open" already explains itself. Remove the redundant explanatory line.
 R(`home44Section("Also open",needs.slice(1),"needs","The rest of your open cases.")`,`home44Section("Also open",needs.slice(1),"needs","")`);
-
-// Replace the plain count circle with a small folder/clock object inspired by the visual concepts.
 R(`</div><span class="home44-orb" aria-hidden="true">'+needs.length+'</span></section>`, `</div>'+home54Visual(needs.length)+'</section>`);
-
-// New-case entry stays easy to find without competing with the active case.
 R(`'<button class="btn primary block home44-new" data-a="compose">+ Sort something new</button>'`,`'<button class="btn block home44-new" data-a="compose">+ Sort something new</button>'`);
-
-// Styling and restrained motion. Motion is fully disabled for reduced-motion users.
 R(`</style>\n\n</head>`,String.raw`/* v54 visual polish */
 .home44{gap:23px}
 .home44-intro{align-items:center}
@@ -106,8 +92,7 @@ R(`</style>\n\n</head>`,String.raw`/* v54 visual polish */
 </style>
 
 </head>`);
-
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='3e58d6591727a785cdd28487657f6d3f6bff7ca1';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v54 ok',h(s),s.length);

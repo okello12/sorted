@@ -32,6 +32,15 @@ jobs:
           mkdir -p tests/out
           sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
           node tests/make_reader.js
+      - name: Inspect case control renderers
+        run: |
+          node <<'NODE'
+          const fs=require('fs'); const s=fs.readFileSync('public/index.html','utf8');
+          for (const q of ['data-p="paste"','case56-sharing','case56Evidence','case75Secondary']) {
+            let i=s.indexOf(q); console.log('\n===== '+q+' @ '+i+' =====');
+            console.log(i<0?'NOT FOUND':s.slice(Math.max(0,i-900),i+1600));
+          }
+          NODE
       - name: Run remaining walkthroughs with full tracebacks
         env:
           TZ: Europe/London

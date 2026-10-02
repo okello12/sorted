@@ -21,7 +21,7 @@ around the due date. Most items below should wait for that result.
 | 1 | Replies come back into the case | Database change written, not applied | Approval to apply it, then about a day of work |
 | 2 | Forwarding emails to a personal Sorted address | Switched off since v28; addresses removed 2 Oct 2026 | A check that the forwarder really is the account owner, or drop it in favour of item 1 |
 | 3 | WhatsApp | Not started | Baldwin: Meta business account, verification, a number, running costs |
-| 4 | Share into Sorted from other apps | Not started | Accounts with email for everyone first (see below) |
+| 4 | Share into Sorted from other apps | iPhone done in v40 (Apple Shortcut); Android not started | Android needs an installed app or a manifest (see below) |
 | 5 | Share a case with roles | Database change written, not applied | Accept flow and notice text, after the pilot |
 | 6 | The other party replies inside Sorted | Not started | Proof the consumer side works |
 | 7 | Promise data and a public scoreboard | Not started | Enough real cases, a privacy decision, legal review |
@@ -29,6 +29,11 @@ around the due date. Most items below should wait for that result.
 | 9 | Sorted for advisers | Not started | Proof the consumer side works |
 | 10 | Charging per case | Not started | Pilot pass, own name and domain, terms, checkout |
 | 11 | Name clearance and own domain | Not started | A UK trade mark search by an attorney (SORTED is crowded) |
+| 12 | Escalation route | Not started | Pilot result; wording reviewed so it never reads as legal advice |
+| 13 | Organisation memory | Not started | Item 7's privacy decision; enough real cases |
+| 14 | Family and helper view | Not started | Item 5 (roles), then design |
+| 15 | Evidence timeline | Partly there (screenshots, PDFs and messages already land in the case) | Pilot result; storage and retention decision for files |
+| 16 | "Passed between companies" | Not started | Pilot result |
 
 ## 1. Replies come back into the case
 
@@ -159,6 +164,65 @@ SORTED is a crowded name:
 Get a UK trade mark search by an attorney before spending on brand. getsorted.uk was registered earlier. Move off
 sorted-pilot.vercel.app before charging anyone.
 
+## 12. Escalation route
+
+**Goal.** When a case has gone round more than once, Sorted shows the next formal step, as information, not advice:
+"You've chased them twice and the date has passed. Most companies have a formal complaints process. After 8 weeks, or
+a final response, you can usually go to the Ombudsman for that sector."
+
+**Design.**
+- Triggered by facts Sorted already holds: number of missed promises, chases sent, weeks since the first contact.
+- A small fixed table of sectors and their routes (energy, telecoms, financial services, housing, councils), with the
+  official link and the waiting period, written and dated by a person. No generated legal text.
+- The step is offered, never pushed. "Keep chasing" stays the default.
+- Say what Sorted doesn't know, the pattern from the benefits and housing notes.
+
+**Needs.** The sector table checked against each Ombudsman's own pages, a review date on it, and wording that can't be
+read as legal advice.
+
+## 13. Organisation memory
+
+**Goal.** Practical knowledge about a company, learned across cases: the channel that worked, the department, what
+their reference numbers look like. "People reached British Gas fastest through webchat."
+
+**Design.**
+- Only from the fixed company list (`PARTIES`), never free text. Only counts and categories, never case content.
+- Shown as a hint inside a case, with how many cases it's based on and a minimum sample before anything shows.
+- The person's own past cases with that company come first ("Last time you used reference BG-…").
+
+**Needs.** The same privacy decision as item 7, because it pools behaviour across users. Notice changes first.
+
+## 14. Family and helper view
+
+**Goal.** Manage a problem for someone else, such as a parent, together:
+"Mum's boiler · British Gas said Friday 8–12 · Baldwin contacted them · Nothing needs either of you until Friday 12:00."
+
+**Design.** Builds on item 5 (roles). One case shared with named people, each sees who did what last, and Sorted's one
+next step is the same for everyone. Still one case at a time: "share this problem, not your whole life".
+
+**Needs.** Item 5's accept flow, consent from the person the case is about, and notice text about acting for someone.
+
+## 15. Evidence timeline
+
+**Goal.** Everything that proves what happened, in order, with where each fact came from: "From their message (photo
+of the letter)", "You wrote", "Sorted read this date". Exportable as one page for a complaint or the Ombudsman.
+
+**Already there.** Case history, "In your words", screenshots and PDFs read on the phone, pasted messages, the recap.
+
+**Still to do.** Keep the original files (today only the text is kept, and only up to 300 characters), mark each
+line's source, and an export page. Storing files is a real privacy and cost step: decide retention, size limits and
+where files live before building.
+
+## 16. "Passed between companies"
+
+**Goal.** When responsibility moves (retailer → courier → manufacturer, landlord → agent → contractor), the case shows
+who has it now and who said it was someone else's job: "Currys said it's DPD's problem (Tue 3 Oct)."
+
+**Design.** A promise or note can name a hand-off. The case title follows the current holder, and the chase quotes the
+hand-off ("You told me on 3 October that DPD were responsible"). Uses the existing party detection.
+
+**Needs.** Pilot evidence that hand-offs are common enough to justify it.
+
 ## Backend fixes from the v37 audit (all applied 2 October 2026)
 
 `supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered three times and cancelled at
@@ -218,8 +282,8 @@ Keep these out of the pilot's examples; revisit only with a DPIA and notice chan
 
 **Out of scope (unchanged).** Groceries, habits, calendar events, medication reminders, birthdays, generic to-dos.
 
-**Ideas that build on what exists:** escalation route (needs care: no legal advice), "organisation memory" for the
-right channel per company, family/helper view (item 5), evidence timeline (screenshots and PDFs already land in the case).
+**Ideas that build on what exists:** items 12 to 16 above (escalation route, organisation memory, family and helper
+view, evidence timeline, passed between companies).
 
 ## Lessons from Things 3 (looked at 2 October 2026)
 

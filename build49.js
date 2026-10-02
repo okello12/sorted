@@ -108,6 +108,6 @@ R(`</style>\n\n</head>`,String.raw`/* v49 visual polish */
 </head>`);
 
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='e5bb671872c22e3d072b03ceb9d91be85d215ee1';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v49 ok',h(s),s.length);

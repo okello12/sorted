@@ -58,7 +58,7 @@ with sync_playwright() as p:
     ok(not groups.nth(0).get_attribute('open') and not groups.nth(1).get_attribute('open'),'both secondary groups start collapsed')
 
     # A confirmed promise stays above the email setup prompt.
-    open_said=pg.evaluate("openPromise(task(S.view.id)).said")
+    t=task0(pg); open_said=next(q['said'] for q in t.get('promises',[]) if q.get('status')=='open')
     pg.evaluate("S.view.panel='claim';render()") ; wait(pg,200)
     claim=pg.locator('#claim'); promise_text=pg.get_by_text(open_said,exact=True).first
     ok(claim.count()==1 and promise_text.count()==1,'claim screen still shows the promise being held')
@@ -67,7 +67,7 @@ with sync_playwright() as p:
     ok('Add email reminders?' in claim.inner_text() and 'promise is already saved' in claim.inner_text().lower(),'email prompt is clearly optional after the promise is saved')
 
     # An incoming reply keeps the old promise in view and does not hide the rest of the case.
-    pg.evaluate("""()=>{var t=task(S.view.id);S.view.panel=null;S.cxAt=S.cxAt||{};S.cxAt[t.id]=Date.now();S.caseMail={};S.caseMail[t.id]=[{id:'mail-1',subject:'Refund update',body:'We have looked at your refund and will write again.',received_at:new Date().toISOString(),from_domain:'currys.co.uk'}];render()}""") ; wait(pg,200)
+    pg.evaluate("""()=>{var t=S.tasks.find(x=>x.id===S.view.id);S.view.panel=null;S.cxAt=S.cxAt||{};S.cxAt[t.id]=Date.now();S.caseMail={};S.caseMail[t.id]=[{id:'mail-1',subject:'Refund update',body:'We have looked at your refund and will write again.',received_at:new Date().toISOString(),from_domain:'currys.co.uk'}];render()}""") ; wait(pg,200)
     ok(pg.locator('.cm-card .case75-promise-context').count()==1,'reply card includes what Sorted was already holding')
     if pg.locator('.cm-card .case75-promise-context').count():
         ok(open_said in pg.inner_text('.cm-card .case75-promise-context'),'reply can be judged against the earlier promise')

@@ -20,6 +20,6 @@ R('</style>\n\n</head>',String.raw`/* v81: two extra expressive cues */
 
 </head>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='0000000000000000000000000000000000000000';
+const EXPECT='30189ca2f049dc4b2a509fbbb19f1386d5f310c4';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v81 ok',h(s),s.length);

@@ -282,7 +282,8 @@ engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), i
 4. ~~Challenge builder~~ Done in v63: tick what's true (with your own words), a draft from that and confirmed facts
    only, "Uses 6 confirmed details and 2 things you told Sorted", a completeness check, copy, and the exact text kept
    when you say you've sent it.
-5. Response reader: a reply compared with the case so far, "what changed", and the next stage.
+5. ~~Response reader~~ Done in v64: a reply is read for what kind of decision it is, their reasons, what it skips
+   from your challenge and evidence, and a re-offered reduced price; proposed, then confirmed, then the stage moves.
 6. Adviser pack: summary, chronology, deadlines, evidence and questions, as one page to copy or download.
 AI is for extraction, classification, explanation and drafting only, and waits for item 18's privacy decision.
 Releases 1 to 4 work on the phone without it.

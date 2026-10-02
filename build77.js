@@ -6,6 +6,6 @@ function R(a,b,n){n=n||1;const k=s.split(a).length-1;if(k!==n)throw new Error('m
 // A person can add a message, use sharing, or reach the record without abandoning the live step.
 R('  if(!S.view.panel)h+=case75Secondary(t,s);','  h+=case75Secondary(t,s);');
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='d94a96a3ccd9bbc8de25f9e451ceaf27c68e0ca6';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v77 ok',h(s),s.length);

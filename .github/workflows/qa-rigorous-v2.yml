@@ -20,8 +20,11 @@ jobs:
         run: |
           pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Build exact current app
-        run: node all.js >/dev/null
+      - name: Build exact current app and mocked browser copy
+        run: |
+          node all.js >/dev/null
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
       - name: Run isolated semantic fuzzing
         run: python tests/17_semantic_isolated.py
       - name: Run volume, state and share stress

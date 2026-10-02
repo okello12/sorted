@@ -1,0 +1,21 @@
+name: v88 fingerprint probe
+on:
+  push:
+    branches: [resolution-flywheel-v82]
+jobs:
+  hash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build and probe v88
+        run: |
+          node all.js
+          node <<'NODE'
+          const fs=require('fs'),cp=require('child_process');
+          let s=fs.readFileSync('build88.js','utf8').replace("const EXPECT='0000000000000000000000000000000000000000';","const EXPECT='';");
+          fs.writeFileSync('.v88.js',s);cp.execSync('node .v88.js',{stdio:'inherit'});fs.unlinkSync('.v88.js');
+          NODE
+          sha1sum public/index.html

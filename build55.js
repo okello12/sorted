@@ -29,9 +29,6 @@ R(`    h+='<p class="home44-question">'+esc(q[0])+'</p>';`,`    var hq=home55Que
 // Keep the time easy to scan and move the reference onto its own quieter line.
 R(`    h+='<p class="home44-meta">'+esc(who)+' · '+esc(whenText(p))+(p.ref?' · Ref '+esc(p.ref):'')+'</p>';`,`    h+='<div class="home55-meta"><p class="home55-meta-main">'+esc(who)+' · '+esc(whenText(p))+'</p>'+(p.ref?'<p class="home55-ref">Ref '+esc(p.ref)+'</p>':'')+'</div>';`);
 
-// The headline already carries the count. Keep the graphic decorative rather than saying the number twice.
-R(`'<span class="home54-count">'+count+'</span></span>'`,`'<span class="home55-spark"></span></span>'`);
-
 R(`</style>\n\n</head>`,String.raw`/* v55 spotlight refinement */
 .home44-spot{padding:14px 16px;gap:10px;box-shadow:0 8px 20px rgba(20,23,38,.06)}
 .home44-spot-top{padding-left:3px}
@@ -41,16 +38,14 @@ R(`</style>\n\n</head>`,String.raw`/* v55 spotlight refinement */
 .home55-meta{padding-left:3px;display:flex;flex-direction:column;gap:2px;color:var(--ink-2)}
 .home55-meta-main{font-family:inherit;font-size:15px;line-height:1.35;letter-spacing:0;overflow-wrap:anywhere}
 .home55-ref{font-family:var(--mono);font-size:13px;line-height:1.3;color:var(--ink-2);opacity:.82}
-.home55-spark{position:absolute;right:3px;bottom:3px;width:12px;height:12px;border-radius:50%;background:var(--lav);border:2px solid var(--sheet);box-shadow:0 4px 10px rgba(0,0,0,.12)}
-.home55-spark:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--lav) 42%,transparent);border-radius:50%}
+/* The headline already says the number. Turn the graphic badge into a simple decorative dot. */
+.home54-count{min-width:12px;width:12px;height:12px;padding:0;font-size:0;border-width:2px;right:3px;bottom:3px}
+.home54-count:after{content:"";position:absolute;inset:-5px;border:1px solid color-mix(in srgb,var(--lav) 42%,transparent);border-radius:50%}
 @media (max-width:520px){
   .home44-spot{padding:13px 14px;gap:9px}
   .home55-meta-main{font-size:14px}
   .home55-ref{font-size:12px}
 }
-@media (prefers-reduced-motion:no-preference){.home55-spark{animation:home55Spark .7s ease .25s both}}
-@media (prefers-reduced-motion:reduce){.home55-spark{animation:none!important}}
-@keyframes home55Spark{0%{transform:scale(.65);opacity:.35}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
 </style>
 
 </head>`);

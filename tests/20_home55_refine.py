@@ -14,8 +14,9 @@ with sync_playwright() as p:
     pg.click('[data-a=example]'); wait(pg,450)
 
     ok(pg.locator('.home44-state').count()==0,'spotlight does not repeat Your move')
-    ok(pg.locator('.home54-count').count()==0,'header graphic does not repeat the headline count')
-    ok(pg.locator('.home55-spark').count()==1,'graphic keeps a decorative accent without a second number')
+    badge=pg.locator('.home54-count')
+    ok(badge.count()==1,'header graphic keeps its decorative badge element')
+    ok(pg.evaluate("getComputedStyle(document.querySelector('.home54-count')).fontSize")=='0px','header graphic no longer repeats the numeric count')
     ok(pg.locator('.home55-meta-main').count()==1,'spotlight metadata uses the softer split layout')
     spot_h=pg.locator('.home44-spot').bounding_box()['height']
     ok(spot_h < 470,'spotlight stays compact on a 390px phone viewport: %.1fpx'%spot_h)

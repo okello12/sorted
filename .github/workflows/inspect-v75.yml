@@ -37,9 +37,12 @@ jobs:
           TZ: Europe/London
           PYTHONPATH: ${{ github.workspace }}/tests
         run: |
+          status=0
           for t in 01_basics.py 09_paste_wins.py 18_intake.py 22_case_facts.py 26_response.py 28_case_tools.py 37_ui_consolidation.py; do
             echo "===== $t ====="
-            python3 "tests/$t"
+            python3 "tests/$t" || status=1
           done
+          exit $status
       - name: Show generated fingerprint
+        if: always()
         run: sha1sum public/index.html

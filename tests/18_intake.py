@@ -82,5 +82,18 @@ with sync_playwright() as p:
     t = case(pg, T)
     ok(any(l.startswith('Added a message shared from another app: “Currys') for l in labels(t)), 'shared message: kept, and says it was shared')
     ok(all(len(l) < 260 for l in labels(t)), 'evidence lines are kept short')
+    # v52: "What they sent" on the case page
+    if pg.locator('[data-a=sug-no]').count(): pg.click('[data-a=sug-no]'); wait(pg)
+    ok(pg.locator('.evidence').count() == 1, 'v52: the case shows What they sent')
+    items = pg.locator('.evidence > .ev-list > .ev-item')
+    ok(items.count() == 3 and 'Show 2 more' in pg.inner_text('.ev-more summary'), 'v52: newest three shown, the rest folded (%d)' % items.count())
+    first = items.nth(0).inner_text().lower()
+    ok('shared' in first and 'delayed' in first, 'v52: newest first, labelled Shared')
+    srcs = [x.strip().lower() for x in pg.locator('.evidence .ev-src').all_text_contents()]
+    ok(srcs == ['shared', 'message', 'screenshot', 'message', 'message'], 'v52: each says where it came from: %s' % srcs)
+    n = pg.evaluate("document.querySelector('main').textContent.split('passed this to our refunds team').length-1")
+    ok(n == 1, 'v52: the history points to the block instead of repeating the message (%d)' % n)
+    ok('It’s under What they sent' in pg.inner_text('main'), 'v52: history line says where to find it')
+    pg.locator('.evidence').scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/evidence.png')
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

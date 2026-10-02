@@ -105,7 +105,8 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Reading the first sentence: company, reference, item, how long | `caseFacts()` and `PARTIES`, `BENEFITS`, `ITEMS` (build30 to build32) |
 | Promise from a sentence | `suggestPromise()` (build33, rules tightened in build39, build43, build49 and build50: `PNEG`, `PTENT`, `PTMSG`, `PINFO`, `PIMP`, `PSAIDDO`, `PDAY`, `PCHG`, `pWhenOk`, `pTwo`, `pNamed`, `pChanged`, `pNorm`) |
 | Which reader the start box uses | `readCase()` (build50): one function for typed sentences, pasted messages and short notifications |
-| Bringing something into an existing case | `intakeRead()` and `evidence()` (build51): the paste panel and "Add to that case" both use them; the history line says where it came from (a screenshot, a PDF, shared from another app) | |
+| Bringing something into an existing case | `intakeRead()` and `evidence()` (build51): the paste panel and "Add to that case" both use them; the history line says where it came from (a screenshot, a PDF, shared from another app) |
+| "What they sent" on a case | `evidenceBlock()`, `evidenceOf()`, `EVRE` (build52): read from the history lines, newest first, three shown | |
 | Promise from a pasted message | `sugFromMessage()` (build34) |
 | The card | `sugCard()` and the `sug-yes`, `sug-edit` and `sug-no` actions |
 | Screenshots and photos | `readPicture()` and `readImage()` (Tesseract, on the phone) |

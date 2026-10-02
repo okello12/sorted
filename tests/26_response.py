@@ -10,7 +10,7 @@ def ok(c, m):
 def wait(pg, ms=350): pg.wait_for_timeout(ms)
 T0 = datetime.date.today()
 def uk(n): return (T0 + datetime.timedelta(days=n)).strftime('%d/%m/%Y')
-def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%a, %-d %b') if x.year == T0.year else x.strftime('%a, %-d %b %Y')
+def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%a %-d %b') if x.year == T0.year else x.strftime('%a %-d %b %Y')
 def tasks(pg): return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(y=>y.data)")
 def case(pg, title): return next((x for x in tasks(pg) if x['title'] == title), None)
 def start(pg, text):

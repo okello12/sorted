@@ -37,6 +37,6 @@ input[type=text],input[type=date],input[type=time],textarea{border-radius:14px;b
 
 </head>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='0000000000000000000000000000000000000000';
+const EXPECT='2f9e23afaa0140af6f07439a8fb014871ea4b2ba';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v79 ok',h(s),s.length);

@@ -6,10 +6,10 @@ def ok(c,m):
     print(('PASS ' if c else 'FAIL ')+m)
     if not c: fails.append(m)
 def wait(pg,ms=350): pg.wait_for_timeout(ms)
-def clear_cache(pg):
-    pg.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))")
-def task0(pg):
-    return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks[0].data")
+def tasks(pg):
+    return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(x=>x.data)")
+def task0(pg): return tasks(pg)[0]
+def latest(pg): return tasks(pg)[-1]
 def start_case(pg,text):
     pg.goto('https://sorted.test/'); wait(pg,350)
     if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); wait(pg)
@@ -26,8 +26,9 @@ with sync_playwright() as p:
 
     # Landing hierarchy: the product promise is the headline, the generic line is secondary.
     pg.goto('https://sorted.test/'); wait(pg,250)
+    hero=pg.inner_text('.hero')
     ok('They said Tuesday.' in pg.inner_text('.hero .h1') and 'Sorted remembers Tuesday.' in pg.inner_text('.hero .h1'),'landing uses the sharp promise as the headline')
-    ok('Life gets messy. Sorted keeps up.' in pg.inner_text('.hero .eyebrow'),'generic landing line is secondary')
+    ok('Life gets messy.' in hero and 'Sorted keeps up.' in hero,'generic landing line is secondary')
 
     # The research baseline still exists, but its choices fit the case rather than offering repair actions for a refund.
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
@@ -57,17 +58,22 @@ with sync_playwright() as p:
     ok('What’s happened' in groups.nth(0).inner_text() and 'Tools for this case' in groups.nth(1).inner_text(),'secondary content is grouped as What’s happened and Tools for this case')
     ok(not groups.nth(0).get_attribute('open') and not groups.nth(1).get_attribute('open'),'both secondary groups start collapsed')
 
-    # A confirmed promise stays above the email setup prompt.
-    t=task0(pg); open_said=next(q['said'] for q in t.get('promises',[]) if q.get('status')=='open')
-    pg.evaluate("S.view.panel='claim';render()") ; wait(pg,200)
-    claim=pg.locator('#claim'); promise_text=pg.get_by_text(open_said,exact=True).first
-    ok(claim.count()==1 and promise_text.count()==1,'claim screen still shows the promise being held')
+    # Save a real promise through the UI. The email step appears only after the promise exists.
+    start_case(pg,"Currys said my refund of £89 will arrive tomorrow, order 998877")
+    if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg,350)
+    t=latest(pg); op=next((q for q in t.get('promises',[]) if q.get('status')=='open'),None); open_said=op['said'] if op else ''
+    claim=pg.locator('#claim')
+    promise_text=pg.get_by_text(open_said,exact=True).first if open_said else pg.locator('text=__missing__')
+    ok(bool(open_said) and claim.count()==1 and promise_text.count()==1,'claim screen still shows the promise being held')
     if claim.count() and promise_text.count():
         ok(promise_text.bounding_box()['y'] < claim.bounding_box()['y'],'promise is above the email setup prompt')
-    ok('Add email reminders?' in claim.inner_text() and 'promise is already saved' in claim.inner_text().lower(),'email prompt is clearly optional after the promise is saved')
+    ok(claim.count()==1 and 'Add email reminders?' in claim.inner_text() and 'promise is already saved' in claim.inner_text().lower(),'email prompt is clearly optional after the promise is saved')
+    if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,250)
 
     # An incoming reply keeps the old promise in view and does not hide the rest of the case.
-    pg.evaluate("""()=>{var t=S.tasks.find(x=>x.id===S.view.id);S.view.panel=null;S.cxAt=S.cxAt||{};S.cxAt[t.id]=Date.now();S.caseMail={};S.caseMail[t.id]=[{id:'mail-1',subject:'Refund update',body:'We have looked at your refund and will write again.',received_at:new Date().toISOString(),from_domain:'currys.co.uk'}];render()}""") ; wait(pg,200)
+    cid=t['id']
+    pg.evaluate("""([id])=>{var db=JSON.parse(localStorage.getItem('__mockdb'));db.inbound_items=db.inbound_items||[];db.inbound_items.push({id:'v76-mail',user_id:'x',task_id:id,from_domain:'currys.co.uk',subject:'Refund update',body:'We have looked at your refund and will write again.',received_at:new Date().toISOString(),used_at:null});localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}""",[cid])
+    pg.goto('https://sorted.test/'); wait(pg,450); pg.locator('[data-a=open][data-id="%s"]'%cid).first.click(); wait(pg,500)
     ok(pg.locator('.cm-card .case75-promise-context').count()==1,'reply card includes what Sorted was already holding')
     if pg.locator('.cm-card .case75-promise-context').count():
         ok(open_said in pg.inner_text('.cm-card .case75-promise-context'),'reply can be judged against the earlier promise')

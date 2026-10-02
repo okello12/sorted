@@ -1,0 +1,37 @@
+name: QA v58 debug
+on:
+  push:
+    branches: [case-detail-redesign-v58]
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build
+        run: node all.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Prepare test page
+        run: |
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          node tests/make_reader.js
+      - name: Test 12 audit fixes
+        continue-on-error: true
+        run: python3 tests/12_audit_fixes.py
+      - name: Test 18 intake
+        continue-on-error: true
+        run: python3 tests/18_intake.py
+      - name: Test 21 case detail
+        continue-on-error: true
+        run: python3 tests/21_case_detail56.py

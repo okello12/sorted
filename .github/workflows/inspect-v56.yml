@@ -1,0 +1,34 @@
+name: Inspect v56 case detail
+on:
+  push:
+    branches: [case-detail-redesign-v56]
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build current app
+        run: node all.js
+      - name: Print case-detail implementation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('public/index.html').read_text()
+          for marker, before, after in [
+            ('function viewTask()',0,18000),
+            ("What's happened so far",3500,5000),
+            ('Email reminders are on',3000,4000),
+            ('Copy the helper link again',2500,4500),
+            ('Use the official page',2500,5000),
+            ('function calBlock(t)',0,4500),
+            ('function renewDone',0,6500),
+          ]:
+            i=s.find(marker)
+            print('\n\n===== MARKER:',marker,'INDEX',i,'=====')
+            if i>=0: print(s[max(0,i-before):i+after])
+          PY

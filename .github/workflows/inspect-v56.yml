@@ -12,8 +12,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build v56
+      - name: Build current branch
         run: node all.js
-      - name: Find case-detail test dependencies
+      - name: Print move model and handler
         run: |
-          grep -R -n -E "data-a=(share|unshare|cal|gcal|email-on|email-off|helper|move-done|move-rebook|move-drop)|What.s happened so far|Copy the helper link|Email reminders|Open the official page|It.s renewed|I.ve applied" tests || true
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('public/index.html').read_text()
+          for marker,before,after in [('function openMove',0,1800),('function moveForm',0,6500),('case "move-done"',1200,3500),('case "move-rebook"',800,2500)]:
+            i=s.find(marker)
+            print('\n===== ',marker,' ',i,' =====')
+            if i>=0: print(s[max(0,i-before):i+after])
+          PY

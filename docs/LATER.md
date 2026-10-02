@@ -19,7 +19,7 @@ around the due date. Most items below should wait for that result.
 | # | Item | Status | Blocked on |
 |---|---|---|---|
 | 1 | Replies come back into the case | Database change written, not applied | Approval to apply it, then about a day of work |
-| 2 | Forwarding emails to a personal Sorted address | Built, switched off since v28 | A check that the forwarder really is the account owner, or drop it in favour of item 1 |
+| 2 | Forwarding emails to a personal Sorted address | Switched off since v28; addresses removed 2 Oct 2026 | A check that the forwarder really is the account owner, or drop it in favour of item 1 |
 | 3 | WhatsApp | Not started | Baldwin: Meta business account, verification, a number, running costs |
 | 4 | Share into Sorted from other apps | Not started | Accounts with email for everyone first (see below) |
 | 5 | Share a case with roles | Database change written, not applied | Accept flow and notice text, after the pilot |
@@ -159,14 +159,15 @@ SORTED is a crowded name:
 Get a UK trade mark search by an attorney before spending on brand. getsorted.uk was registered earlier. Move off
 sorted-pilot.vercel.app before charging anyone.
 
-## Backend fixes waiting for approval (v37 audit)
+## Backend fixes from the v37 audit (all applied 2 October 2026)
 
 `supabase/parked/03_audit_fixes_v37.sql` is the database half of the v37 audit. It was offered three times and cancelled at
 approval each time, so it has **not** been applied.
 
 On 2 October Baldwin chose the reliability part and ran `supabase/parked/04_reliability_v39.sql` himself in the SQL
 editor. `send-reminders` v8 (claims reminders and helper invites before sending) went live straight after.
-Still waiting: helper protections, the tidy-ups (forwarding addresses, grants, indexes, policies) and idle-account deletion. Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
+The rest (helper protections, tidy-ups, idle-account deletion) followed the same night as `05_remaining_v41.sql`,
+after release v41 put the two new rules in the privacy notice. **The whole audit is now applied.** Nothing in v37's page depends on it. Apply it only with Baldwin's go-ahead.
 
 What it does:
 - **Helper emails.** A log and a suppression list, so one case can't be used to email a stranger repeatedly, and

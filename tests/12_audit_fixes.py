@@ -85,4 +85,5 @@ ok('fonts.googleapis' not in PAGE and 'fonts.gstatic' not in PAGE and 'Google Fo
 ok(all(os.path.exists(HERE+'/public'+u) for u in re.findall(r'url\((/fonts/[^)]+)\)',PAGE)) and PAGE.count('@font-face')==5,'every self-hosted font file exists')
 ok('src:sp.fromMsg&&!sp.typed?"message":"sentence"' in PAGE,'step record says where a confirmed suggestion came from')
 ok('scrambled, one-way copy' in PAGE and '12 months without a sign-in' in PAGE,'v41: notice covers the stop list and idle accounts')
+ok('S.inboundAddr=null;S.inbox=[];return;' in PAGE,'v42: the page no longer asks for a forwarding address')
 print('ERRORS',errs); print('FAILS',fails)

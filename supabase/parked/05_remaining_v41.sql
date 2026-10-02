@@ -1,5 +1,5 @@
 -- The rest of the v37 audit (2 October 2026): helper protections, tidy-ups and idle-account deletion.
--- Chosen by Baldwin; paste into the Supabase SQL editor (project boxrwcuhxmimayaxzywu) and run as one script.
+-- APPLIED: run by Baldwin in the Supabase SQL editor on 2 October 2026.
 -- Release v41 already tells people about the stop list and idle-account deletion, so the notice is not behind this.
 -- Safe to run more than once. It reads no case content. It deletes the 9 unused forwarding addresses (forwarding has
 -- been off since v28) and schedules two clean-up jobs.

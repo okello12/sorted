@@ -1,6 +1,6 @@
 # Sorted pilot
 
-This repository is the code behind **https://sorted-pilot.vercel.app** (release v40, 2 October 2026).
+This repository is the code behind **https://sorted-pilot.vercel.app** (release v42, 2 October 2026).
 Start with `CLAUDE.md` (how it's built, tested and deployed) and `docs/LATER.md` (parked work and why).
 The earlier Grok-built prototype is kept on the branch `grok-prototype`.
 
@@ -11,8 +11,8 @@ to it in order, and checks the result against a fingerprint so a wrong step fail
 `feat*.js` hold larger blocks of code that some layers insert. `h/*.bin` are the parts of an early hero image.
 
 ```
-node all.js          # runs build.js, build7.js … build40.js in order
-# → public/index.html, sha1 15278abd8a8431350f97cb8ddfec2231d60c7904 for v40
+node all.js          # runs build.js, build7.js … build42.js in order
+# → public/index.html, sha1 69d86b6da5c1ed43d34d729424c9ce2be73a0480 for v42
 sh tests/run.sh      # builds, then runs every walkthrough test
 ```
 
@@ -23,7 +23,7 @@ Vercel runs the same command (`node all.js`, output directory `public`). `public
 - `supabase/schema_snapshot.sql`: tables, access rules, functions and scheduled jobs, copied from the live
   project on 1 October 2026, with grants, constraints, indexes and policies. Structure only. No rows and no secrets.
 - `supabase/functions/`: the three edge functions as deployed: `send-reminders` (runs every 10 minutes),
-  `inbound-email` (Resend webhook for forwarded emails, switched off since v28) and `email-stop` (one-click unsubscribe).
+  `inbound-email` (Resend webhook for forwarded emails, switched off since v28; forwarding addresses removed 2 October 2026) and `email-stop` (one-click unsubscribe).
 
 `supabase/parked/` holds database changes that are written but not applied, including the backend
 half of the v37 audit (`03_audit_fixes_v37.sql`), which is waiting for approval.

@@ -1,4 +1,4 @@
--- Audit fixes, 1 October 2026 (release v37). NOT YET APPLIED: cancelled at the approval step on 1 Oct 2026. Apply when ready (see docs/LATER.md, "Backend fixes waiting for approval").
+-- Audit fixes, 1 October 2026 (release v37). ALL APPLIED on 2 October 2026, in two parts: 04_reliability_v39.sql and 05_remaining_v41.sql.
 
 -- 1. Helper invites: one log per invite (not per case), a lasting "they said stop", owner and email account required
 create table if not exists public.helper_invite_log(id bigserial primary key, user_id uuid not null references auth.users(id) on delete cascade, at timestamptz not null default now());

@@ -91,9 +91,9 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Edge functions | `send-reminders` v8 (every 10 minutes from pg_cron; claims each reminder before sending), `inbound-email` (off since v28), `email-stop` |
 | Step records | `pilot_events` (a fixed step name, IDs and a time) |
 | Metrics | `pilot_metrics()` and `pilot_health()`, admin only |
-| Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; step records 12 months |
+| Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; email accounts with no cases 12 months without a sign-in (not pilot admins); carry tokens 1 day; step records 12 months |
 | Applied 2 Oct 2026 | `supabase/parked/04_reliability_v39.sql`: safe date parsing in retention, reminder claiming, reminder and case-size caps |
-| Waiting for approval | The rest of `supabase/parked/03_audit_fixes_v37.sql` (see `docs/LATER.md`) |
+| Applied 2 Oct 2026 | `supabase/parked/05_remaining_v41.sql`: helper invite log and stop list, forwarding addresses removed, narrower grants, faster policies, carry and idle-account clean-up |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
 | Parked changes | `supabase/parked/`, written but not applied |
 

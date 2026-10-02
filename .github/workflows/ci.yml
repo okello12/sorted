@@ -32,5 +32,18 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run full regression suite
         run: sh tests/run.sh
-      - name: Verify generated app is committed
-        run: git diff --exit-code -- public/index.html
+      - name: Verify final build fingerprint is pinned
+        run: |
+          node <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const all=fs.readFileSync('all.js','utf8');
+          const ns=[...all.matchAll(/'build(\d+)\.js'/g)].map(m=>+m[1]);
+          if(!ns.length) throw new Error('no numbered build layer found');
+          const file='build'+Math.max(...ns)+'.js';
+          const src=fs.readFileSync(file,'utf8');
+          const m=src.match(/const EXPECT='([0-9a-f]{40})'/);
+          if(!m) throw new Error(file+' has no pinned EXPECT fingerprint');
+          const actual=crypto.createHash('sha1').update(fs.readFileSync('public/index.html')).digest('hex');
+          if(actual!==m[1]) throw new Error('generated '+actual+' != '+file+' EXPECT '+m[1]);
+          console.log(file+' pinned '+actual);
+          NODE

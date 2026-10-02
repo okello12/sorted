@@ -67,6 +67,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `29_escalation.py` checks the next formal step by sector and that it only shows once a case has gone round.
 - `28_case_tools.py` checks moving a message, hand-offs and your history with a company.
 - `27_pack.py` checks the adviser pack's sections, saved questions, copy, the downloaded file and print view.
 - `26_response.py` checks replies: acknowledgement changes nothing, a rejection is proposed with their reasons and the point they skipped, cancellation finishes, "No" leaves it.
@@ -140,4 +141,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Response reader (release 5) | `rsRead()` classifies a reply (rejected, cancelled, acknowledgement) with `RS_NO`, `RS_YES`, `RS_ACK`; pulls their reasons; compares with `t.pk.build` (`RS_TOPIC`) to list points their reply skips; spots a re-offered reduced price. `rsIn()` proposes it as `t.pk.resp`, `rsCard()` asks, `rs-yes` moves the stage, `rsBlock()` keeps it on the case (build64). Decision letters skip the notice reader unless they are a Notice to Owner or Keeper (`RS_NOTICE`) |
 | Adviser pack and export (release 6) | `packData()`, `packText()`, `packView()`, `packLink()` (build65): summary, dates, what happened in order, what they say, what you say, evidence, your questions (`t.packQs`). Copy, download as a .txt made on the phone, or print (print CSS shows only `.pack-doc`). Works for every case |
 | Move a message, hand-offs, your history (build66) | `mvPanel()`, `ev-move`, `ev-move-to`, `ev-move-new`, `intakeQuiet()`; hand-offs `HO_RE`, `hoName()`, `hoRead()`, `hoIn()`, `hoCard()`, `hoLine()`, stored in `t.holder` and quoted by `callDefaults()`; `memWith()`, `memBlock()` from your own cases on the phone only |
+| Escalation route (build67) | `XR` table and `XR_CHECKED`: energy, telecoms (6 weeks since Ofcom's change), finance, social housing, letting agents, private landlords, councils, water (CCW only; the next water scheme is in flux), Royal Mail, DWP, HMRC, shops and couriers. `xrFor()` picks the sector, `xrRound()` decides it has gone round, `xrBlock()` shows "If they still don't sort it" folded. Recheck every link and rule before changing `XR_CHECKED` |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

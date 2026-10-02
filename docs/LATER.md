@@ -29,7 +29,7 @@ around the due date. Most items below should wait for that result.
 | 9 | Sorted for advisers | Not started | Proof the consumer side works |
 | 10 | Charging per case | Not started | Pilot pass, own name and domain, terms, checkout |
 | 11 | Name clearance and own domain | Not started | A UK trade mark search by an attorney (SORTED is crowded) |
-| 12 | Escalation route | Not started | Pilot result; wording reviewed so it never reads as legal advice |
+| 12 | Escalation route | Done in v67: 12 sectors, hand-checked 2 Oct 2026, shown folded once a case has gone round | Water's next scheme to recheck |
 | 13 | Organisation memory | Not started | Item 7's privacy decision; enough real cases |
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |

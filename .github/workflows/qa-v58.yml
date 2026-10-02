@@ -1,0 +1,32 @@
+name: QA v58 case detail
+on:
+  push:
+    branches: [case-detail-redesign-v58]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build
+        run: node all.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Run full walkthrough suite
+        run: sh tests/run.sh
+      - name: Upload case detail preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: case58-light-preview
+          path: tests/out/case56-light.png
+          if-no-files-found: ignore

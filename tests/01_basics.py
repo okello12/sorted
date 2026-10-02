@@ -35,7 +35,7 @@ with sync_playwright() as p:
     compose(pg,'Submit the bursary documents by Friday'); ok(pg.locator('form[data-f=move]').count()==0,'bursary sentence is not turned into a to-do')
     pg.goto('https://sorted.test/'); wait(pg,300)
     compose(pg,'Refund from Currys hasn’t arrived')
-    pg.click('button.chip:has-text("Call someone")'); pg.click('text=Start this case'); wait(pg,200)
+    pg.click('button.chip:has-text("Ask where the refund is")'); pg.click('text=Start this case'); wait(pg,200)
     pg.fill('#f-who','Currys'); pg.click('form[data-f=call] button[type=submit]'); wait(pg,200)
     pg.click('text=Log what they said'); pg.fill('#f-said','The engineer will come Tuesday afternoon, ref CR-7781'); wait(pg,100); pg.click('[data-a=use-sug]'); pg.click('text=Save the promise'); wait(pg)
     if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,150)

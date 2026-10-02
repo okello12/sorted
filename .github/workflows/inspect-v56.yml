@@ -9,6 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build v56
+        run: node all.js
       - name: Find case-detail test dependencies
         run: |
           grep -R -n -E "data-a=(share|unshare|cal|gcal|email-on|email-off|helper|move-done|move-rebook|move-drop)|What.s happened so far|Copy the helper link|Email reminders|Open the official page|It.s renewed|I.ve applied" tests || true

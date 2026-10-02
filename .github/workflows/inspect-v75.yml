@@ -10,12 +10,20 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build current app
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
         run: |
-          node all.js
-          sha1sum public/index.html
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Run full regression suite
+        run: sh tests/run.sh
+      - name: Show generated fingerprint
+        run: sha1sum public/index.html

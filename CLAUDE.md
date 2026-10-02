@@ -117,7 +117,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | PDFs | `pdfToText()` (pdf.js with `isEvalSupported:false`) |
 | Matching a message to an existing case | `matchCase()` (build36) |
 | Chasing message wording | `callDefaults()` |
-| The case page's single next step | `viewTask()` |
+| The case page | `viewTask()`, rebuilt in build57 and build58 around the next move: `moveCard()`, `case56Evidence()`, `case56Timeline()`, `case56Sharing()`, `case56ReminderFold()`, `case56More()`; build59 only checks the final fingerprint |
 | Deleting one case | `case-del` action (build37) |
 | "Sorted can't see what needs sorting" | `caseSignal()`, `vagueBlock()` (build39) |
 | Accessibility pass after each render | `a11yPass()` (build37) |

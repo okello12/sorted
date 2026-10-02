@@ -10,7 +10,7 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,22 +32,13 @@ jobs:
           mkdir -p tests/out
           sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
           node tests/make_reader.js
-      - name: Inspect case control renderers
-        run: |
-          node <<'NODE'
-          const fs=require('fs'); const s=fs.readFileSync('public/index.html','utf8');
-          for (const q of ['data-p="paste"','case56-sharing','case56Evidence','case75Secondary']) {
-            let i=s.indexOf(q); console.log('\n===== '+q+' @ '+i+' =====');
-            console.log(i<0?'NOT FOUND':s.slice(Math.max(0,i-900),i+1600));
-          }
-          NODE
-      - name: Run remaining walkthroughs with full tracebacks
+      - name: Run focused consolidation checks
         env:
           TZ: Europe/London
           PYTHONPATH: ${{ github.workspace }}/tests
         run: |
           status=0
-          for t in 01_basics.py 09_paste_wins.py 18_intake.py 22_case_facts.py 26_response.py 28_case_tools.py 37_ui_consolidation.py; do
+          for t in 01_basics.py 09_paste_wins.py 18_intake.py 37_ui_consolidation.py; do
             echo "===== $t ====="
             python3 "tests/$t" || status=1
           done

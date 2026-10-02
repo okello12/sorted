@@ -274,8 +274,9 @@ engine, with parking as its first playbook (Baldwin's plan of 2 October 2026), i
 1. ~~Case facts and provenance~~ Done in v60. A parking notice (typed, pasted, shared, a photo or a PDF, all read on
    the phone) becomes proposed facts, each with where it came from; nothing counts until the person confirms it.
    A later letter only asks about what is new or different, and shows what it said before.
-2. Parking playbook: stages (notice, challenge sent, waiting, decision, next stage) and typed deadlines, each checked
-   against the notice. Deadlines come from rules and confirmed facts, never from a model.
+2. ~~Parking playbook~~ Done in v61: stages (notice, challenge sent, waiting, rejected, Notice to Owner, formal
+   challenge, appeal, finished), dates that say what they mean, worked out on the safe side from confirmed facts,
+   proof of what was sent, and waiting on them through the usual promise engine.
 3. Official routes: a registry of organisation, case type, stage, official link, purpose and date last checked.
 4. Challenge builder: "What do you want to do?", a short interview, a draft from confirmed facts only, and a
    completeness check ("You mentioned the sign but haven't added a photo"), never a chance of winning.

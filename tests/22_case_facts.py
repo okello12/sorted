@@ -78,6 +78,7 @@ with sync_playwright() as p:
     facts = pg.inner_text('.cf-facts')
     ok('SK12345678' in facts and 'You entered this' in facts and 'Lordship Lane, East Dulwich' in facts, 'Case facts shows them, with where each came from')
     if pg.locator('[data-a=sug-no]').count(): pg.click('[data-a=sug-no]'); wait(pg)
+    if pg.locator('.pk-card [data-a=panel][data-p=call]').count(): pg.click('.pk-card [data-a=panel][data-p=call]'); wait(pg)
     ask = pg.input_value('textarea[name=ask]') if pg.locator('textarea[name=ask]').count() else ''
     ok(ask.startswith('I’m getting in touch about penalty charge notice SK12345678 for vehicle AB12 CDE') and 'LONDON BOROUGH' not in ask, 'the call message names the notice instead of pasting it: %r' % ask[:90])
     # 4 a later letter: only what's new or different is asked about

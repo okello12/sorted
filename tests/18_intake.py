@@ -87,19 +87,21 @@ with sync_playwright() as p:
     t = case(pg, T)
     ok(any(l.startswith('Added a message shared from another app: “Currys') for l in labels(t)), 'shared message: kept, and says it was shared')
     ok(all(len(l) < 260 for l in labels(t)), 'evidence lines are kept short')
-    # v52: "What they sent" on the case page
+    # v58: the compact case page keeps evidence together without repeating the audit log
     if pg.locator('[data-a=sug-no]').count(): pg.click('[data-a=sug-no]'); wait(pg)
-    ok(pg.locator('.evidence').count() == 1, 'v52: the case shows What they sent')
-    items = pg.locator('.evidence > .ev-list > .ev-item')
-    ok(items.count() == 3 and 'Show 2 more' in pg.inner_text('.ev-more summary'), 'v52: newest three shown, the rest folded (%d)' % items.count())
-    first = items.nth(0).inner_text().lower()
-    ok('shared' in first and 'delayed' in first, 'v52: newest first, labelled Shared')
-    srcs = [x.strip().lower() for x in pg.locator('.evidence .ev-src').all_text_contents()]
-    ok(srcs == ['shared', 'message', 'screenshot', 'message', 'message'], 'v52: each says where it came from: %s' % srcs)
-    n = pg.evaluate("document.querySelector('main').textContent.split('passed this to our refunds team').length-1")
-    ok(n == 1, 'v52: the history points to the block instead of repeating the message (%d)' % n)
-    ok('It’s under What they sent' in pg.inner_text('main'), 'v52: history line says where to find it')
-    pg.locator('.evidence').scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/evidence.png')
+    evidence=pg.get_by_role('heading',name='Messages & evidence').locator('xpath=ancestor::section[1]')
+    ok(evidence.count()==1, 'v58: the case shows Messages & evidence')
+    items=evidence.locator(':scope > .ev-list > .ev-item')
+    ok(items.count()==2 and 'More evidence' in evidence.inner_text(), 'v58: newest two shown, the rest folded (%d)' % items.count())
+    first=items.nth(0).inner_text().lower()
+    ok('shared' in first and 'delayed' in first, 'v58: newest first, labelled Shared')
+    evidence.locator('details.case56-fold > summary').click(); wait(pg,80)
+    srcs=[x.strip().lower() for x in evidence.locator('.ev-src').all_text_contents()]
+    ok(srcs==['shared','message','screenshot','message','message'], 'v58: each says where it came from: %s' % srcs)
+    n=pg.evaluate("document.querySelector('main').textContent.split('passed this to our refunds team').length-1")
+    ok(n==1, 'v58: the timeline points to evidence instead of repeating the message (%d)' % n)
+    ok('It’s under Messages & evidence.' in pg.inner_text('main'), 'v58: timeline says where to find the evidence')
+    evidence.scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/evidence.png')
     # v53: a second case, then a share that goes to the case you pick, not the one Sorted guessed
     pg.click('[data-a=home]'); wait(pg)
     if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); wait(pg)

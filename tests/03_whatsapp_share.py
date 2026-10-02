@@ -5,6 +5,9 @@ def ok(c,m):
     print(('PASS ' if c else 'FAIL ')+m)
     if not c: fails.append(m)
 def wait(pg,ms=350): pg.wait_for_timeout(ms)
+def open_sharing(pg):
+    d=pg.locator('.case56-sharing')
+    if d.count() and not d.evaluate('(x)=>x.open'): d.locator('summary').click(); wait(pg,80)
 with sync_playwright() as p:
     b=p.chromium.launch()
     for scheme in ['light','dark']:
@@ -18,7 +21,8 @@ with sync_playwright() as p:
         pg.click('[data-a=example]'); wait(pg); pg.click('.slip-open'); wait(pg)
         ok(pg.locator('[data-a=wa-share]').count()==0,scheme+': no WhatsApp button before a link exists')
         pg.evaluate("navigator.clipboard&&(navigator.clipboard.writeText=()=>Promise.resolve())")
-        pg.click('[data-a=share]'); wait(pg)
+        open_sharing(pg); pg.click('[data-a=share]'); wait(pg)
+        open_sharing(pg)
         ok(pg.locator('[data-a=wa-share]').count()==1,scheme+': WhatsApp button once the link exists')
         href=pg.get_attribute('[data-a=wa-share]','href'); db=pg.evaluate("JSON.parse(localStorage.getItem('__mockdb'))")
         tok=db['shares'][0]['token']; txt=urllib.parse.unquote(href.split('text=')[1])
@@ -28,9 +32,9 @@ with sync_playwright() as p:
         h=pg.evaluate("document.querySelector('[data-a=wa-share]').getBoundingClientRect().height"); ok(h>=44,scheme+': tap target %d'%h)
         with ctx.expect_page() as np: pg.click('[data-a=wa-share]')
         np.value.wait_for_load_state(); np.value.close(); wait(pg)
-        pg.click('[data-a=wa-share]') if False else None
         m=pg.inner_text('main'); ok(m.count('Sent the helper link on WhatsApp')==1,scheme+': logged once')
         ok(len(wa)>=1,scheme+': WhatsApp opened')
+        open_sharing(pg)
         pg.screenshot(path=HERE+'/tests/out/wa29_'+scheme+'.png',full_page=False) if pg.locator('[data-a=wa-share]').scroll_into_view_if_needed() is None else None
         pg.click('[data-a=unshare]'); wait(pg)
         ok(pg.locator('[data-a=wa-share]').count()==0,scheme+': WhatsApp button gone once switched off')

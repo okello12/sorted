@@ -24,13 +24,13 @@ around the due date. Most items below should wait for that result.
 | 4 | Share into Sorted from other apps | iPhone done in v40 (Apple Shortcut); Android not started | Android needs an installed app or a manifest (see below) |
 | 5 | Share a case with roles | Database change written, not applied | Accept flow and notice text, after the pilot |
 | 6 | The other party replies inside Sorted | Not started | Proof the consumer side works |
-| 7 | Promise data and a public scoreboard | Not started | Enough real cases, a privacy decision, legal review |
+| 7 | Promise data and a public scoreboard | Built in v69 as in-case company totals (counts only, 5 promises from 3 people) | Baldwin: run `07_scores_v69.sql`; enough real cases; legal review before any public page |
 | 8 | Predictions ("usually 5 days late") | Not started | Item 7 |
 | 9 | Sorted for advisers | Not started | Proof the consumer side works |
 | 10 | Charging per case | Not started | Pilot pass, own name and domain, terms, checkout |
 | 11 | Name clearance and own domain | Not started | A UK trade mark search by an attorney (SORTED is crowded) |
 | 12 | Escalation route | Done in v67: 12 sectors, hand-checked 2 Oct 2026, shown folded once a case has gone round | Water's next scheme to recheck |
-| 13 | Organisation memory | Not started | Item 7's privacy decision; enough real cases |
+| 13 | Organisation memory | Done: your own history in v66, shared channel totals in v69 | Enough real cases |
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
 | 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Done in v66: proposed from a message, confirmed, shown on the case and quoted in the next message | |

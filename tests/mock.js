@@ -41,6 +41,8 @@ window.supabase={createClient:function(){
       if(name==="report_auth_error"){var q=JSON.parse(localStorage.getItem("__reperr")||"[]");q.push(args.p_kind);localStorage.setItem("__reperr",JSON.stringify(q));return Promise.resolve({data:null,error:null})}
       if(name==="is_pilot_admin")return Promise.resolve({data:localStorage.getItem("__admin")==="1",error:null});
       if(name==="pilot_metrics"){window.__pm=args;return Promise.resolve({data:{people:3,include_admins:args.include_admins,funnel:{started:10,promised:7,matured:5,returned:4,acted:3,closed:2,closers:2,second:1},miss:{missed:2,recovered:1},return_hours_median:5.2,email:{anon_promises:4,emails_added:3},counts:{case_started:{total:10,week:6}}},error:null})}
+      if(name==="record_outcome"){var oc=JSON.parse(localStorage.getItem("__outcomes")||"[]");oc.push(args);localStorage.setItem("__outcomes",JSON.stringify(oc));return Promise.resolve({data:null,error:null})}
+      if(name==="company_scores"){window.__scoresCalls=(window.__scoresCalls||0)+1;return Promise.resolve({data:JSON.parse(localStorage.getItem("__scores")||"[]"),error:null})}
       if(name==="email_reminders_ready")return Promise.resolve({data:localStorage.getItem("__emailReady")==="1",error:null});
       if(name==="delete_my_account"){DB={tasks:[],shares:[],reminders:[],helpers:[],inbound_items:[]};persist();return Promise.resolve({data:null,error:null})}
     },

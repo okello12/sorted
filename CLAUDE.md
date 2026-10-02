@@ -68,6 +68,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `31_scores.py` checks only company, outcome and channel are sent, never for people or with step records off, and the totals' wording.
 - `30_assistant.py` checks the assistant sends nothing until tapped, says what it sends, never changes the case on its own, and explains errors.
 - `29_escalation.py` checks the next formal step by sector and that it only shows once a case has gone round.
 - `28_case_tools.py` checks moving a message, hand-offs and your history with a company.
@@ -110,7 +111,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Applied 2 Oct 2026 | `supabase/parked/04_reliability_v39.sql`: safe date parsing in retention, reminder claiming, reminder and case-size caps |
 | Applied 2 Oct 2026 | `supabase/parked/05_remaining_v41.sql`: helper invite log and stop list, forwarding addresses removed, narrower grants, faster policies, carry and idle-account clean-up |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
-| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works |
+| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works; `07_scores_v69.sql` before company scores |
 
 ## Where things are in the page code
 
@@ -145,4 +146,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Move a message, hand-offs, your history (build66) | `mvPanel()`, `ev-move`, `ev-move-to`, `ev-move-new`, `intakeQuiet()`; hand-offs `HO_RE`, `hoName()`, `hoRead()`, `hoIn()`, `hoCard()`, `hoLine()`, stored in `t.holder` and quoted by `callDefaults()`; `memWith()`, `memBlock()` from your own cases on the phone only |
 | Escalation route (build67) | `XR` table and `XR_CHECKED`: energy, telecoms (6 weeks since Ofcom's change), finance, social housing, letting agents, private landlords, councils, water (CCW only; the next water scheme is in flux), Royal Mail, DWP, HMRC, shops and couriers. `xrFor()` picks the sector, `xrRound()` decides it has gone round, `xrBlock()` shows "If they still don't sort it" folded. Recheck every link and rule before changing `XR_CHECKED` |
 | Sorted's assistant (build68) | `aiContext()` (the case, capped at 9,000 characters), `aiRun()` calls the `case-assistant` edge function only when tapped; `aiPanel()` (`aiexplain`, `aiask`), `aiImproveBox()` in the challenge builder, `aiIntro()` the first-time notice. Nothing in the case changes unless the person uses the text. Tests use `functions.invoke` in `tests/mock.js` (`__aiMode` for errors) |
+| Company scores (build69) | `SC_PARTIES` (the fixed list from `PARTIES`), `recordOutcome()` on kept and missed (not parking, not examples, not with step records off), `loadScores()`, `scoreBlock()`. Server: `promise_outcomes`, `record_outcome()`, `company_scores()` (5 promises from 3 people minimum) in `07_scores_v69.sql`. Never case text |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

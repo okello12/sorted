@@ -64,6 +64,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
 - The page runs against `tests/mock.js`, a stand-in for Supabase that keeps its database in localStorage, so tests never touch real data.
 - The screenshot and PDF readers are served from `tests/node_modules`, the same versions the live site loads from jsDelivr.
 - Every test file must end with `ERRORS []` and `FAILS []`.
+- GitHub Actions runs `.github/workflows/ci.yml` on every pull request to `main` and after pushes to `main`; it runs the complete regression suite and checks the generated app is committed.
 - Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale. All tests run on London time
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
@@ -115,8 +116,12 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; email accounts with no cases 12 months without a sign-in (not pilot admins); carry tokens 1 day; step records 12 months |
 | Applied 2 Oct 2026 | `supabase/parked/04_reliability_v39.sql`: safe date parsing in retention, reminder claiming, reminder and case-size caps |
 | Applied 2 Oct 2026 | `supabase/parked/05_remaining_v41.sql`: helper invite log and stop list, forwarding addresses removed, narrower grants, faster policies, carry and idle-account clean-up |
+| Applied 2 Oct 2026 | `supabase/parked/06_assistant_v68.sql`: assistant usage counts, the 40-a-day gate and assistant error-source logging. The edge function is deployed; it remains intentionally unavailable until `anthropic_api_key` exists in Vault |
+| Applied 2 Oct 2026 | `supabase/parked/07_scores_v69.sql`: privacy-preserving company outcome totals and retention |
+| Applied 2 Oct 2026 | `supabase/parked/08_replies_notes_v70.sql`: case reply addresses, `case_replies_on=yes`, inbound case routing and helper notes |
+| Applied 2 Oct 2026 | `supabase/parked/09_answers_v71.sql`: `drop_outcome()` for Undo from reminder-email answers |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
-| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works; `07_scores_v69.sql` before company scores; `08_replies_notes_v70.sql` before replies and helper notes (it replaces 01 and the notes part of 02); `09_answers_v71.sql` (`drop_outcome`, for Undo) after 07 |
+| Parked changes | `supabase/parked/` also contains the source SQL for migrations already applied. Do not rerun 04–09 just because the files remain in that folder; check the Applied rows above and the Supabase migration history first |
 
 ## Where things are in the page code
 

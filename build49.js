@@ -31,7 +31,7 @@ R(`return '<section class="home44-section"><div class="home44-section-head">`, `
 R(`home44Section("Also open",needs.slice(1),"needs","The rest of your open cases.")`,`home44Section("Also open",needs.slice(1),"needs","")`);
 
 // Replace the plain count circle with a small folder/clock object inspired by the visual concepts.
-R(`'<span class="home44-orb" aria-hidden="true">'+needs.length+'</span></section>'`, `home49Visual(needs.length)+'</section>'`);
+R(`</div><span class="home44-orb" aria-hidden="true">'+needs.length+'</span></section>`, `</div>'+home49Visual(needs.length)+'</section>`);
 
 // New-case entry stays easy to find without competing with the active case.
 R(`'<button class="btn primary block home44-new" data-a="compose">+ Sort something new</button>'`,`'<button class="btn block home44-new" data-a="compose">+ Sort something new</button>'`);

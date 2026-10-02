@@ -36,8 +36,9 @@ with sync_playwright() as p:
     for part,v in [('d',due.day),('m',due.month),('y',due.year)]: pg.select_option('select[data-dp=f-mdate][data-part=%s]'%part,str(v))
     pg.click('form[data-f=move] button[type=submit]'); wait(pg,350)
     ok(pg.locator('.case56-next').count()==1,'real move renders in the compact Next card')
-    nxt=pg.inner_text('.case56-next')
-    ok('Next' in nxt and 'Remind to apply for it' in nxt and 'Your move' not in nxt,'next card removes repeated Your move labels')
+    ok(pg.locator('.case56-next .case56-overline').inner_text().strip()=='Next','next card uses one clear state label')
+    ok('Remind to apply for it' in pg.locator('.case56-next h2').inner_text(),'next card names the action directly')
+    ok(pg.locator('.case56-next').get_by_text('Your move',exact=True).count()==0,'next card does not repeat Your move')
     ok(pg.locator('.case56-next [data-a=move-done]').is_visible(),'primary completion action remains prominent')
     ok(pg.locator('.case56-next .case56-reminders').count()==1 and not pg.locator('.case56-next .case56-reminders').evaluate('(x)=>x.open'),'calendar and email machinery is folded under Reminders')
 
@@ -58,6 +59,11 @@ with sync_playwright() as p:
       localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k));
     }""")
     pg.reload(); wait(pg,500)
+    # Reload returns to Home. Re-open the case before checking the detail screen.
+    if pg.locator('main.case56').count()==0:
+        row=pg.locator('button:has-text("My driving licence")').first
+        ok(row.count()==1,'renewal case is present on Home after reload')
+        row.click(); wait(pg,350)
     main=pg.inner_text('main')
     ok('My driving licence' in main,'legacy renewal keeps its familiar case title')
     renew=pg.inner_text('.case56-renew-state')

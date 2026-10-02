@@ -26,9 +26,9 @@ with sync_playwright() as p:
 
     # Landing hierarchy: the product promise is the headline, the generic line is secondary.
     pg.goto('https://sorted.test/'); wait(pg,250)
-    hero=pg.inner_text('.hero')
-    ok('They said Tuesday.' in pg.inner_text('.hero .h1') and 'Sorted remembers Tuesday.' in pg.inner_text('.hero .h1'),'landing uses the sharp promise as the headline')
-    ok('Life gets messy.' in hero and 'Sorted keeps up.' in hero,'generic landing line is secondary')
+    hero=pg.locator('.hero').text_content() or ''
+    ok('They said Tuesday.' in (pg.locator('.hero .h1').text_content() or '') and 'Sorted remembers Tuesday.' in (pg.locator('.hero .h1').text_content() or ''),'landing uses the sharp promise as the headline')
+    ok('Life gets messy. Sorted keeps up.' in hero,'generic landing line is secondary')
 
     # The research baseline still exists, but its choices fit the case rather than offering repair actions for a refund.
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
@@ -62,11 +62,11 @@ with sync_playwright() as p:
     start_case(pg,"Currys said my refund of £89 will arrive tomorrow, order 998877")
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg,350)
     t=latest(pg); op=next((q for q in t.get('promises',[]) if q.get('status')=='open'),None); open_said=op['said'] if op else ''
-    claim=pg.locator('#claim')
-    promise_text=pg.get_by_text(open_said,exact=True).first if open_said else pg.locator('text=__missing__')
-    ok(bool(open_said) and claim.count()==1 and promise_text.count()==1,'claim screen still shows the promise being held')
-    if claim.count() and promise_text.count():
-        ok(promise_text.bounding_box()['y'] < claim.bounding_box()['y'],'promise is above the email setup prompt')
+    claim=pg.locator('#claim'); promise=pg.locator('.promise').first
+    promise_text=(promise.text_content() or '') if promise.count() else ''
+    ok(bool(open_said) and claim.count()==1 and promise.count()==1 and open_said in promise_text,'claim screen still shows the promise being held')
+    if claim.count() and promise.count():
+        ok(promise.bounding_box()['y'] < claim.bounding_box()['y'],'promise is above the email setup prompt')
     ok(claim.count()==1 and 'Add email reminders?' in claim.inner_text() and 'promise is already saved' in claim.inner_text().lower(),'email prompt is clearly optional after the promise is saved')
     if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,250)
 
@@ -76,7 +76,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); wait(pg,450); pg.locator('[data-a=open][data-id="%s"]'%cid).first.click(); wait(pg,500)
     ok(pg.locator('.cm-card .case75-promise-context').count()==1,'reply card includes what Sorted was already holding')
     if pg.locator('.cm-card .case75-promise-context').count():
-        ok(open_said in pg.inner_text('.cm-card .case75-promise-context'),'reply can be judged against the earlier promise')
+        ok(open_said in (pg.locator('.cm-card .case75-promise-context').text_content() or ''),'reply can be judged against the earlier promise')
     ok(pg.locator('details.case75-group').count()==2,'reply no longer hides the rest of the case')
 
     # Secondary actions share one quiet row treatment.
@@ -96,7 +96,7 @@ with sync_playwright() as p:
     ok(pg.locator('.case75-parking-pending').count()==1,'deferred parking details stay in a parking-specific state')
     ok(pg.locator('form[data-f=call]').count()==0,'deferred parking notice does not fall back to Who are you contacting')
     if pg.locator('.case75-parking-pending').count():
-        tx=pg.inner_text('.case75-parking-pending')
+        tx=pg.locator('.case75-parking-pending').text_content() or ''
         ok('Parking notice' in tx and 'Nothing counts until you confirm it.' in tx,'parking pending card explains what remains to check')
 
     b.close()

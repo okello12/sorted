@@ -11,7 +11,7 @@ ${line('RS_ACK')}
 // A reply that mentions a day or a number of days, with a promise word: it may give a new date. Only a hint for the
 // notification; the phone's own reader proposes the actual date when the person opens the case.
 export const RD_DATE=/\\b(?:will|should|expect|expected|aim|arrange[ds]?|book(?:ed)?|scheduled|processed|arrive|be with you)\\b[^.!?]{0,80}\\b(?:today|tomorrow|(?:mon|tues|wednes|thurs|fri|satur|sun)day|within \\d{1,2} (?:working |business )?days|\\d{1,2}(?:st|nd|rd|th)? (?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*|\\d{1,2}[\\/.]\\d{1,2}(?:[\\/.]\\d{2,4})?|next week)\\b/i;
-// Same order as rsRead() in the page: cancelled, then rejected, then acknowledgement; then a possible date.
+// As rsRead() in the page: cancelled before rejected. A possible date comes before a plain acknowledgement, so "we will reply within 14 days" counts as a date.
 export function replyKind(text){
   const x=String(text||"").replace(/\\s+/g," ").trim();
   if(RS_YES.test(x)&&!/\\bnot (?:be )?cancel/i.test(x))return "cancelled";

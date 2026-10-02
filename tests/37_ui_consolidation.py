@@ -28,7 +28,13 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); wait(pg,250)
     ok('They said Tuesday.' in pg.inner_text('.hero .h1') and 'Sorted remembers Tuesday.' in pg.inner_text('.hero .h1'),'landing uses the sharp promise as the headline')
     ok('Life gets messy. Sorted keeps up.' in pg.inner_text('.hero .eyebrow'),'generic landing line is secondary')
-    choices=pg.evaluate("planChoices('call','Currys refund')")
+
+    # The research baseline still exists, but its choices fit the case rather than offering repair actions for a refund.
+    pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
+    pg.fill('#f-case',"Currys refund hasn't arrived"); pg.click('form[data-f=case] button[type=submit]'); wait(pg)
+    if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
+    if pg.locator('[data-a=vague-go]').count(): pg.click('[data-a=vague-go]'); wait(pg)
+    choices=[x.strip() for x in pg.locator('form[data-f=baseline] .chip').all_text_contents()]
     ok('Ask where the refund is' in choices and 'Try to fix it myself' not in choices,'research baseline choices fit a refund case')
 
     # Anonymous Home warning: full once, then one slim line.

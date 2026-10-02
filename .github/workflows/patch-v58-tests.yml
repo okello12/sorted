@@ -1,0 +1,45 @@
+name: Patch v58 regression tests
+on:
+  push:
+    branches: [case-detail-redesign-v58]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'QA: apply v58 regression test updates'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Align tests with compact case detail
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('tests/12_audit_fixes.py')
+          s=p.read_text()
+          old="    pg.click('[data-a=panel][data-p=delcase]'); wait(pg)\n"
+          new="    pg.locator('.case56-more > summary').click(); wait(pg,100)\n    pg.click('[data-a=panel][data-p=delcase]'); wait(pg)\n"
+          assert old in s
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('tests/21_case_detail56.py')
+          s=p.read_text()
+          old="    ok('Driving licence' in renew and 'Expired' in renew,'renewal state is compact and clear')\n"
+          new="    ok('driving licence' in renew.lower() and 'expired' in renew.lower(),'renewal state is compact and clear')\n"
+          assert old in s
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('tests/18_intake.py')
+          s=p.read_text()
+          start=s.index('    # v52: "What they sent" on the case page')
+          end=s.index('    # v53: a second case, then a share that goes to the case you pick, not the one Sorted guessed', start)
+          block='''    # v58: the compact case page keeps evidence together without repeating the audit log\n    if pg.locator('[data-a=sug-no]').count(): pg.click('[data-a=sug-no]'); wait(pg)\n    evidence=pg.get_by_role('heading',name='Messages & evidence').locator('xpath=ancestor::section[1]')\n    ok(evidence.count()==1, 'v58: the case shows Messages & evidence')\n    items=evidence.locator(':scope > .ev-list > .ev-item')\n    ok(items.count()==2 and 'More evidence' in evidence.inner_text(), 'v58: newest two shown, the rest folded (%d)' % items.count())\n    first=items.nth(0).inner_text().lower()\n    ok('shared' in first and 'delayed' in first, 'v58: newest first, labelled Shared')\n    evidence.locator('details.case56-fold > summary').click(); wait(pg,80)\n    srcs=[x.strip().lower() for x in evidence.locator('.ev-src').all_text_contents()]\n    ok(srcs==['shared','message','screenshot','message','message'], 'v58: each says where it came from: %s' % srcs)\n    n=pg.evaluate(\"document.querySelector('main').textContent.split('passed this to our refunds team').length-1\")\n    ok(n==1, 'v58: the timeline points to evidence instead of repeating the message (%d)' % n)\n    ok('It’s under Messages & evidence.' in pg.inner_text('main'), 'v58: timeline says where to find the evidence')\n    evidence.scroll_into_view_if_needed(); pg.screenshot(path=HERE + '/tests/out/evidence.png')\n'''
+          p.write_text(s[:start]+block+s[end:])
+          PY
+      - name: Commit test updates
+        run: |
+          git config user.name "Sorted QA"
+          git config user.email "actions@users.noreply.github.com"
+          git add tests/12_audit_fixes.py tests/18_intake.py tests/21_case_detail56.py
+          git commit -m "test: align regression suite with compact case detail"
+          git push

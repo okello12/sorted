@@ -1,4 +1,4 @@
-# v83: real-device polish — richer scenes, compact returning chooser, opaque sticky chrome, tighter tools.
+# v83/v84: real-device polish — richer scenes, compact returning chooser, opaque sticky chrome, tighter tools.
 import os
 from playwright.sync_api import sync_playwright
 HERE=os.path.abspath('.'); errs=[]; fails=[]
@@ -31,7 +31,12 @@ with sync_playwright() as p:
         ok(disp=='flex','returning choices become a horizontal carousel')
         ok(home.locator('.cap82-grid').evaluate("e=>e.scrollWidth>e.clientWidth"),'carousel is horizontally discoverable instead of a tall grid')
     nb=pg.locator('.home44-compose .home44-new')
-    ok(nb.count()==0 or nb.evaluate("e=>getComputedStyle(e).display")=='none','redundant Sort something new control is not shown')
+    if nb.count():
+        hidden=nb.evaluate("e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return parseFloat(s.opacity)===0&&r.width<=1.1&&r.height<=1.1&&e.getAttribute('tabindex')==='-1'&&e.getAttribute('aria-hidden')==='true'}")
+        ok(hidden,'duplicate Sort something new CTA is visually and keyboard hidden')
+        nb.click(); wait(pg,120)
+        ok(pg.locator('#f-case').count()==1,'legacy compose trigger remains programmatically actionable')
+    else: ok(True,'duplicate Sort something new CTA is absent')
     ok(pg.locator('.home44-spot').count()==1,'active-case spotlight remains prominent')
     ok(no_overflow(pg),'compact chooser and cases fit 390px')
 

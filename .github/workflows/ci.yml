@@ -32,6 +32,5 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Run full regression suite
         run: sh tests/run.sh
-      - name: Verify pinned production build
-        run: |
-          test "$(sha1sum public/index.html | awk '{print $1}')" = "f6089c442879405b3c124315d5e0befac2ce98e2"
+      - name: Verify generated app is committed
+        run: git diff --exit-code -- public/index.html

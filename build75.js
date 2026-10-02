@@ -153,6 +153,6 @@ R('.pb-card p{margin:0}', `.pb-card p{margin:0}
 .case75-group-body>.case56-section,.case75-group-body>.stack-s,.case75-group-body>.pk-dates,.case75-group-body>.cf-facts,.case75-group-body>.rs-block{padding-top:14px;border-top:1px solid var(--rule)}
 .case75-parking-pending p{margin:0}`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='8c72bc97ccfe09fdc30c4f25f2751c735623a1b2';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v75 ok',h(s),s.length);

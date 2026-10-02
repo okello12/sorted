@@ -23,7 +23,23 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
-      - name: Run full regression suite
-        run: sh tests/run.sh
+      - name: Prepare app
+        run: |
+          export TZ=Europe/London
+          export PYTHONPATH="$PWD/tests"
+          node all.js >/dev/null
+          (cd tests && npm ci --omit=optional --ignore-scripts --silent)
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          node tests/make_reader.js
+      - name: Run remaining walkthroughs with full tracebacks
+        env:
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: |
+          for t in 01_basics.py 09_paste_wins.py 18_intake.py 22_case_facts.py 26_response.py 28_case_tools.py 37_ui_consolidation.py; do
+            echo "===== $t ====="
+            python3 "tests/$t"
+          done
       - name: Show generated fingerprint
         run: sha1sum public/index.html

@@ -62,6 +62,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
 - Tests 08 to 11 build dates relative to today (`tests/dates.py`), so they don't go stale. All tests run on London time
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
+- `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
 - `17_corpus.py` runs `tests/corpus.py` (374 sentences and messages, including messy real-world writing with exact
   date checks) straight through `readCase()`, on a test-only copy of the page that exposes the reader
   (`tests/make_reader.js` writes `tests/out/reader.html`; production is untouched). Add new language there.
@@ -103,7 +104,8 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 |---|---|
 | Reading the first sentence: company, reference, item, how long | `caseFacts()` and `PARTIES`, `BENEFITS`, `ITEMS` (build30 to build32) |
 | Promise from a sentence | `suggestPromise()` (build33, rules tightened in build39, build43, build49 and build50: `PNEG`, `PTENT`, `PTMSG`, `PINFO`, `PIMP`, `PSAIDDO`, `PDAY`, `PCHG`, `pWhenOk`, `pTwo`, `pNamed`, `pChanged`, `pNorm`) |
-| Which reader the start box uses | `readCase()` (build50): one function for typed sentences, pasted messages and short notifications | |
+| Which reader the start box uses | `readCase()` (build50): one function for typed sentences, pasted messages and short notifications |
+| Bringing something into an existing case | `intakeRead()` and `evidence()` (build51): the paste panel and "Add to that case" both use them; the history line says where it came from (a screenshot, a PDF, shared from another app) | |
 | Promise from a pasted message | `sugFromMessage()` (build34) |
 | The card | `sugCard()` and the `sug-yes`, `sug-edit` and `sug-no` actions |
 | Screenshots and photos | `readPicture()` and `readImage()` (Tesseract, on the phone) |

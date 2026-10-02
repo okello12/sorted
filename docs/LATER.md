@@ -32,7 +32,7 @@ around the due date. Most items below should wait for that result.
 | 12 | Escalation route | Not started | Pilot result; wording reviewed so it never reads as legal advice |
 | 13 | Organisation memory | Not started | Item 7's privacy decision; enough real cases |
 | 14 | Family and helper view | Not started | Item 5 (roles), then design |
-| 15 | Evidence timeline | Partly there (screenshots, PDFs and messages already land in the case) | Pilot result; storage and retention decision for files |
+| 15 | Evidence timeline | Partly there: since v51 every message added to a case is kept with its source | Pilot result; storage and retention decision for files |
 | 16 | "Passed between companies" | Not started | Pilot result |
 
 ## 1. Replies come back into the case
@@ -208,6 +208,14 @@ next step is the same for everyone. Still one case at a time: "share this proble
 of the letter)", "You wrote", "Sorted read this date". Exportable as one page for a complaint or the Ombudsman.
 
 **Already there.** Case history, "In your words", screenshots and PDFs read on the phone, pasted messages, the recap.
+Since v51 every message brought into a case (pasted, a screenshot, a PDF, shared from another app, or matched from the
+start box) is kept in the history with where it came from, even when it has no date.
+
+**Intake, next slices (in order).**
+1. Show evidence lines in the case as their own small block ("What they sent"), not mixed with steps.
+2. Share straight into a chosen case from the Shortcut (`#new=` plus a case picker) instead of via the start box.
+3. Let the person correct which case a message belongs to after it was added.
+4. Only then, keeping original files (see below).
 
 **Still to do.** Keep the original files (today only the text is kept, and only up to 300 characters), mark each
 line's source, and an export page. Storing files is a real privacy and cost step: decide retention, size limits and

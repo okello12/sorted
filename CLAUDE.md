@@ -68,6 +68,7 @@ The old manual route (Vercel API `create_deployment` with files by sha1) still w
   (`dates.py` and `run.sh` set `TZ`), so a run near midnight on a UTC machine doesn't compare two different days.
 - `14_promise_stress.py` holds every sentence from the stress tests (false promises and real ones), run through the UI.
 - `18_intake.py` covers every way into an existing case, including a real screenshot read by Tesseract.
+- `33_email_answers.py` checks Yes and No from a reminder email: recorded only after a fresh load, the chase ready after No, Undo restores the case and the totals, an old link changes nothing, your own step, and sign-in keeping the answer.
 - `31_scores.py` checks only company, outcome and channel are sent, never for people or with step records off, and the totals' wording.
 - `32_replies_notes.py` covers the case address in Cc, a reply shown as a proposal (add, or not about this case), and helper notes (switch, send, keep, off).
 - `30_assistant.py` checks the assistant sends nothing until tapped, says what it sends, never changes the case on its own, and explains errors.
@@ -105,14 +106,14 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 
 | Area | What's there |
 |---|---|
-| Edge functions | `case-assistant` v1 (Claude via the Anthropic API; key `anthropic_api_key` and optional `assistant_model` in Vault; 40 a day per person through `assistant_take`; checks the user itself, so verify_jwt is off; stores no case text), `send-reminders` v8 (every 10 minutes from pg_cron; claims each reminder before sending), `inbound-email` v4 (written in v70, signature first, To and Cc, `case-` replies only when the Vault secret `case_replies_on` is `yes`; personal forwarding stays off), `email-stop` |
+| Edge functions | `case-assistant` v1 (Claude via the Anthropic API; key `anthropic_api_key` and optional `assistant_model` in Vault; 40 a day per person through `assistant_take`; checks the user itself, so verify_jwt is off; stores no case text), `send-reminders` v9 (every 10 minutes from pg_cron; claims each reminder before sending; an "after" reminder has Yes and No answer links, never case details), `inbound-email` v4 (written in v70, signature first, To and Cc, `case-` replies only when the Vault secret `case_replies_on` is `yes`; personal forwarding stays off), `email-stop` |
 | Step records | `pilot_events` (a fixed step name, IDs and a time) |
 | Metrics | `pilot_metrics()` and `pilot_health()`, admin only |
 | Retention jobs | Cases 90 days idle (30 without an email), unless a promise is live; helper links stop working after 30 days and are deleted after 90; inbound items 30 days; `ops_errors` 90 days; anonymous accounts 30 days idle; email accounts with no cases 12 months without a sign-in (not pilot admins); carry tokens 1 day; step records 12 months |
 | Applied 2 Oct 2026 | `supabase/parked/04_reliability_v39.sql`: safe date parsing in retention, reminder claiming, reminder and case-size caps |
 | Applied 2 Oct 2026 | `supabase/parked/05_remaining_v41.sql`: helper invite log and stop list, forwarding addresses removed, narrower grants, faster policies, carry and idle-account clean-up |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
-| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works; `07_scores_v69.sql` before company scores; `08_replies_notes_v70.sql` before replies and helper notes (it replaces 01 and the notes part of 02) |
+| Parked changes | `supabase/parked/`, written but not applied. `06_assistant_v68.sql` (assistant usage counts, error log source) is needed before the assistant works; `07_scores_v69.sql` before company scores; `08_replies_notes_v70.sql` before replies and helper notes (it replaces 01 and the notes part of 02); `09_answers_v71.sql` (`drop_outcome`, for Undo) after 07 |
 
 ## Where things are in the page code
 
@@ -149,4 +150,5 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Sorted's assistant (build68) | `aiContext()` (the case, capped at 9,000 characters), `aiRun()` calls the `case-assistant` edge function only when tapped; `aiPanel()` (`aiexplain`, `aiask`), `aiImproveBox()` in the challenge builder, `aiIntro()` the first-time notice. Nothing in the case changes unless the person uses the text. Tests use `functions.invoke` in `tests/mock.js` (`__aiMode` for errors) |
 | Company scores (build69) | `SC_PARTIES` (the fixed list from `PARTIES`), `recordOutcome()` on kept and missed (not parking, not examples, not with step records off), `loadScores()`, `scoreBlock()`. Server: `promise_outcomes`, `record_outcome()`, `company_scores()` (5 promises from 3 people minimum) in `07_scores_v69.sql`. Never case text |
 | Replies and helper notes (build70) | `loadCaseExtras()` (the case address, unused replies by `task_id`, notes), `cmCard()` (a reply as a proposal: add it, or not about this case), `notesBlock()` (keep or remove), `helperNoteForm()` on the helper page; the mailto adds the case address in Cc; the notes switch is `notes-toggle` in Sharing. Server: `case_mail`, `case_reply_address()`, `case_notes`, `add_share_note()` in `08_replies_notes_v70.sql` |
+| Answers from the reminder email (build71) | `?task=…&src=email&ans=yes|no&p=<promise or step id>`; `openPending()` waits for a fresh load, then `ansApply()` presses the case's own button (`kept`, `missed`, `move-done`, or `move-rebook` for Not yet, which records nothing); `ansBanner()` says what was recorded with `ans-undo`, which restores the case from a snapshot and calls `drop_outcome`. Parking promises get no answer links |
 | Saving (one save at a time) | `save()` with `_saving` and `_again` (build37) |

@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// v9 (Sorted v71): an "after" reminder for a promise or your own step has two answer links, Yes and No. They open the
+// case, which records the answer once it has loaded and offers Undo. Still no case details in the email.
 // v8: claims reminders and helper invites in the database before sending (needs the reliability fixes of 2 Oct 2026).
 // Called every 10 minutes by pg_cron (and straight away after a helper invite).
 // Emails never contain task details: only a link.
@@ -22,8 +24,9 @@ function eq(a: string, b: string) { if (a.length !== b.length) return false; let
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // A plain, well-formed service email: short intro, one button, the link written out, and who sends it.
-function html(heading: string, intro: string, button: string, link: string, footer: string): string {
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px">${esc(button)}</a><p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p></td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${footer}</td></tr></table></td></tr></table></body></html>`;
+function html(heading: string, intro: string, button: string, link: string, footer: string, second?: { button: string; link: string; note: string }): string {
+  const two = second ? `<a href="${esc(second.link)}" style="display:inline-block;margin:10px 0 0;background:#FFFFFF;color:#2A3990;border:2px solid #2A3990;text-decoration:none;font-size:16px;font-weight:bold;padding:10px 20px;border-radius:6px">${esc(second.button)}</a><p style="margin:16px 0 0;font-size:14px;line-height:1.5;color:#55565C">${esc(second.note)}</p>` : "";
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px;margin-right:8px">${esc(button)}</a>${two}${second ? "" : `<p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p>`}</td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${footer}</td></tr></table></td></tr></table></body></html>`;
 }
 
 async function send(key: string, from: string, to: string, subject: string, text: string, htmlBody: string, headers?: Record<string, string>): Promise<{ ok: boolean; id?: string; err?: string }> {
@@ -43,10 +46,10 @@ async function send(key: string, from: string, to: string, subject: string, text
 function copy(kind: string, move: boolean) {
   if (move) {
     if (kind === "start") return { subject: "Your Sorted reminder: due tomorrow", heading: "Something you planned to do is due tomorrow", intro: "One of your cases in Sorted has something for you to do by tomorrow. Open it to see what, and mark it done when you have." };
-    if (kind === "after") return { subject: "Your Sorted case: did you get it done?", heading: "Did you get it done?", intro: "The time you set for one of your cases has passed. Open it and mark it done, or pick a new time." };
+    if (kind === "after") return { subject: "Your Sorted case: did you get it done?", heading: "Did you get it done?", intro: "The time you set for one of your cases has passed. Tap Yes and Sorted will mark it done, or Not yet to pick a new time." };
     return { subject: "Your Sorted reminder", heading: "Something you planned to do is due", intro: "One of your cases in Sorted has something for you to do. Open it to see what, and mark it done when you have." };
   }
-  if (kind === "after") return { subject: "Your Sorted case: did it happen?", heading: "Did it happen?", intro: "The time for one of your cases has passed. Open it and tell Sorted what happened, so it knows what to do next." };
+  if (kind === "after") return { subject: "Your Sorted case: did it happen?", heading: "Did it happen?", intro: "The time for one of your cases has passed. Tap an answer and Sorted will record it in that case. If it didn't happen, your chase will be ready." };
   return { subject: "Your Sorted reminder", heading: "Something you're waiting on is coming up", intro: "One of your cases in Sorted is due soon. Open it to see the details and what to have ready." };
 }
 
@@ -109,9 +112,14 @@ Deno.serve(async (req: Request) => {
     if (!email) { await cancel("no email"); continue; }
     const link = `${SITE}/?task=${encodeURIComponent(r.task_id)}&src=email`;
     const c = copy(r.kind, isMove);
+    // Answer links only after the time has passed, only for the promise or step this reminder is about, never for parking.
+    const target = isMove ? openMv : open;
+    const ask = r.kind === "after" && r.promise_id && target && target.id === r.promise_id && target.src !== "parking";
+    const ans = (a: string) => `${link}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
-    const text = `${c.heading}\n\n${c.intro}\n\nOpen your case: ${link}\n\nYou're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, "Open your case", link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
+    const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined);
     const res = await send(key, from, email, c.subject, text, hb, { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
     if (!res.ok) { failed++; await sb.from("reminders").update({ cancel_reason: `send failed: ${res.err}` }).eq("id", r.id); continue; }
     await sb.from("reminders").update({ sent_at: new Date().toISOString(), provider_id: res.id ?? null }).eq("id", r.id);

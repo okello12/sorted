@@ -21,6 +21,8 @@ with sync_playwright() as p:
     spot_h=pg.locator('.home44-spot').bounding_box()['height']
     ok(spot_h < 470,'spotlight stays compact on a 390px phone viewport: %.1fpx'%spot_h)
 
+    # Change only the wording/party of the example's already-due promise, reload Home,
+    # and verify the real UI question rather than exposing a production test hook.
     cases=[
       ({'said':'Currys promised the refund would be paid tomorrow','party':'Currys'},'Did the money arrive?'),
       ({'said':'British Gas said they would call back tomorrow','party':'British Gas'},'Did they get back to you?'),
@@ -30,10 +32,10 @@ with sync_playwright() as p:
       ({'said':'They would deal with it tomorrow','party':'Letting agent'},'Did the letting agent do what they said?'),
     ]
     for promise,expected in cases:
-        got=pg.evaluate('(x)=>home55Question(x,["Did it happen?"])',promise)
-        ok(got==expected,'context question: %s'%expected)
-    kept=pg.evaluate('()=>home55Question({said:"anything",party:"Someone"},["Did they come?"])')
-    ok(kept=='Did they come?','an already-specific question is preserved')
+        pg.evaluate("""x=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var t=db.tasks[0].data;var ps=t.promises||[];var pr=ps.find(p=>p.status==='open')||ps[0];pr.said=x.said;pr.party=x.party;localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}""",promise)
+        pg.reload(); wait(pg,350)
+        got=pg.inner_text('.home44-question')
+        ok(got==expected,'context question: %s (got %s)'%(expected,got))
 
     pg.screenshot(path=HERE+'/tests/out/home55-light.png',full_page=True)
     b.close()

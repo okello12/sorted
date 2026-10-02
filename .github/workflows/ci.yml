@@ -1,0 +1,37 @@
+name: Sorted regression CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sorted-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Run full regression suite
+        run: sh tests/run.sh
+      - name: Verify pinned production build
+        run: |
+          test "$(sha1sum public/index.html | awk '{print $1}')" = "f6089c442879405b3c124315d5e0befac2ce98e2"

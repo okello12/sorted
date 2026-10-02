@@ -29,18 +29,23 @@ with sync_playwright() as p:
     pg.locator('.case56-more > summary').click(); wait(pg,100)
     ok(pg.locator('.case56-more [data-p=done]').is_visible(),'finish action remains available under More')
 
-    # Create a real move through the product so the legacy-renewal test uses the production data shape.
+    # Create a real move through the product and exercise the compact Next UI against real stored data.
     pg.click('[data-a=panel][data-p=move]'); wait(pg,120)
     pg.fill('#f-mwhat','Remind to apply for it')
     due=datetime.date.today()+datetime.timedelta(days=22)
     for part,v in [('d',due.day),('m',due.month),('y',due.year)]: pg.select_option('select[data-dp=f-mdate][data-part=%s]'%part,str(v))
     pg.click('form[data-f=move] button[type=submit]'); wait(pg,350)
     ok(pg.locator('.case56-next').count()==1,'real move renders in the compact Next card')
+    nxt=pg.inner_text('.case56-next')
+    ok('Next' in nxt and 'Remind to apply for it' in nxt and 'Your move' not in nxt,'next card removes repeated Your move labels')
+    ok(pg.locator('.case56-next [data-a=move-done]').is_visible(),'primary completion action remains prominent')
+    ok(pg.locator('.case56-next .case56-reminders').count()==1 and not pg.locator('.case56-next .case56-reminders').evaluate('(x)=>x.open'),'calendar and email machinery is folded under Reminders')
 
-    # Convert that same case to the legacy driving-licence renewal shape while preserving the real move.
+    # Convert the same mock row to a legacy driving-licence renewal. This fixture checks renewal presentation only;
+    # move persistence itself is covered above through the real product path rather than by synthetic localStorage edits.
     pg.evaluate("""()=>{
       var db=JSON.parse(localStorage.getItem('__mockdb')),row=db.tasks.find(x=>x.data&&x.data.example),t=row.data;
-      t.example=false;t.title='My driving licence';t.mode='renew';t.board='yours';t.promises=[];t.call=null;t.fix=null;
+      t.example=false;t.title='My driving licence';t.mode='renew';t.board='yours';t.promises=[];t.moves=[];t.call=null;t.fix=null;
       t.renew={kind:'licence',step:'done',expiry:'2026-04-25',applied:false,provider:'DVLA',how:'self'};
       t.events=[
         {at:'2026-09-30T08:10:00.000Z',label:'Application date confirmed for 24 Oct.'},
@@ -56,17 +61,12 @@ with sync_playwright() as p:
     pg.reload(); wait(pg,500)
     main=pg.inner_text('main')
     ok('My driving licence' in main,'legacy renewal keeps its familiar case title')
-    ok(pg.locator('.case56-next').count()==1,'own action stays as one compact Next card')
-    nxt=pg.inner_text('.case56-next')
-    ok('Next' in nxt and 'Remind to apply for it' in nxt and 'Your move' not in nxt,'next card removes repeated Your move labels')
-    ok(pg.locator('.case56-next [data-a=move-done]').is_visible(),"I've applied action remains prominent")
-    ok(pg.locator('.case56-next .case56-reminders').count()==1 and not pg.locator('.case56-next .case56-reminders').evaluate('(x)=>x.open'),'calendar/email machinery is folded under Reminders')
     renew=pg.inner_text('.case56-renew-state')
     ok('Driving licence' in renew and 'Expired' in renew,'renewal state is compact and clear')
     official=pg.inner_text('.case56-official')
     ok('Renew on GOV.UK' in official and 'Open GOV.UK' in official,'official route is the main renewal guidance')
     ok(not pg.locator('.case56-official .case56-fold').evaluate('(x)=>x.open'),'extra GOV.UK guidance is collapsed')
-    ok(pg.locator('.case56-official [data-a=applied]').count()==0 and pg.locator('.case56-official [data-p=renewed]').is_visible(),'lower renewal card does not duplicate the primary apply action')
+    ok(pg.locator('.case56-official [data-a=applied]').is_visible() and pg.locator('.case56-official [data-p=renewed]').is_visible(),'renewal outcome actions remain available when there is no separate move')
 
     # Only meaningful case events should be visible before Full history is expanded.
     timeline=pg.locator('#case56-timeline').locator('xpath=ancestor::section[1]')

@@ -9,26 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Build current app
-        run: node all.js
-      - name: Print case-detail implementation
+      - name: Find case-detail test dependencies
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          s=Path('public/index.html').read_text()
-          for marker, before, after in [
-            ('function moveCard',0,6500),
-            ('function doIdleCard',0,5000),
-            ('function evidenceBlock',0,6500),
-            ('function helperBlock',0,7500),
-            ('function evRow',0,4500),
-            ('function renewCard(t)',0,9000),
-            ('function promiseCard',0,8000),
-          ]:
-            i=s.find(marker)
-            print('\n\n===== MARKER:',marker,'INDEX',i,'=====')
-            if i>=0: print(s[max(0,i-before):i+after])
-          PY
+          grep -R -n -E "data-a=(share|unshare|cal|gcal|email-on|email-off|helper|move-done|move-rebook|move-drop)|What.s happened so far|Copy the helper link|Email reminders|Open the official page|It.s renewed|I.ve applied" tests || true

@@ -2,14 +2,14 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { replyKind } from "./readers.mjs";
 
-// Resend webhook for email.received. A user forwards a company's email to their own
-// secret Sorted address; we keep the subject and text for up to 30 days so the app
-// can offer to log it as a promise. Security: signed webhook (Svix), secret address,
-// and the forwarder must be the account's own email address.
-// Failures and rejections are logged to ops_errors as a kind and a time only (no addresses, no content).
+// Resend webhook for email.received.
+// Two deliberately separate inbound routes share this endpoint:
+// 1) case-<token>@... receives replies for one existing case;
+// 2) log-<token>@... is a private user intake address for emails the user forwards themselves.
+// A universal forwarded email is never attached to a case by this function. It waits with task_id = null until
+// the signed-in person explicitly chooses a case in the app. For log- addresses the From address must exactly
+// match the email on the Sorted account as well as knowing the random secret address.
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-
-const FORWARDING_OFF = true;  // personal forwarding (log-) addresses stay off; case- replies are separate (v4)
 
 async function oops(kind: string) { try { await sb.from("ops_errors").insert({ source: "inbound", kind }); } catch { /* never block mail on logging */ } }
 async function secret(name: string): Promise<string | null> {
@@ -19,7 +19,6 @@ async function secret(name: string): Promise<string | null> {
 function b64decode(s: string): Uint8Array { return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)); }
 function b64encode(b: ArrayBuffer): string { return btoa(String.fromCharCode(...new Uint8Array(b))); }
 function eq(a: string, b: string) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
-
 async function verify(req: Request, body: string): Promise<"ok" | "no_secret" | "bad_signature"> {
   const whsec = await secret("resend_webhook_secret");
   if (!whsec) return "no_secret";
@@ -32,7 +31,6 @@ async function verify(req: Request, body: string): Promise<"ok" | "no_secret" | 
 }
 const addr = (s: string) => { const m = String(s || "").match(/<([^>]+)>/); return (m ? m[1] : String(s || "")).trim().toLowerCase(); };
 const strip = (html: string) => html.replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|tr|li|h\d)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\n{3,}/g, "\n\n");
-
 async function bodyText(d: any): Promise<string> {
   const key = (await secret("resend_inbound_key")) || (await secret("resend_api_key"));
   if (!key) { await oops("no_secret"); return ""; }
@@ -43,9 +41,7 @@ async function bodyText(d: any): Promise<string> {
   return String(j.text || (j.html ? strip(j.html) : ""));
 }
 
-// v5 (Sorted v72): after a reply is stored, the case's owner gets a short email saying a reply came in and what kind it
-// looks like (read with the page's own patterns, readers.mjs). Never which case, who sent it or what it says. Not for an
-// acknowledgement, at most one every 6 hours per case, and never after they have stopped Sorted's emails.
+// After a case reply is stored, notify the owner without exposing case content in the notification email.
 const SITE = "https://sorted-pilot.vercel.app";
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const NOTE: Record<string, { heading: string; intro: string }> = {
@@ -66,17 +62,27 @@ async function notify(taskId: string, userId: string, kind: string) {
   const n = NOTE[kind], link = `${SITE}/?task=${encodeURIComponent(taskId)}&src=reply`;
   const foot = "Check it's genuine before you rely on it: anyone can send an email. This email doesn't say which case or what the reply says; that stays in the app.";
   const text = `${n.heading}\n\n${n.intro}\n\nOpen your case: ${link}\n\n${foot}\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(n.heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(n.intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px">Open your case</a><p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p></td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${esc(foot)}<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.</td></tr></table></td></tr></table></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(n.heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(n.intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px">Open your case</a></td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${esc(foot)}<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.</td></tr></table></td></tr></table></body></html>`;
   try {
     const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: "A reply came into one of your Sorted cases", text, html }) });
     if (!r.ok) await oops("notify_failed");
   } catch { await oops("notify_failed"); }
 }
 
-// v4 (Sorted v70): replies come back into the case. Every message's signature is checked first. Each case has its own
-// address case-<random>@<inbound domain>, added in Cc when the person emails a company from that case. A reply to it is
-// stored for that case only, with the sender's website (domain) and never their full address, and the app shows it as
-// a proposal the owner must confirm. Old personal forwarding addresses (log-...) stay switched off.
+async function storeForwarded(local: string, from: string, fromDomain: string, d: any, getText: () => Promise<string>): Promise<boolean> {
+  const { data: ia } = await sb.from("inbound_addresses").select("user_id").eq("token", local).maybeSingle();
+  if (!ia?.user_id) { await oops("unknown_address"); return false; }
+  const { data: u } = await sb.auth.admin.getUserById(ia.user_id);
+  const account = addr(u?.user?.email || "");
+  if (!account || account !== from) { await oops("forwarder_mismatch"); return false; }
+  const { count } = await sb.from("inbound_items").select("id", { count: "exact", head: true }).eq("user_id", ia.user_id).is("task_id", null).gte("received_at", new Date(Date.now() - 86400000).toISOString());
+  if ((count ?? 0) >= 20) { await oops("daily_limit"); return false; }
+  const text = await getText();
+  const { error } = await sb.from("inbound_items").insert({ user_id: ia.user_id, task_id: null, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: text.slice(0, 8000) });
+  if (error) { await oops("store_failed"); return false; }
+  return true;
+}
+
 async function handle(req: Request): Promise<Response> {
   if (req.method !== "POST") return new Response("ok");
   const body = await req.text();
@@ -87,26 +93,32 @@ async function handle(req: Request): Promise<Response> {
   const d = ev.data || {};
   const domain = (await secret("inbound_domain") || "").toLowerCase();
   if (!domain) { await oops("no_secret"); return Response.json({ stored: 0 }); }
-  const on = (await secret("case_replies_on")) === "yes";
+  const caseRepliesOn = (await secret("case_replies_on")) === "yes";
+  const universalOn = (await secret("universal_forwarding_on")) === "yes";
   const from = addr(d.from), fromDomain = from.slice(from.lastIndexOf("@") + 1).slice(0, 120);
-  const rcpts = ([] as string[]).concat(d.to || [], d.cc || []).map(addr);
+  const rcpts = Array.from(new Set(([] as string[]).concat(d.to || [], d.cc || []).map(addr)));
   let stored = 0, text: string | null = null;
+  const getText = async () => { if (text === null) text = await bodyText(d); return text || ""; };
   for (const a of rcpts) {
     const at = a.lastIndexOf("@");
     if (at < 0 || a.slice(at + 1) !== domain) continue;
     const local = a.slice(0, at);
-    if (local.startsWith("log-")) { if (FORWARDING_OFF) continue; }
-    if (!local.startsWith("case-") || !on) continue;
+    if (local.startsWith("log-")) {
+      if (!universalOn) continue;
+      if (await storeForwarded(local, from, fromDomain, d, getText)) stored++;
+      continue;
+    }
+    if (!local.startsWith("case-") || !caseRepliesOn) continue;
     const { data: cm } = await sb.from("case_mail").select("task_id,user_id").eq("token", local).maybeSingle();
     if (!cm) { await oops("unknown_address"); continue; }
     const { count } = await sb.from("inbound_items").select("id", { count: "exact", head: true }).eq("task_id", cm.task_id).gte("received_at", new Date(Date.now() - 86400000).toISOString());
     if ((count ?? 0) >= 20) { await oops("daily_limit"); continue; }
     const { count: recent } = await sb.from("inbound_items").select("id", { count: "exact", head: true }).eq("task_id", cm.task_id).gte("received_at", new Date(Date.now() - 6 * 3600000).toISOString());
-    if (text === null) text = await bodyText(d);
-    const { error } = await sb.from("inbound_items").insert({ user_id: cm.user_id, task_id: cm.task_id, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: (text || "").slice(0, 8000) });
+    const body = await getText();
+    const { error } = await sb.from("inbound_items").insert({ user_id: cm.user_id, task_id: cm.task_id, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: body.slice(0, 8000) });
     if (error) { await oops("store_failed"); continue; }
     stored++;
-    if ((recent ?? 0) === 0) await notify(cm.task_id, cm.user_id, replyKind(`${d.subject || ""}. ${text || ""}`));
+    if ((recent ?? 0) === 0) await notify(cm.task_id, cm.user_id, replyKind(`${d.subject || ""}. ${body}`));
   }
   return Response.json({ stored });
 }

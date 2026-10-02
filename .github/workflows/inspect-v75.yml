@@ -23,16 +23,17 @@ jobs:
           const fs=require('fs');
           const s=fs.readFileSync('public/index.html','utf8');
           const picks=[
-            ['anonNote','function anonNote',5000],
-            ['caseEntry','function caseEntry',12000],
+            ['landing phrase','Life gets messy',7000],
+            ['tagline phrase','They said Tuesday',7000],
+            ['PLANS','var PLANS',5000],
+            ['cfCheck','function cfCheck',8000],
+            ['rsCard','function rsCard',12000],
             ['viewTask','function viewTask',30000],
-            ['promiseCard','function promiseCard',9000],
-            ['home44Row','function home44Row',9000],
-            ['viewHome','function viewHome',18000]
+            ['home title','function home54Title',5000]
           ];
           for(const [name,key,len] of picks){
             const i=s.indexOf(key);
             console.log('\n===== '+name+' @ '+i+' =====');
-            console.log(i<0?'NOT FOUND':s.slice(i,i+len));
+            console.log(i<0?'NOT FOUND':s.slice(Math.max(0,i-2000),i+len));
           }
           NODE

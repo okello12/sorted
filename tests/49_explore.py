@@ -30,11 +30,11 @@ with sync_playwright() as p:
     # 1 the doors teach more, and the strip is there with 12 examples
     m = pg.inner_text('#cap82-start')
     ok('Washing machine, boiler, broadband' in m and 'HMRC, the council, your insurer' in m and 'Passport, driving licence, MOT' in m, 'the six doors list broader examples')
-    ok('Things people use Sorted for' in m and pg.locator('#cap82-start .cap95-chip').count() == 32, 'the strip has 32 examples (v97)')
+    ok('Things people use Sorted for' in m and pg.locator('#cap82-start .cap95-chip[data-cap95]').count() == 32, 'the strip has 32 examples (v97)')
     ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth"), 'the strip scrolls inside itself, not the page')
     ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('.cap95-also').count() == 0, 'the fold and search are there from the first visit (v97), the extra line is not')
     # every example opens a flow
-    keys = pg.locator('#cap82-start .cap95-chip').evaluate_all("els=>els.map(e=>e.getAttribute('data-cap95'))")
+    keys = pg.locator('#cap82-start .cap95-chip[data-cap95]').evaluate_all("els=>els.map(e=>e.getAttribute('data-cap95'))")
     bad = []
     for k in keys:
         pg.evaluate("sessionStorage.clear()"); pg.goto("https://sorted.test/#start"); pg.reload(); wait(pg, 700); pg.locator('#cap82-start [data-cap95=%s]' % k).first.evaluate('e=>e.click()'); wait(pg, 500)
@@ -71,7 +71,7 @@ with sync_playwright() as p:
     ok(pg.locator('.cap95-also').count() == 1 and 'Sorted can also help with' in pg.inner_text('.cap95-also'), 'Home: one line saying what else it helps with (v96: fitted to the last case)')
     ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('details.cap95-explore .cap95-theme').count() == 9, 'the fold has nine parts of life')
     if not pg.evaluate("document.getElementById('cap95-explore').open"): pg.click('details.cap95-explore summary'); wait(pg, 200)
-    pg.locator('details.cap95-explore [data-cap95=insurance]').first.click(); wait(pg, 600)
+    pg.locator('details.cap95-explore .cap95-themes [data-cap95=insurance]').first.click(); wait(pg, 600)
     ok('Who is dealing with your claim?' in pg.inner_text('main'), 'an example in the fold opens its flow too')
     # 4 a finished case suggests three others
     home(pg)

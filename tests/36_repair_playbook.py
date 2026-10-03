@@ -74,6 +74,6 @@ with sync_playwright() as p:
     # 6 not a repair: unchanged
     r = start(pg, "Currys promised a refund of £89 by Friday, order 445566")
     overdue_open(pg, r); pg.click('.promise [data-a=kept]'); wait(pg)
-    ok(pg.locator('.pb-card').count() == 0 and pg.locator('form[data-f=done]').count() == 1, 'a refund kept still asks how it ended, as before')
+    ok('Has all of it arrived?' in (card(pg) if pg.locator('.pb-card').count() else '') and pg.locator('form[data-f=done]').count() == 0, 'a refund kept follows the refund playbook (v98): has all of it arrived?')
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

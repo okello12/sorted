@@ -52,7 +52,9 @@ with sync_playwright() as p:
     pg.goto(link(cid, 'yes', pid)); wait(pg, 700)
     t = task(pg, cid); q = next(x for x in t['promises'] if x['id'] == pid)
     ok(q['status'] == 'kept' and 'Recorded from your email: they kept it.' in pg.inner_text('main'), '"Yes" records that they kept it')
-    pg.click('[data-a=panel][data-p=""] >> nth=-1') if pg.locator('[data-a=panel][data-p=""]').count() else None; wait(pg)
+    if pg.locator('[data-a=pb-go]').count(): pg.locator('[data-a=pb-go]').first.click()  # v98: a refund asks if all of it arrived
+    elif pg.locator('[data-a=panel][data-p=""]').count(): pg.click('[data-a=panel][data-p=""] >> nth=-1')
+    wait(pg)
     ok(pg.locator('.ans-note').count() == 0, 'the note goes once you do something else')
     # 4 the same link again changes nothing
     n1 = len(task(pg, cid)['events'])

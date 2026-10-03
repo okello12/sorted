@@ -133,7 +133,9 @@ with sync_playwright() as p:
     t = task(pg, cid)
     ok(t['promises'][-1]['status'] == 'kept', 'kept: recorded')
     if t['board'] != 'done':
-        if pg.locator('#f-outcome').count(): pg.fill('#f-outcome', 'Refund arrived')
+        ok('Has all of it arrived?' in pg.inner_text('main'), 'kept: the refund playbook asks if all of it arrived (v98)')
+        if pg.locator('[data-a=pb-go]').count(): pg.locator('[data-a=pb-go]').first.click(); wait(pg)
+        if pg.locator('#f-outcome').count() and not pg.input_value('#f-outcome'): pg.fill('#f-outcome', 'Refund arrived')
         for sel in ['text=Mark it done']:
             if pg.locator(sel).count(): pg.locator(sel).first.click(); wait(pg); break
         if pg.locator('form[data-f=outcome]').count(): pg.click('form[data-f=outcome] button[type=submit]'); wait(pg)

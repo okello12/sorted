@@ -22,9 +22,9 @@ def settle_case(pg):
         if chips.count():chips.first.click()
         form.locator('button[type=submit]:visible').first.click();wait(pg,220)
     if pg.locator('[data-a=sug-yes]:visible').count():pg.locator('[data-a=sug-yes]:visible').first.click();wait(pg,180)
-    if pg.get_by_text('Not now',exact=True).locator('visible=true').count():pg.get_by_text('Not now',exact=True).first.click();wait(pg,180)
+    notnow=pg.get_by_text('Not now',exact=True)
+    if notnow.count() and notnow.first.is_visible():notnow.first.click();wait(pg,180)
 def open_other(pg):
-    # return to a start surface and choose only a control that is actually visible
     h=pg.locator('[data-cap87=home]:visible')
     if h.count():h.first.click();wait(pg,250)
     else:pg.goto('https://sorted.test/');wait(pg,350)

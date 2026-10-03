@@ -1,6 +1,6 @@
 # v92: after Start. Every new case opens with what Sorted makes of it (what I understand, what to do next, what Sorted
 # will remember, anything better avoided). Starts ask two questions at most, renewals propose a dated step, "Something
-# else" is only the box. Then one case goes the whole way: promise, waiting, due, missed, chase, new promise, kept, done.
+# else" is only the box. v93: a typed renewal gets a reminder to renew, and a case with no date asks for one. Then one case goes the whole way: promise, waiting, due, missed, chase, new promise, kept, done.
 import os, sys, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dates
@@ -55,6 +55,21 @@ with sync_playwright() as p:
     for title, text, want in H:
         typed(pg, text); t = newest(pg); f = fr(pg)
         ok(title.lower() in t['title'].lower() and all(w in f for w in want) and 'What Sorted will remember' in f, '%s: %s' % (title, t['title']))
+    # a renewal typed in: no call form, a reminder to renew for you to confirm, nothing added until you do
+    typed(pg, "My driving licence expires on 24 November")
+    t = newest(pg)
+    ok(pg.locator('form[data-f=call]').count() == 0 and pg.locator('[data-a=fr-renew]').count() == 1, 'typed renewal: no call form, a reminder to renew instead')
+    pg.click('[data-a=fr-renew]'); wait(pg)
+    vals = pg.locator('#moveform input, #moveform textarea').evaluate_all("els=>els.map(e=>e.value).join('|')")
+    ok(pg.locator('#moveform').count() == 1 and 'Renew my driving licence' in vals and not (newest(pg).get('moves') or []), 'it proposes "Renew my driving licence" and adds nothing yet: %s' % vals[:80])
+    pg.click('#moveform button[type=submit]'); wait(pg)
+    mv = (newest(pg).get('moves') or [{}])[-1]
+    ok(mv.get('what', '').startswith('Renew my driving licence') and mv.get('dueAt', '')[5:10] in ('11-23', '11-24'), 'confirmed, it is due by the expiry date: %s %s' % (mv.get('what'), mv.get('dueAt')))
+    # no date yet: get one, and the message asks for it
+    typed(pg, "BT broadband has been down for a week and they keep saying an engineer will come")
+    ok('Ask BT for a date for the engineer' in fr(pg), 'no date yet: the next step is to get one')
+    ask = pg.input_value('#f-ask') if pg.locator('#f-ask').count() else ''
+    ok('Please give me a date for the engineer' in ask, 'and the message asks for it: %s' % ask[-70:])
     t = newest(pg)
     lam = next(x['data'] for x in db(pg)['tasks'] if 'Lambeth' in x['data']['title'])
     ok(not lam.get('sugP'), 'a demand on you is not proposed as their promise')

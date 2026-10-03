@@ -9,7 +9,7 @@ function q(table){
     var rows=DB[table];
     if(op==="select"){var fr=rows.filter(r=>filters.every(f=>r[f[0]]===f[1]));return {data:(table==="tasks"||table==="shares")?fr.map(r=>({data:r.data,card:r.card})):fr.map(r=>Object.assign({},r)),error:null}}
     if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
-    if(op==="upsert"){var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
+    if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
     if(op==="insert"){rows.push(Object.assign({},payload,{updated_at:new Date().toISOString()}));persist();return {data:null,error:null}}
     if(op==="update"){rows.forEach(r=>{if(filters.every(f=>r[f[0]]===f[1])){Object.assign(r,payload,{updated_at:new Date().toISOString()})}});persist();return {data:null,error:null}}

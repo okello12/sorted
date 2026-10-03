@@ -56,7 +56,7 @@ with sync_playwright() as p:
     ok('Who should have cancelled it?' in pg.inner_text('main'), 'subscription: the chase flow')
     # 3 after a first case: one line on Home, and the fold
     home(pg)
-    ok(pg.locator('.cap95-also').count() == 1 and 'repairs, refunds, appointments, letters, complaints, renewals and promises' in pg.inner_text('.cap95-also'), 'Home: one line saying what else it keeps track of')
+    ok(pg.locator('.cap95-also').count() == 1 and 'Sorted can also help with' in pg.inner_text('.cap95-also'), 'Home: one line saying what else it helps with (v96: fitted to the last case)')
     ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('details.cap95-explore .cap95-theme').count() == 6, 'the fold has six parts of life')
     pg.click('details.cap95-explore summary'); wait(pg, 200)
     pg.locator('details.cap95-explore [data-cap95=insurance]').first.click(); wait(pg, 600)

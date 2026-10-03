@@ -33,13 +33,10 @@ with sync_playwright() as p:
     ok(pg.locator('#cap82-start').evaluate("e=>e.classList.contains('cap82-with-cases')"),'chooser becomes more compact when cases exist')
     ok(no_overflow(pg),'combined chooser and case dashboard do not overflow at 390px')
 
-    # A visual choice opens the existing composer instead of creating a parallel workflow.
-    pg.click('#cap82-start [data-cap82="call"]'); wait(pg,240)
-    f=pg.locator('#f-case')
-    ok(f.count()==1,'visual choice opens the existing case composer')
-    if f.count():
-        ph=f.get_attribute('placeholder') or ''
-        ok('call' in ph.lower(),'composer prompt is tailored to the chosen real-life situation')
+    # Since v91 a visual choice opens a guided start for that situation; its answers go through the normal case reader.
+    pg.click('#cap82-start [data-cap82="call"]'); wait(pg,400)
+    ok(pg.locator('.gi-form #gi-who').count()==1,'visual choice opens a guided start for that situation')
+    ok('call' in pg.inner_text('.gi-form').lower(),'the guided start is tailored to the chosen real-life situation')
     ok(pg.locator('.home44-spot').count()==1,'opening a new visual choice does not remove the active case')
 
     # Dark mode keeps the unified surface stable.

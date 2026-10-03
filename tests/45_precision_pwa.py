@@ -24,19 +24,20 @@ with sync_playwright() as p:
     chooser=pg.locator('#cap82-start,#cap82-landing').first
     if chooser.count() and chooser.locator('.cap82-card[data-cap82=fix]').count():
         chooser.locator('.cap82-card[data-cap82=fix]').click();wait(pg,450)
+    ok(pg.locator('.gi-form').count()==1,'broken choice reaches the guided start (v91)')
+    heading0=pg.locator('h1,h2').filter(has_text="What’s broken?");ok(heading0.count()>=1,'the guided start asks What’s broken?')
+    if pg.locator('[data-a=gi-own]').count():pg.click('[data-a=gi-own]');wait(pg,300)
     ta=pg.locator('#f-case').first
-    ok(ta.count()==1,'broken choice reaches the intake composer')
+    ok(ta.count()==1,'"your own words" reaches the intake composer')
     if ta.count():
         ok(pg.locator('html.cap87-intake').count()==1,'intake precision state is active')
-        heading=pg.locator('h1,h2').filter(has_text="What’s broken?")
-        ok(heading.count()>=1,'broken choice carries through to a specific intake heading')
         ok(pg.locator('.hero-art:visible').count()==0,'giant decorative hero art is removed from intake')
         ok(pg.locator('.cap87-empty-cases:visible').count()==0,'empty Your cases block is hidden during first-case creation')
         ta.focus(); ring=ta.evaluate("e=>getComputedStyle(e).outlineStyle==='none'&&getComputedStyle(e).boxShadow!=='none'")
         ok(ring,'textarea uses one deliberate focus treatment')
-        ta.fill('Pcn'); pg.locator('button[type=submit]').first.click(); wait(pg,250)
+        ta.fill('Stuff'); pg.locator('button[type=submit]').first.click(); wait(pg,250)
         more=pg.get_by_text('Add a little more detail',exact=True)
-        cont=pg.get_by_text('Continue with “Pcn”',exact=True)
+        cont=pg.get_by_text('Continue with “Stuff”',exact=True)
         ok(more.count()==1,'vague-input recovery asks for a little more detail')
         ok(cont.count()==1,'vague-input recovery names the exact text if user continues')
     ok(no_overflow(pg),'v87 precision and standalone toolbar fit 390px')

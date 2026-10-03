@@ -36,11 +36,10 @@ with sync_playwright() as p:
     chooser=pg.locator('#cap82-start,#cap82-landing').first
     fix=chooser.locator('[data-cap82=fix]')
     if fix.count():fix.click();wait(pg,500)
-    ta=pg.locator('#f-case').first
-    ok(ta.count()==1,'broken tile reopens the composer')
+    ok(pg.locator('.gi-form').count()==1,'broken tile opens the guided start (v91)')
     ok(pg.get_by_text('What’s broken?',exact=True).count()>=1,'broken tile carries through to What’s broken?')
-    if ta.count():ok('broken' in (ta.get_attribute('placeholder') or '').lower(),'broken tile carries through to the textarea prompt')
-    large2=pg.evaluate("""()=>{const ta=document.querySelector('#f-case'),m=ta&&ta.closest('main'),h=m&&Array.from(m.querySelectorAll('h1,h2')).find(x=>(x.textContent||'').trim()==='What’s broken?');if(!m||!h)return -1;const hy=h.getBoundingClientRect().top;return Array.from(m.querySelectorAll('img,picture,figure,svg,[class*=hero-art],[class*=illustration],[class*=artwork]')).filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return s.display!=='none'&&r.width>=170&&r.height>=100&&r.bottom<=hy+50}).length}""")
+    ok('drain' in (pg.locator('#gi-what').get_attribute('placeholder') or '').lower(),'broken tile asks what it is doing, with examples')
+    large2=pg.evaluate("""()=>{const ta=document.querySelector('#f-case,.gi-form'),m=ta&&ta.closest('main'),h=m&&Array.from(m.querySelectorAll('h1,h2')).find(x=>(x.textContent||'').trim()==='What’s broken?');if(!m||!h)return -1;const hy=h.getBoundingClientRect().top;return Array.from(m.querySelectorAll('img,picture,figure,svg,[class*=hero-art],[class*=illustration],[class*=artwork]')).filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return s.display!=='none'&&r.width>=170&&r.height>=100&&r.bottom<=hy+50}).length}""")
     ok(large2==0,'category-specific intake also has no large decorative artwork')
     ok(no_overflow(pg),'standalone compact intake fits 390px')
     ctx.close();b.close()

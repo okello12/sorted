@@ -15,6 +15,6 @@ R('</body>',String.raw`<script>
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='PENDING_V87_RACE';
+const EXPECT='485a1332b6ee019632585a1cda7d0cd8087c835b';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v87 final ok',h(s),s.length);

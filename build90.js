@@ -43,7 +43,8 @@ R('</body>',String.raw`<script>
     });
   }
   function tune(){
-    var ta=document.querySelector('#f-case');if(!ta)return;
+    var ta=document.querySelector('#f-case');
+    if(!ta){document.documentElement.classList.remove('cap90-intake');return}
     document.documentElement.classList.add('cap90-intake');
     var main=ta.closest('main')||document.querySelector('main')||document.body;
     var hs=Array.from(main.querySelectorAll('h1,h2'));
@@ -52,16 +53,21 @@ R('</body>',String.raw`<script>
     if(c&&heading){heading.textContent=c[0];var lede=Array.from(main.querySelectorAll('p')).find(function(e){return /Tell Sorted in one sentence|Tell Sorted what stopped working|Tell Sorted who you need to contact|Tell Sorted what they said|Tell Sorted what you are waiting|Tell Sorted what the letter|Tell Sorted what it is/.test(e.textContent||'')});if(lede)lede.textContent=c[1];ta.setAttribute('placeholder',c[2])}
     hideLargeArt(main,heading);hideEmpty();
   }
-  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cap82]');if(b){last=b.getAttribute('data-cap82')||'';try{sessionStorage.setItem('cap90.choice',last)}catch(x){}}setTimeout(tune,0);setTimeout(tune,120);setTimeout(tune,320)},true);
-  document.addEventListener('submit',function(){setTimeout(tune,80);setTimeout(tune,260)},true);
-  window.addEventListener('hashchange',function(){setTimeout(tune,40);setTimeout(tune,180)});
-  window.addEventListener('pageshow',function(){setTimeout(tune,40)});
-  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')setTimeout(tune,40)});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tune,40)});else setTimeout(tune,40);
+  function afterChoice(){setTimeout(tune,0);setTimeout(tune,120);setTimeout(tune,320)}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('[data-cap82]');
+    if(b){last=b.getAttribute('data-cap82')||'';try{sessionStorage.setItem('cap90.choice',last)}catch(x){}afterChoice();return}
+    if(e.target.closest&&e.target.closest('[data-cap87=home]'))document.documentElement.classList.remove('cap90-intake');
+  },true);
+  document.addEventListener('submit',function(){if(document.querySelector('#f-case')){setTimeout(tune,80);setTimeout(tune,260)}},true);
+  window.addEventListener('hashchange',function(){setTimeout(tune,60)});
+  window.addEventListener('pageshow',function(){setTimeout(tune,60)});
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')setTimeout(tune,60)});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(tune,60)});else setTimeout(tune,60);
 })();
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='3d0b98d60484eebbb3f7bae402483627b29f6060';
+const EXPECT='PENDING_V90B';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v90 intake handoff',h(s),s.length);

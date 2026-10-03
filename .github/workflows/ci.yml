@@ -47,6 +47,12 @@ jobs:
           TZ: Europe/London
           PYTHONPATH: ${{ github.workspace }}/tests
         run: python3 tests/54_pressure_moving_home.py
+      - name: Run scale and accessibility pressure test
+        if: always()
+        env:
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: python3 tests/55_pressure_scale_accessibility.py
       - name: Verify production build fingerprint remains pinned
         if: always()
         run: |

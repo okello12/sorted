@@ -45,6 +45,6 @@ R('</body>',String.raw`<script>
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='PENDING_V84C';
+const EXPECT='761c9c32b4cab1201ee28d1c57a6968a5ed02a32';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v84 ok',h(s),s.length);

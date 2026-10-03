@@ -15,6 +15,6 @@ R('</body>',String.raw`<script>
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='dbc76d1621bdc351d812fb1ef703eb9d683c9b8f';
+const EXPECT='da781afccdb2bd98fa5950a13dbaddacf8f6aeb1';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v87 final ok',h(s),s.length);

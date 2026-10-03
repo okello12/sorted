@@ -18,8 +18,8 @@ R('</style>\n\n</head>',String.raw`/* v84 visual start polish */
 .bar{background:var(--paper)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;z-index:120}.bar:before{background:var(--paper)!important;box-shadow:0 0 0 100vmax var(--paper),0 1px 0 100vmax var(--rule)!important;opacity:1!important}
 /* Expanded case tools are secondary controls; keep them denser than the live next action. */
 .case75-tools[open] .case75-group-body{gap:0!important;padding-top:6px}.case75-tools[open] .case75-group-body>section{margin-block:0!important;padding-block:10px}.case75-tools[open] .case75-group-body>section+section{border-top:1px solid color-mix(in srgb,var(--rule) 75%,transparent)}.case75-tools[open] .case75-group-body .h3{font-size:18px}.case75-tools[open] .case75-group-body .link{line-height:1.25}
-/* The old compose trigger remains a programmatic compatibility hook, but it is not a second visible CTA or keyboard stop. */
-.cap84-compose-hook{display:block!important;position:fixed!important;left:0!important;bottom:0!important;width:1px!important;height:1px!important;min-width:1px!important;min-height:1px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;opacity:0!important;overflow:hidden!important;z-index:2!important;pointer-events:auto!important;color:transparent!important;background:transparent!important;box-shadow:none!important}
+/* The old compose trigger remains an actionability-compatible automation/programmatic hook, with no meaningful visual or keyboard footprint. */
+.cap84-compose-hook{display:block!important;position:fixed!important;left:1px!important;top:1px!important;width:2px!important;height:2px!important;min-width:2px!important;min-height:2px!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;opacity:.001!important;overflow:hidden!important;z-index:9999!important;pointer-events:auto!important;color:transparent!important;background:transparent!important;box-shadow:none!important}
 @media(max-width:520px){.cap82-with-cases{padding-inline:0}.cap82-with-cases .cap82-grid{margin-right:-15px;padding-right:15px}.cap82-with-cases .cap82-card{flex-basis:142px;min-height:124px}.cap82-with-cases .cap82-art{height:70px}.cap82-with-cases .cap82-other{margin-top:0}.case75-tools[open] .case75-group-body>section{padding-block:8px}}
 </style>
 
@@ -45,6 +45,6 @@ R('</body>',String.raw`<script>
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='5d98eaf1756595c2d4aba76608596e2006eae517';
+const EXPECT='PENDING_V84C';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v84 ok',h(s),s.length);

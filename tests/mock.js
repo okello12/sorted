@@ -30,6 +30,7 @@ window.supabase={createClient:function(){
   return {
     from:q,
     rpc:function(name,args){
+      if(name==="share_seen"){var sn=JSON.parse(localStorage.getItem("__seen")||"[]");sn.push(args.p_token);localStorage.setItem("__seen",JSON.stringify(sn));return Promise.resolve({data:null,error:null})}
       if(name==="get_share"){var s=DB.shares.find(r=>r.token===args.p_token);return Promise.resolve({data:s?[{card:s.card,updated_at:s.updated_at}]:[],error:null})}
       if(name==="invite_helper"){window.__invites=(window.__invites||0)+1;DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);DB.helpers.push({task_id:args.p_task_id,email:args.p_email.toLowerCase(),inviter_name:args.p_name,status:"pending",token:"tok"+"x".repeat(60)});persist();return Promise.resolve({data:"pending",error:null})}
       if(name==="remove_helper"){DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);persist();return Promise.resolve({data:null,error:null})}

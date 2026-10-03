@@ -15,6 +15,7 @@
 -- pilot_events: id bigint, actor uuid, name text, case_id text, promise_id text, props jsonb, at timestamp with time zone
 -- reminders: id uuid, task_id text, user_id uuid, kind text, send_at timestamp with time zone, promise_id text, sent_at timestamp with time zone, cancelled_at timestamp with time zone, created_at timestamp with time zone, cancel_reason text, provider_id text, helper_sent_at timestamp with time zone
 -- shares: token text, task_id text, user_id uuid, card jsonb, updated_at timestamp with time zone
+-- share_opens: task_id text (pk, -> tasks cascade), opens integer, open_days integer, first_at timestamptz, last_at timestamptz. RLS on, no policies, no grants to app roles; written only by share_seen(), read only by pilot_metrics() (v104)
 -- tasks: id text, user_id uuid, data jsonb, created_at timestamp with time zone, updated_at timestamp with time zone
 -- RLS is enabled on every table. inbound_addresses, pilot_admins, pilot_carry and ops_errors have no client policies (server-side only).
 

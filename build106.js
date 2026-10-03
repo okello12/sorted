@@ -11,7 +11,7 @@ function semMoney(v){if(v==null||v==='')return '';var n=String(v).replace(/[^0-9
 function semNorm(k,v){if(v==null)return '';v=String(v).trim();if(k==='amount')return semMoney(v);if(k==='promise_date'){var d=new Date(v);return isNaN(d)?v:d.toISOString()}return v.toLowerCase().replace(/\s+/g,' ')}
 function semDay(v){var d=new Date(v);return isNaN(d)?String(v||''):fmtDay(d)}
 function semShow(k,v){return k==='promise_date'?semDay(v):String(v==null?'':v)}
-function semRe(v){return String(v||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function semRe(v){return String(v||'').replace(/[\\^$.*+?()[\]{}|]/g,'\\$&')}
 function semSwap(x,a,b){if(!x||!a||semNorm('',a)===semNorm('',b))return x;try{return String(x).replace(new RegExp(semRe(a),'gi'),b)}catch(e){return x}}
 function semCfVal(t,k){var f=t&&t.cf&&t.cf.f&&t.cf.f[k];return f&&f.st!=='rejected'?f.v:''}
 function semCanonical(t){

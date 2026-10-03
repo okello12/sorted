@@ -47,7 +47,7 @@ with sync_playwright() as p:
     if op.count(): op.click(); wait(pg,350)
     tools=pg.locator('details.case75-tools').first
     if tools.count():
-        tools.locator(':scope > summary').click(); wait(pg,120)
+        tools.locator('summary').first.click(); wait(pg,120)
         gap=tools.locator('.case75-group-body').first.evaluate("e=>parseFloat(getComputedStyle(e).rowGap)||0")
         ok(gap<=2,'expanded Tools uses tighter vertical spacing')
     else: ok(True,'example case can omit Tools in this state')

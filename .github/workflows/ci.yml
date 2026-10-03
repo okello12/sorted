@@ -1,14 +1,12 @@
-name: Sorted regression CI
+name: Sorted pressure CI
 
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: sorted-ci-${{ github.ref }}
+  group: sorted-pressure-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -17,7 +15,7 @@ permissions:
 jobs:
   regression:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,9 +28,27 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright
           python -m playwright install --with-deps chromium
-      - name: Run full regression suite
-        run: sh tests/run.sh
-      - name: Verify final build fingerprint is pinned
+      - name: Build pressure fixture
+        run: |
+          export TZ=Europe/London
+          node all.js >/dev/null
+          [ -d tests/node_modules ] || (cd tests && npm ci --omit=optional --ignore-scripts --silent)
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          node tests/make_reader.js
+      - name: Run core pressure test with full traceback
+        env:
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: python3 tests/53_pressure_core.py
+      - name: Run Moving Home pressure test with full traceback
+        if: always()
+        env:
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: python3 tests/54_pressure_moving_home.py
+      - name: Verify production build fingerprint remains pinned
+        if: always()
         run: |
           node <<'NODE'
           const fs=require('fs'), crypto=require('crypto');

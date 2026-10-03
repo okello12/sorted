@@ -25,7 +25,8 @@ with sync_playwright() as p:
     ok('#start' in pg.url,'choosing a visual from the public landing starts the existing flow')
 
     # Enter the pilot and create the existing example so Home has real cases.
-    pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,220)
+    # v101 carries a landing choice through sign-in; this part starts clean to reach Home with the example case.
+    pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,220)
     if pg.locator('[data-a=anon-start]').count(): pg.click('[data-a=anon-start]'); wait(pg,260)
     if pg.locator('[data-a=example]').count(): pg.click('[data-a=example]'); wait(pg,500)
     ok(pg.locator('#cap82-start .cap82-card').count()==6,'returning Home keeps all six visual starting points')

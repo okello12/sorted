@@ -16,7 +16,10 @@ def task(pg, cid): return next(x['data'] for x in db(pg)['tasks'] if x['data']['
 def home(pg): pg.goto('https://sorted.test/'); wait(pg, 600)
 def choose(pg, k):
     if pg.locator('[data-a=gi-back]').count(): pg.click('[data-a=gi-back]'); wait(pg)
-    pg.locator('[data-cap82=%s]' % k).first.click(); wait(pg, 500)
+    d = pg.locator('[data-cap82=%s]' % k).first
+    if d.is_visible(): d.click()
+    elif not (k == 'other' and pg.locator('#f-case').count()): d.evaluate('e=>e.click()')  # v101: a first-time Home after a reload shows the box, choices hidden
+    wait(pg, 500)
 def poke(pg, js):
     pg.evaluate("(js)=>{var db=JSON.parse(localStorage.getItem('__mockdb'));(new Function('db',js))(db);localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}", js)
 def baseline(pg):
@@ -46,7 +49,7 @@ with sync_playwright() as p:
         ("Southwark PCN", "London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Vehicle Registration Mark: AB12 CDE Date of contravention: 30/09/2026 The penalty charge is £130. If paid within 14 days, reduced to £65.", ['parking ticket', 'Paying usually ends your chance to challenge']),
         ("landlord", "My landlord still hasn't fixed the damp in the bedroom. I reported it 3 weeks ago.", ['There’s damp or mould, and it’s your landlord’s job', 'Don’t stop paying rent']),
         ("Currys refund", "Currys said my refund of £89 would arrive within 5 working days, order 445566", ['Currys owes you money: £89', 'Check the promise Sorted found', 'voucher']),
-        ("Washing machine", "My washing machine won't drain", ['Washing machine isn’t working', 'Answer the questions just below']),
+        ("Washing machine", "My washing machine won't drain", ['Your washing machine isn’t working', 'Answer the questions just below']),
         ("Lambeth council tax", "Got a letter from Lambeth Council saying I owe £240 council tax arrears and must pay by 20 October", ['Lambeth Council says you need to act by', 'Don’t let the date pass']),
         ("passport", "My passport expires in March", ['Your passport needs renewing', 'GOV.UK']),
         ("Aviva callback", "Aviva said they'd call me back about my home insurance claim within 48 hours, claim ref HC-77812", ['You need Aviva to do something', 'Check the promise Sorted found']),

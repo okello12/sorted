@@ -62,6 +62,6 @@ R('</body>',String.raw`<script>
 </script>
 </body>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='PENDING_V90';
+const EXPECT='3d0b98d60484eebbb3f7bae402483627b29f6060';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v90 intake handoff',h(s),s.length);

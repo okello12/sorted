@@ -94,6 +94,8 @@ with sync_playwright() as p:
     pg.click('[data-a=mom-panel][data-p=link]'); wait(pg)
     ok(pg.locator('[data-a=mom-link][data-id="%s"]' % cid).count() == 1, 'the second move can take the case')
     pg.locator('[data-a=mom-link][data-id="%s"]' % cid).click(); wait(pg)
+    ok('Tap it again to move it here' in pg.inner_text('main'), 'v105: it asks before taking it from the other move')
+    pg.locator('[data-a=mom-link][data-id="%s"]' % cid).click(); wait(pg)
     c = [x for x in cases(pg) if x['id'] == cid][0]; m2 = [x for x in moms(pg) if x['id'] != mid][0]
     ok(c['momentId'] == m2['id'], 'and then it belongs to the second move only')
     pg.goto('https://sorted.test/'); wait(pg, 600); pg.locator('.cap99-row').filter(has_text='In 30 days').click(); wait(pg)

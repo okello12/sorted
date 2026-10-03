@@ -14,9 +14,16 @@ mkdir -p tests/out
 sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
 node tests/make_reader.js
 fail=0
+findings=""
 for t in tests/[0-9]*.py; do
-  r=$(timeout 300 python3 "$t" 2>&1 | grep -E '^FAILS|^ERRORS|Error' | tr '\n' ' ')
+  out=$(timeout 300 python3 "$t" 2>&1) || true
+  r=$(echo "$out" | grep -E '^FAILS|^ERRORS|Error' | tr '\n' ' ')
   echo "$(basename "$t"): $r"
+  # a FINDING is something a test noticed but doesn't fail on; show it so a green run can't hide it
+  f=$(echo "$out" | grep -E '^FINDING ' | sed "s#^#  $(basename "$t") #")
+  [ -n "$f" ] && echo "$f" && findings="$findings
+$f"
   echo "$r" | grep -q "FAILS \[\]" && echo "$r" | grep -q "ERRORS \[\]" || fail=1
 done
+[ -n "$findings" ] && printf '\nFindings (not failures, but read them):%s\n' "$findings"
 exit $fail

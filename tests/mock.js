@@ -13,6 +13,7 @@ function q(table){
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
     if(op==="insert"){rows.push(Object.assign({},payload,{updated_at:new Date().toISOString()}));persist();return {data:null,error:null}}
     if(op==="update"){rows.forEach(r=>{if(filters.every(f=>r[f[0]]===f[1])){Object.assign(r,payload,{updated_at:new Date().toISOString()})}});persist();return {data:null,error:null}}
+    if(op==="delete"&&table==="shares"&&localStorage.getItem("__failShareDelete")==="1")return {data:null,error:{message:"test: delete refused"}};
     if(op==="delete"){DB[table]=rows.filter(r=>!filters.every(f=>r[f[0]]===f[1]));persist();return {data:null,error:null}}
   }
   self.select=function(){op="select";return self};

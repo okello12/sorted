@@ -42,6 +42,14 @@ with sync_playwright() as p:
         r = R(t); s = r['sug'] or {}
         good = bool(s) and all([(r['party'] == want['party']) if 'party' in want else True, (r['ref'] == want['ref']) if 'ref' in want else True, (r['amount'] == want['amount']) if 'amount' in want else True, (r['kind'] == want['kind']) if 'kind' in want else True, (s.get('party') == want['sparty']) if 'sparty' in want else True, bool(s.get('end')) if want.get('window') else True])
         ok(good, 'promise kept whole: %s -> %s' % (t, json.dumps({k: r[k] for k in ('party', 'ref', 'amount')} | {'sug': s}, ensure_ascii=False)[:180]))
+    # 2b v103: "X will install on Tuesday" is their promise; your own plans, maybes and threats are not
+    for t, want in [("BT will install on 22 October between 8 and 1", dict(sparty='BT', window=True)), ("Virgin will install on Tuesday ref V123", dict(ref='V123', sparty='Virgin')),
+                    ("Sky will install it on Tuesday", dict(sparty='Sky')), ("John Lewis will deliver the sofa on Saturday, order 55123", dict(sparty='John Lewis', ref='55123')),
+                    ("Octopus will send the final bill within 10 days", dict(sparty='Octopus Energy'))]:
+        r = R(t); s = r['sug'] or {}
+        ok(bool(s) and (s.get('party') == want['sparty']) and ((r['ref'] == want['ref']) if 'ref' in want else True) and (bool(s.get('end')) if want.get('window') else True), '"will" is their promise: %s -> %s' % (t, json.dumps(s, ensure_ascii=False)[:140]))
+    for t in ["I'll call BT on Tuesday", "BT will probably install on Tuesday", "If BT will install on Tuesday I can work from home", "HMRC will charge interest from 1 November", "The council will fine me if I don't pay by Friday", "We will move on 29 October"]:
+        ok(R(t)['sug'] is None, 'not their promise: %s' % t)
     # 3 a demand on you is never their promise, and keeps who and how much
     r = R("HMRC says I owe £450 by 12 October"); ok(r['sug'] is None and r['party'] == 'HMRC' and r['amount'] == 450, 'HMRC demand: HMRC and £450 kept, not a promise')
     # 4 typos and shorthand

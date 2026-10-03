@@ -44,7 +44,7 @@ with sync_playwright() as p:
     main = pg.inner_text('main')
     ok('Moving home' in main and 'In 20 days' in main and 'Sorted won’t remind you about these' in main, 'the container: date, how long, and that only cases get reminders')
     ok('Move your broadband' in main and 'driving licence' in main and 'Buildings insurance' not in main, 'only what applies: broadband moving, a car, renting (no buildings insurance)')
-    ok('Give notice to your landlord' in grp(pg, 'needs') and 'Take meter readings' in grp(pg, 'coming'), 'what is due now is in Needs you; moving-day steps are in Coming up')
+    ok('Give notice to your landlord' in grp(pg, 'needs') and 'Take final meter readings' in grp(pg, 'coming'), 'what is due now is in Needs you; moving-day steps are in Coming up')
     ok(pg.locator('a[href="https://www.gov.uk/change-address-driving-licence"]').count() == 1, 'your own steps carry the official link')
     ok('%' not in main, 'no percentages')
     # 2 your own step: done already, not relevant, undo; no reminders ever
@@ -60,7 +60,7 @@ with sync_playwright() as p:
     # 3 something someone owes you becomes a normal case, inside the container
     mid = moms(pg)[0]['id']
     pg.locator('.cap99-item', has_text='Move your broadband').locator('[data-a=mom-case]').click(); wait(pg)
-    ok('Who is installing your broadband?' in pg.inner_text('main'), 'Start a case opens the normal start, with its question')
+    ok('What has your broadband provider told you?' in pg.inner_text('main'), 'I’ve contacted them asks what they said (v103)')
     pg.fill('#gi-who', 'Virgin Media'); pg.fill('#gi-what', 'move my broadband on %s between 8am and 1pm, ref VM8211' % (datetime.date.today() + datetime.timedelta(days=18)).strftime('%-d %B'))
     pg.click('form[data-f=gi] button[type=submit]'); wait(pg, 600)
     if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)

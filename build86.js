@@ -12,6 +12,6 @@ R('</style>\n\n</head>',String.raw`/* v86 landing continuity */
 
 </head>`);
 fs.writeFileSync('public/index.html',s);
-const EXPECT='PENDING_V86';
+const EXPECT='090720efa7e4f36e316b01e3ab71cbf38cd7f25c';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v86 ok',h(s),s.length);

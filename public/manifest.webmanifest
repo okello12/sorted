@@ -1,0 +1,12 @@
+{
+  "name": "Sorted",
+  "short_name": "Sorted",
+  "description": "One calm place to work out what to do, keep track of promises, and come back when it matters.",
+  "start_url": "/#start",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10121B",
+  "theme_color": "#10121B",
+  "lang": "en-GB",
+  "orientation": "portrait-primary"
+}

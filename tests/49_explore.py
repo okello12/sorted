@@ -30,9 +30,21 @@ with sync_playwright() as p:
     # 1 the doors teach more, and the strip is there with 12 examples
     m = pg.inner_text('#cap82-start')
     ok('Washing machine, boiler, broadband' in m and 'HMRC, the council, your insurer' in m and 'Passport, driving licence, MOT' in m, 'the six doors list broader examples')
-    ok('Things people use Sorted for' in m and pg.locator('#cap82-start .cap95-chip').count() == 12, 'the strip has 12 examples')
+    ok('Things people use Sorted for' in m and pg.locator('#cap82-start .cap95-chip').count() == 32, 'the strip has 32 examples (v97)')
     ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth"), 'the strip scrolls inside itself, not the page')
-    ok('What else can Sorted help you sort?' not in pg.inner_text('main') and pg.locator('.cap95-also').count() == 0, 'no fold or extra line before any case')
+    ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('.cap95-also').count() == 0, 'the fold and search are there from the first visit (v97), the extra line is not')
+    # every example opens a flow
+    keys = pg.locator('#cap82-start .cap95-chip').evaluate_all("els=>els.map(e=>e.getAttribute('data-cap95'))")
+    bad = []
+    for k in keys:
+        pg.evaluate("sessionStorage.clear()"); pg.goto("https://sorted.test/#start"); pg.reload(); wait(pg, 700); pg.locator('#cap82-start [data-cap95=%s]' % k).first.evaluate('e=>e.click()'); wait(pg, 500)
+        if not (pg.locator('.gi-form').count() or pg.locator('.pk-short').count() or pg.input_value('#f-case') if pg.locator('#f-case').count() else pg.locator('.gi-form').count()): bad.append(k)
+        if db(pg)['tasks']: bad.append(k + ' created a case')
+    ok(not bad and len(keys) == 32, 'each of the 32 examples opens its flow and creates nothing: %s' % bad)
+    home(pg)
+    ok(pg.locator('[data-a=ex-all]').count() == 1, '"See all and search" under the strip')
+    pg.click('[data-a=ex-all]'); wait(pg, 600)
+    ok(pg.evaluate("document.getElementById('cap95-explore').open"), 'and it opens the fold')
     # 2 each example opens its flow with the context set
     chip(pg, 'refund')
     ok(pg.locator('.gi-form').count() == 1 and 'Who owes you a refund?' in pg.inner_text('main') and 'Currys, Amazon, your airline' in (pg.get_attribute('#gi-who', 'placeholder') or ''), 'refund: the promise questions, about a refund')
@@ -57,8 +69,8 @@ with sync_playwright() as p:
     # 3 after a first case: one line on Home, and the fold
     home(pg)
     ok(pg.locator('.cap95-also').count() == 1 and 'Sorted can also help with' in pg.inner_text('.cap95-also'), 'Home: one line saying what else it helps with (v96: fitted to the last case)')
-    ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('details.cap95-explore .cap95-theme').count() == 6, 'the fold has six parts of life')
-    pg.click('details.cap95-explore summary'); wait(pg, 200)
+    ok(pg.locator('details.cap95-explore').count() == 1 and pg.locator('details.cap95-explore .cap95-theme').count() == 9, 'the fold has nine parts of life')
+    if not pg.evaluate("document.getElementById('cap95-explore').open"): pg.click('details.cap95-explore summary'); wait(pg, 200)
     pg.locator('details.cap95-explore [data-cap95=insurance]').first.click(); wait(pg, 600)
     ok('Who is dealing with your claim?' in pg.inner_text('main'), 'an example in the fold opens its flow too')
     # 4 a finished case suggests three others

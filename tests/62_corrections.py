@@ -21,6 +21,11 @@ def paste(pg,text):
     ok(p.count()>0,'paste/message tool is available')
     if not p.count():return
     p.first.click();wait(pg,180);pg.fill('#f-paste',text);pg.locator('form[data-f=paste] button[type=submit]:visible').first.click();wait(pg,550)
+    # The established case-tools flow can deliberately leave the paste panel open after saving.
+    # Close it exactly as Test 28 does; a pending SEM-03 proposal survives the render and remains visible.
+    if pg.locator('#f-paste:visible').count():
+        c=pg.locator('form[data-f=paste] [data-a=panel][data-p=""]:visible')
+        if c.count():c.first.click();wait(pg,250)
 def confirm_general(pg):
     ok(pg.locator('.sem-correction:visible').count()==1,'a correction is proposed before changing the case')
     if pg.locator('[data-a=sem-yes]:visible').count():pg.locator('[data-a=sem-yes]:visible').first.click();wait(pg,450);return True

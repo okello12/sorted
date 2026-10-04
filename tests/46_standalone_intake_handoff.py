@@ -29,10 +29,10 @@ with sync_playwright() as p:
         ok(h.count()==1,'Something else keeps the generic intake question')
         large=pg.evaluate("""()=>{const ta=document.querySelector('#f-case'),m=ta&&ta.closest('main'),h=m&&Array.from(m.querySelectorAll('h1,h2')).find(x=>(x.textContent||'').includes('What do you need to sort out?'));if(!m||!h)return -1;const hy=h.getBoundingClientRect().top;return Array.from(m.querySelectorAll('img,picture,figure,svg,[class*=hero-art],[class*=illustration],[class*=artwork]')).filter(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return s.display!=='none'&&r.width>=170&&r.height>=100&&r.bottom<=hy+50}).length}""")
         ok(large==0,'Something else has no large decorative artwork above the intake question')
-    ok(pg.locator('.cap87-appnav:visible').count()==1,'standalone navigation remains available on the composer')
+    ok(pg.locator('.tab129:visible').count()==1,'standalone navigation remains available on the composer (v129: the app bar)')
 
     # Home returns to chooser, and a named tile carries its category into intake.
-    pg.locator('.cap87-appnav [data-cap87=home]').click();wait(pg,350)
+    pg.locator('.tab129 [data-a=go-home]').click();wait(pg,350)
     chooser=pg.locator('#cap82-start,#cap82-landing').first
     fix=chooser.locator('[data-cap82=fix]')
     if fix.count():fix.click();wait(pg,500)

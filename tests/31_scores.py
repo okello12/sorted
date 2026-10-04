@@ -61,7 +61,7 @@ with sync_playwright() as p:
     a2 = start(pg, "Argos said the replacement will arrive on Monday")
     ok(pg.locator('.sc-block').count() == 0, 'a company without enough totals shows nothing')
     # 6 the privacy notice
-    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg); pg.click('.acct112-nav [data-v=help]'); pg.wait_for_timeout(400); 
+    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('.tab129 [data-a=data]'); wait(pg); pg.click('.acct112-nav [data-v=help]'); pg.wait_for_timeout(400); 
     ok('Company scores. When you record that a company kept or missed a promise' in pg.inner_text('main') and 'Never what your case is about' in pg.inner_text('main'), 'the privacy notice explains company scores')
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

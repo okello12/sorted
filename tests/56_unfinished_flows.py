@@ -14,7 +14,7 @@ def wait(pg, ms=400): pg.wait_for_timeout(ms)
 def rows(pg): return [x['data'] for x in (pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')||'{}')") or {}).get('tasks', [])]
 def moms(pg): return [x for x in rows(pg) if x.get('kind') == 'moment']
 def cases(pg): return [x for x in rows(pg) if x.get('kind') != 'moment']
-def home(pg): pg.locator('.cap87-appnav [data-cap87=home]').click(); wait(pg, 500)
+def home(pg): pg.locator('.tab129 [data-a=go-home]').click(); wait(pg, 500)
 def at_home(pg): return pg.locator('main.home44').count() == 1 and pg.locator('form[data-f=gi], #moveform, form[data-f=mom], .fr-card, form[data-f=call]').count() == 0
 def chooser(pg): return pg.locator('#cap82-start:visible')
 def baseline(pg):

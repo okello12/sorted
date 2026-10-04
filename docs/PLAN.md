@@ -413,6 +413,11 @@ from the Home Screen app. Now a phone uses its share sheet ("Save to Files", or 
 with the link kept for a minute, and the message is honest. A photo from Files or Google Drive with no type is read by
 its name, and an iPhone HEIC photo is converted on the phone where Safari can open it. Evidence: test 86.
 
+**v129 (the navigation note).** One app shell: Home · + New · Cases · More at the bottom of every signed-in screen,
+the place marked; the top bar the logo plus Back on deeper screens; Cases with search and counts; More holding Account,
+Settings, Help and the public pages; a refresh keeps the case, Cases or More; "<Who> said they would Nothing" never
+shown; the guest note one compact card. Evidence: test 87 and the twelve journeys in it.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

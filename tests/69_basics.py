@@ -92,7 +92,7 @@ with sync_playwright() as p:
     c = case(cid)
     ok(c and c[0]['title'] == 'Currys kettle refund' and any(l.startswith('Put back after being deleted.') for l in labels(cid)) and 'Currys kettle refund' in pg.inner_text('main'), 'Undo puts the whole case back, saved again')
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 500); more(); pg.click('[data-a=panel][data-p=delcase]'); wait(pg, 300); pg.click('[data-a=case-del]'); wait(pg, 700)
-    pg.click('.navq'); wait(pg, 500)
+    pg.click('.tab129 [data-a=data]'); wait(pg, 500)
     ok(pg.locator('[data-a=del-undo]').count() == 0 and not case(cid), 'any other tap lets the deletion stand')
     # 6 Account in three parts
     pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('[data-a=data]'); wait(pg, 600); m = pg.inner_text('main')

@@ -136,7 +136,7 @@ with sync_playwright() as p:
     m6 = pg.inner_text('main')
     ok('C991' in m6 and re.search(r'9\s*Oct', m6), 'its promise, reference and date are intact (%r)' % m6[:120])
     pg.goto('https://sorted.test/'); wait(pg, 600); pg.locator('.cap99-row').first.click(); wait(pg, 600)
-    ok('Give notice to your landlord' in pg.inner_text('main') and 'Which nation' in pg.inner_text('main'), 'an old move renders and asks the new question once')
+    ok('Give notice to your landlord' in pg.inner_text('main') and 'Where is your new home?' in pg.inner_text('main'), 'an old move renders and asks the new question once')
     ok(all((x['data'].get('rev') or 0) >= 1 for x in rows() if x['data']['id'] in ('legacy1', 'legacy2', 'legacym')), 'old records gain a revision on first load')
     real_errs = [x for x in errs if 'test boom' not in x and 'flood' not in x and 'late' not in x]
     ok(not real_errs, 'no page errors: %s' % real_errs[:3])

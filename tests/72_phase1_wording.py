@@ -13,7 +13,7 @@ def ok(c, m):
     n[0] += 1; print(('PASS ' if c else 'FAIL ') + m)
     if not c: fails.append(m)
 def wait(pg, ms=450): pg.wait_for_timeout(ms)
-WRONG = ['Sorted keeps nothing you delete', 'the official page is always right', 'Nobody running Sorted reads', 'nobody running Sorted reads', '(30 without an email)', '30 if you haven’t added an email', 'step records', 'Step records', 'deleted after 30 days away', 'can’t be recovered', 'or 30 if you haven’t added an email']
+WRONG = ['Sorted keeps nothing you delete', 'the official page is always right', 'Nobody running Sorted reads', 'nobody running Sorted reads', '(30 without an email)', '30 if you haven’t added an email', 'step records', 'Step records', 'deleted after 30 days away', 'can’t be recovered', 'or 30 if you haven’t added an email', 'without your tap', 'hold them to it', 'holds them to', 'to hold them and remind you']
 RIGHT = {
   'terms: deletion as it works': 'for two minutes Home offers Undo, and closing or refreshing the page ends that',
   'terms: usage records remain': 'Usage records about the case (its id and the steps you used, never its content) stay for up to 12 months',
@@ -51,6 +51,7 @@ with sync_playwright() as p:
         body += '\n' + pg.inner_text('body')
     for w in WRONG: ok(w not in body, 'gone: “%s”' % w)
     for k, v in RIGHT.items(): ok(v in body, 'present, %s' % k)
+    ok('Sorted doesn’t turn an uncertain suggestion into a confirmed fact until you confirm it.' in body, 'present, the confirmation sentence (v122)')
     ok('Usage records' in body and 'Don’t record my usage' in body, 'Settings calls them usage records')
     # 2 opening Sorted signed in records "seen" once per load
     ok(pg.evaluate("+localStorage.getItem('__seenTouch')") == 1, 'opening Sorted signed in calls touch_seen once')

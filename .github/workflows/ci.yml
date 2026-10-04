@@ -88,7 +88,9 @@ jobs:
 
 
   secrets-check:
-    # Says whether the staging secrets exist, so the staging job below is skipped (and shows as skipped) without them.
+    # The staging gate (remediation A10): a release is not ready without the staging suite. When the staging secrets are
+    # missing this job FAILS with "Staging: NOT READY", so a pull request can't look green by leaving staging out. Once
+    # SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY exist it passes and the staging job below runs (docs/STAGING.md).
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     outputs:
@@ -99,14 +101,14 @@ jobs:
           U: ${{ secrets.SORTED_STAGING_URL }}
           K: ${{ secrets.SORTED_STAGING_ANON_KEY }}
         run: |
-          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::warning title=staging::The staging job was skipped: the repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set (docs/STAGING.md)"; fi
+          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; echo "Staging: ready"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::error title=Staging: NOT READY::The repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set, so the staging suite cannot run. A release is not ready until it does (docs/STAGING.md)."; exit 1; fi
 
   staging:
     # The live suite (tests/live/staging.py) against the STAGING Supabase project: row level security, grants, share
     # links, deleting an account, and the real page saving a real case. Never against live. Runs on every pull request
     # (part of the release gate, docs/PLAN.md 0.1), when asked, and after each push to main. Without the repository
-    # secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY it is skipped and says so (secrets-check above); it never
-    # passes without running. docs/STAGING.md says how to set them.
+    # secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY it doesn't run and secrets-check above fails as NOT READY;
+    # it never passes without running. docs/STAGING.md says how to set them.
     needs: secrets-check
     if: needs.secrets-check.outputs.staging == 'yes'
     concurrency:

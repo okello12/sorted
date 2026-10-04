@@ -381,8 +381,10 @@ test 66. Evidence: test 82.
 
 **Phase C (first-use checks with real people) is Baldwin's**, with `docs/PHONE_CHECK.md`.
 
-**A10. Staging as a real gate.** Last, because a missing staging environment then makes every release red until the
-staging secrets exist.
+**A10. Staging as a real gate (done, CI only).** `secrets-check` now fails with "Staging: NOT READY" when the staging
+secrets are missing, so every pull request is red on that check until Baldwin adds `SORTED_STAGING_URL` and
+`SORTED_STAGING_ANON_KEY` and runs the rest of `supabase/staging/01_run_by_hand.sql` (docs/STAGING.md). This change was
+merged last, after v124, for that reason.
 
 ## The remaining-pages review (4 October 2026, evening)
 

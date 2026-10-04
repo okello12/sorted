@@ -26,8 +26,9 @@ a person to confirm statements that delete. **Still to do, once, by the person r
    project's publishable key (Project settings > API keys). The publishable key is the one the page ships with, so it
    is not secret in the way the service key is; it still goes in a GitHub secret, not in a file or a chat.
 
-Until step 3 is done the `staging` job in CI is **skipped** (a `secrets-check` job sees the secrets are missing and
-says so in a warning). It is never reported as passed without running.
+Until step 3 is done the `secrets-check` job in CI **fails** with "Staging: NOT READY" on every pull request and push
+(since v124's follow-up, remediation A10), and the `staging` job doesn't run. A release is not ready until staging has
+run; it is never reported as passed without running.
 
 Migration 15 (`15_delivery_seen_v116.sql`) is fully applied on staging (4 October 2026). Progress on step 1 (the same day, through the Supabase API): `shares_drop_helper` with its trigger, `remove_helper`
 and `drop_outcome` are on staging. Supabase's tooling refused the rest without a person's confirmation, so still to run

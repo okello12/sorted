@@ -1,6 +1,6 @@
 # Working on Sorted
 
-Read this first. Then `docs/LATER.md` for what is parked and why.
+Read this first. Then `docs/PLAN.md` (the current plan, from v114, with its release gate) and `docs/LATER.md` for what is parked and why.
 
 ## What Sorted is
 

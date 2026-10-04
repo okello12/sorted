@@ -401,6 +401,12 @@ common problems, one labelled worked example, and the full catalogue (six ways i
 kept. About: why Sorted exists first. Contact: a copyable address and what to do if no email app opens. Privacy points
 at Account and Settings. Terms describe all of Sorted. Evidence: tests 84, 44, 76.
 
+**v127 (Baldwin's iPhone, 21:45).** Taking a photo of a PCN did nothing: the camera hides the page, and on return
+Sorted redrew (to keep dates current), replacing the file box before the photo arrived. Now nothing redraws while a
+picker is open, the box carries its own handler, big camera photos are scaled before reading, a start choice survives
+the email sign-in link, the box heading no longer shows a leftover "What did they promise?", and the parking screen has
+one photo button. Evidence: test 85, which fails on v126.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

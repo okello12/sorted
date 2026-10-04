@@ -264,3 +264,22 @@ account. A native wrapper is one possible route, not readiness.
   "research pilot" (`send-reminders` v10, `inbound-email` v6).
 - Still open from Phase 1: Supabase's and Resend's retention terms on their free plans (quote both before a backups
   claim is published); the staging suite has still never run (no secrets).
+
+**Phase 2 (v117, 4 October 2026).**
+
+- The shared structure is on every case as "What Sorted understood" (`uCard`): the matter, the outcome wanted, who is
+  involved with their references, whose move it is, their date kept apart from a follow-up you chose, the next
+  action. Uncertain things are questions (whose move; what you'd like to come out of this); nothing changes until
+  confirmed; both can be changed later.
+- The Ford journey works as the plan asked (test 73): the dealer's name is kept and carried into the call form; the
+  case is "Dealer ford: credit check"; "Whose move is it?" with three answers; "Save a follow-up reminder" with
+  "Choose a date", a follow-up that is your own step and never their promise; "They’ve asked me for something" keeps
+  your step rather than a call script; the planning question can be skipped. The outcome wanted is proposed only
+  where Sorted can say it honestly (a notice, a repair, money, a benefit, a promise, a no-date call) and otherwise
+  asked.
+- Five journeys walked end to end in test 73: repair, refund, parking, renewal, dealer and finance; plus an
+  unrecognised sentence through the general organiser. The older journey tests (22, 23, 36, 47, 51, 63) still pass.
+- Migration 16 adds the step names `turn_recorded` and `goal_recorded` (codes only).
+- Not done in Phase 2, carried to Phase 3: several people with their own references inside one case (today a second
+  party is a second case, linked by name), several open actions at once, and editing the matter in place (rename
+  covers the title).

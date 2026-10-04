@@ -96,7 +96,7 @@ create table public.email_optouts (
 create table public.pilot_events (
   id bigint generated always as identity primary key,
   actor uuid not null default auth.uid(),
-  name text not null check (name = any (array['case_started','baseline_action_recorded','promise_created','email_added_at_promise','promise_due_return','outcome_kept','outcome_missed','outcome_rescheduled','chase_used','new_promise_after_miss','case_closed','recap_copied','second_case_started','moment_created','moment_item','moment_opened'])),
+  name text not null check (name = any (array['case_started','baseline_action_recorded','promise_created','email_added_at_promise','promise_due_return','outcome_kept','outcome_missed','outcome_rescheduled','chase_used','new_promise_after_miss','case_closed','recap_copied','second_case_started','moment_created','moment_item','moment_opened','turn_recorded','goal_recorded'])),
   case_id text check (char_length(case_id) <= 40),
   promise_id text check (char_length(promise_id) <= 40),
   props jsonb not null default '{}'::jsonb check (pg_column_size(props) <= 1000),

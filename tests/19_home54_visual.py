@@ -26,7 +26,7 @@ with sync_playwright() as p:
     sec=pg.inner_text('.home44-section.needs')
     ok('The rest of your open cases.' not in sec,'redundant Also-open subtitle is gone')
     ok('TEST:' not in sec and 'tomorrow by 3pm' not in sec and 'Submit bursary documents' in sec,'raw case title is cleaned for Home display')
-    ok(pg.locator('.home44-section.needs .home44-pill').count()==0,'secondary action rows do not repeat Your move pills')
+    ok(pg.locator('.home44-section.needs .home44-row:not(.home111-hot) .home44-pill').count()==0,'secondary action rows do not repeat Your move pills (v111: only a missed or overdue case carries a word)')
 
     # Reduced-motion preference must stop decorative animation.
     pg.emulate_media(reduced_motion='reduce'); wait(pg,100)

@@ -51,7 +51,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/?task=%s&src=reply' % cid); wait(pg, 700)
     ev = pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks[0].data.events")
     ok(any(e.get('kind') == 'return' and e.get('src') == 'reply' and e['label'].startswith('Opened from the reply link') for e in ev), 'opening the case from the reply email counts as a return')
-    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Your data'); wait(pg)
+    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg)
     ok('That email never says which case, who sent it or what it says.' in pg.inner_text('main'), 'the privacy notice says what the reply email contains')
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

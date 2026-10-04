@@ -104,7 +104,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 600)
     main = pg.inner_text('main')
     cur_lines = [l for l in main.split('\n') if not re.search(r'Changed |It was |Left |in your words|In your words|Added a message|Taken from', l)]
-    old = ['Sky', 'AB123', '£80', 'Boiler', tue.strftime('%a, %-d %b'), wed.strftime('%a, %-d %b'), thu.strftime('%a, %-d %b')]
+    old = ['Sky', 'AB123', '£80', 'Boiler', tue.strftime('%A %-d %B'), wed.strftime('%A %-d %B'), thu.strftime('%A %-d %B')]
     leaks = [(v, l) for v in old for l in cur_lines if v in l]
     ok(not leaks, 'the case page shows no replaced value as current: %s' % leaks[:4])
     pg.evaluate("document.querySelector('details.case56-sharing').open=true"); pg.click('[data-a=share]'); wait(pg, 600)

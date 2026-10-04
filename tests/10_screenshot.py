@@ -33,7 +33,7 @@ with sync_playwright() as p:
     if pg.locator('[data-a=safe-continue]').count(): pg.click('[data-a=safe-continue]'); wait(pg)
     pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg)
     c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | '))
-    ok(A5['short'] in c and '08:00' in c and 'BG-77120' in c,'promise proposed from the screenshot')
+    ok((A5['short'] in c or A5['dm'] in c) and ('08:00' in c or '8am' in c) and 'BG-77120' in c,'promise proposed from the screenshot')
     print('  cdn files:',sorted(set(hits)))
     print('  posts to other hosts:',[u for u in up if 'jsdelivr' in u])
     ok(not any('jsdelivr' in u for u in up),'picture not sent anywhere')

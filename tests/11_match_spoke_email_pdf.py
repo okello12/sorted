@@ -83,6 +83,6 @@ with sync_playwright() as p:
     pg.click('form[data-f=case] button[type=submit]'); wait(pg)
     if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
     plan(pg); c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | ')[:220])
-    ok(A6['short'] in c and '13:00' in c and 'TW-448812' in c,'letter becomes a proposed promise')
+    ok((A6['short'] in c or A6['dm'] in c) and ('13:00' in c or '1pm' in c) and 'TW-448812' in c,'letter becomes a proposed promise')
     b.close()
 print('ERRORS',errs); print('FAILS',fails)

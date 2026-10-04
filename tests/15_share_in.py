@@ -33,7 +33,7 @@ with sync_playwright() as p:
     ok(pg.locator('.sug').count()==1 and '556677' in pg.inner_text('.sug'),'the promise card reads the shared message')
     pg.click('[data-a=sug-yes]'); wait(pg)
     if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,150)
-    ok('Afterwards, Sorted brings this back to the top of your list and asks you: “Has the money arrived?”' in pg.inner_text('main'),'Waiting says when Sorted will check and what it will ask')
+    ok('Sorted brings it back and asks: “Has the money arrived?”' in pg.inner_text('main'),'Waiting says when Sorted will check and what it will ask')
     pg.goto('https://sorted.test/'); wait(pg,500)
     ok(pg.locator('#f-case').count()==0 or pg.input_value('#f-case')!=MSG,'the shared text doesn’t come back after the case is made')
     # signed out: the text waits on this phone until they start

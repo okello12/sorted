@@ -27,8 +27,8 @@ with sync_playwright() as p:
     if home.count():
         ok(home.locator('.cap82-title').inner_text().strip()=='What do you need?','returning chooser uses the shorter heading')
         ok(home.locator('.cap82-home-marker').count()==0,'instructional cases-are-below scaffolding is gone')
-        ok(home.locator('.cap82-grid').evaluate("e=>getComputedStyle(e).display")=='flex','returning choices become a horizontal carousel')
-        ok(home.locator('.cap82-grid').evaluate("e=>e.scrollWidth>e.clientWidth"),'carousel is horizontally discoverable instead of a tall grid')
+        ok(home.locator('.cap82-grid').evaluate("e=>getComputedStyle(e).display")=='grid','v111: returning choices are a readable stacked list')
+        ok(home.locator('.cap82-grid').evaluate("e=>e.scrollWidth<=e.clientWidth") and home.locator('.cap82-card').evaluate_all("es=>es.every(e=>{var s=e.querySelector('strong');return s.scrollWidth<=s.clientWidth+1})"),'v111: every label is fully readable, nothing scrolls sideways')
     nb=pg.locator('.home44-compose .home44-new')
     if nb.count():
         hidden=nb.evaluate("e=>{const s=getComputedStyle(e),r=e.getBoundingClientRect();return parseFloat(s.opacity)<=0.01&&r.width<=2.1&&r.height<=2.1&&e.getAttribute('tabindex')==='-1'&&e.getAttribute('aria-hidden')==='true'}")

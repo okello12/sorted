@@ -13,7 +13,7 @@ SEP = ','  # Chromium's own date format decides: some versions write "Fri, 2 Oct
 def d(n): return T0 + datetime.timedelta(days=n)
 def uk(x): return x.strftime('%d/%m/%Y')
 def iso(x): return x.isoformat()
-def day(x): return x.strftime('%a' + SEP + ' %-d %b') if x.year == T0.year else x.strftime('%a' + SEP + ' %-d %b %Y')
+def day(x): return x.strftime('%A %-d %B') if x.year == T0.year else x.strftime('%A %-d %B %Y')
 def tasks(pg): return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(y=>y.data)")
 def case(pg, title): return next((x for x in tasks(pg) if x['title'] == title), None)
 def poke(pg, title, js):

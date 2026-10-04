@@ -32,3 +32,16 @@ that is an iPhone in someone's hand. Do this on a real phone before inviting peo
 
 Write down the step number, the phone and its OS version, and what happened. Nothing else is needed. That goes in
 `docs/LATER.md` or straight into a fix.
+
+## With three people who have never seen Sorted (10 minutes each)
+
+The screenshots show whether the first screen is clear. They cannot show whether someone understands it. Hand the person
+your phone, signed out, on the first screen. Say nothing about what Sorted is. Ask, in this order, and write down what
+they say in their own words:
+
+1. "What would you use Sorted for?"
+2. "How would you start tracking a repair someone promised?"
+3. "What would you expect Sorted to do next?"
+
+Then let them try question 2 for real and watch where they hesitate. Three people who answer 1 and 2 without help are
+evidence that the first screen is doing its job. One person who can't is a finding, in `docs/LATER.md` with their words.

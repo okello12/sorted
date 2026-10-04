@@ -11,7 +11,7 @@ def wait(pg, ms=350): pg.wait_for_timeout(ms)
 T0 = datetime.date.today()
 SEP = ','  # Chromium's own date format decides: some versions write "Fri, 2 Oct", newer ones "Fri 2 Oct"; set from the browser below
 def uk(n): return (T0 + datetime.timedelta(days=n)).strftime('%d/%m/%Y')
-def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%a' + SEP + ' %-d %b') if x.year == T0.year else x.strftime('%a' + SEP + ' %-d %b %Y')
+def day(n): x = T0 + datetime.timedelta(days=n); return x.strftime('%A %-d %B') if x.year == T0.year else x.strftime('%A %-d %B %Y')
 def tasks(pg): return pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks.map(y=>y.data)")
 def case(pg, title): return next((x for x in tasks(pg) if x['title'] == title), None)
 def start(pg, text):

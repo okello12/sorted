@@ -29,7 +29,7 @@ with sync_playwright() as p:
     ok(spot.count()==1,'Home has an active-case spotlight')
     if spot.count():
         sbg=pg.evaluate('e=>getComputedStyle(e).backgroundImage',spot.element_handle())
-        ok('gradient' in sbg,'active case spotlight carries the colourful state treatment')
+        ok(sbg=='none','v111: the active case spotlight is one flat, quiet card')
     rows=pg.locator('.home44-row')
     if rows.count():
         rbg=pg.evaluate('e=>getComputedStyle(e).backgroundImage',rows.first.element_handle())

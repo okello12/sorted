@@ -41,7 +41,7 @@ with sync_playwright() as p:
     pg.click('[data-a=panel][data-p=paste]'); wait(pg)
     pg.fill('#f-paste',"Hi Baldwin, your engineer visit has been moved to "+A4["long"]+" between 12pm and 4pm. Your reference is BG-55123. Thanks, British Gas"); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
     c=pg.locator('.sug').inner_text() if pg.locator('.sug').count() else ''; print('  card:',c.replace('\n',' | '))
-    ok(A4['short'] in c and '12:00' in c and 'BG-55123' in c,'pasted message read: new date, time and reference')
+    ok((A4['short'] in c or A4['dm'] in c) and ('12:00' in c or '12pm' in c) and 'BG-55123' in c,'pasted message read: new date, time and reference')
     pg.click('[data-a=sug-yes]'); wait(pg); t=task(pg,T3)
     ok([x['status'] for x in t['promises']]==['replaced','open'] and t['promises'][1]['ref']=='BG-55123','new promise replaces the old one')
     # 5 a case started from a pasted message

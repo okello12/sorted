@@ -95,7 +95,7 @@ with sync_playwright() as p:
     m = pg.inner_text('main'); line = pg.locator('.promise-line')
     ok(line.count() == 1 and re.search(r'^Sky, ' + DAYS + r', (?:8am|9am) to (?:12pm|1pm)$', line.inner_text().strip()) is not None, 'the promise is one line: who, day, time (%r)' % line.inner_text())
     ok(line.evaluate("e=>getComputedStyle(e).whiteSpace") in ('normal', 'pre-wrap') and pg.locator('.promise-quote').count() == 1 and '“' in pg.locator('.promise-quote').inner_text(), 'it wraps naturally, and their words are quoted beneath')
-    ok(pg.locator('.promise-acts .btn.quiet').count() == 2 and pg.locator('.promise .link:visible').count() == 0, 'the actions are a row of quiet buttons')
+    ok(pg.locator('.promise-acts .btn.quiet').count() == 2 and pg.locator('.promise .link:visible:not(.p-cancel)').count() == 0, 'the actions are a row of quiet buttons')
     ok('Keep the proof together' not in m and 'Case memory' not in m and 'Messages & evidence' in m and 'Timeline' in m, 'fewer headings inside headings')
     tl = pg.locator('.case56-thread').inner_text(); said = [l for l in tl.split('\n') if l.startswith('An engineer would come')]
     ok(said and said[0].count('AB123') == 1 and re.search(DAYS, said[0]), 'the timeline shows the reference once and the date in words (%r)' % (said[:1]))

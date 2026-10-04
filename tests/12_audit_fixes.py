@@ -70,7 +70,7 @@ with sync_playwright() as p:
     pg.click('[data-a=panel][data-p=delcase]'); wait(pg)
     ok(pg.evaluate("document.activeElement.getAttribute('data-a')")=='case-del','delete: confirm button focused')
     pg.click('[data-a=case-del]'); wait(pg,600)
-    ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks"))==n0-1 and 'Case deleted' in pg.inner_text('#toast'),'delete: case removed')
+    ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks"))==n0-1 and 'Deleted “' in pg.inner_text('main') and pg.locator('[data-a=del-undo]').count()==1,'delete: case removed')
     ok(pg.locator('h1').count()>=1,'Home has a page heading')
     b.close()
 

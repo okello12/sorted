@@ -310,3 +310,33 @@ later; who can access what; free; a reply within 10 working days). Separate page
 `#about`, `#how`, `#help`, `#privacy`, `#terms`, `#contact`, all in the footer. The hero and footer no longer say
 "nobody reads" or "30 without an email". Not done: a real domain for those addresses (Baldwin's decision) and a
 lawyer's read of the terms and notice.
+
+**Phase 5 (prepared, 4 October 2026).** Nothing to build until real use. The five signals are already measured, so the
+only missing inputs are the targets and the invitations:
+
+| Signal | Where it is measured | Target (Baldwin) |
+| --- | --- | --- |
+| People complete cases (finished with an outcome, not abandoned) | `pilot_metrics().endings` (`case_closed` codes) against cases started | |
+| They return when a promise falls due | Due Return Rate in `pilot_metrics()` (`promise_due_return`) | |
+| They understand reminders | `pilot_health().delivery` once the Resend webhook is connected; `promise_due_return` with `src=email`; no support questions about where reminders went | |
+| They manage without explanation | the three newcomer questions in `docs/PHONE_CHECK.md`; "Report a problem" and support emails | |
+| They come back for a second matter | `second_case_started` in `pilot_metrics()` | |
+
+Before inviting people: branch protection on `main`; the staging secrets and the rest of `01_run_by_hand.sql`;
+Resend's delivery webhook; a domain and support address (the pages at `#about`, `#how`, `#help`, `#privacy`, `#terms`
+and `#contact` take the domain as it is); the lawyer's read of the terms and privacy notice; the targets above; then
+the phone check in `docs/PHONE_CHECK.md` on a real iPhone and Android phone. Four weeks of use against the targets,
+then the separate platform assessment the plan describes.
+
+## Where things stand after v120
+
+Done: Phases 0 to 4, each released through a pull request with green checks and verified on the live site by the
+`live` job (v114 to v120). Live: sorted-pilot.vercel.app serves v120.
+
+Outstanding, for Baldwin: branch protection; staging (secrets, anonymous sign-in, `01_run_by_hand.sql`); the Resend
+delivery webhook and `resend_events_secret`; a domain and support address; the lawyer; Supabase Pro (backups);
+Supabase's and Resend's retention terms quoted before any backups claim; targets; app-store accounts (Phase 5).
+
+Outstanding, for the next builder: several people with their own references in one case and several open actions
+at once (Phase 3 follow-up, when use shows the need); the staging suite's first real run once the secrets exist;
+`docs/PHONE_CHECK.md` on real phones before a wider release.

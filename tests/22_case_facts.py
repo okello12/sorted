@@ -92,22 +92,23 @@ with sync_playwright() as p:
     ok(pg.locator('.cf-check').count() == 0 and pg.locator('[data-a=cf-show]').count() == 1, '"Not now" folds it to a small link')
     pg.click('[data-a=cf-show]'); wait(pg); pg.click('[data-a=cf-yes]'); wait(pg)
     ok(case(pg, T)['cf']['f']['type']['v'] == 'Notice to Owner from a council', 'confirming takes the new stage')
-    # 5 a photo of a notice, read on the phone
+    # 5 a photo of a notice, read on the phone: since v121 the read is reviewed first, then the facts are confirmed
     pg.click('[data-a=home]'); wait(pg)
     if pg.locator('[data-a=compose]').count(): pg.click('[data-a=compose]'); wait(pg)
     pg.set_input_files('input[data-ocr=f-case]', HERE + '/tests/out/pcn_photo.png')
     for i in range(240):
         st = pg.inner_text('#ocr-status') if pg.locator('#ocr-status').count() else ''
-        if st.startswith('Done') or st.startswith('Sorted couldn'): break
+        if 'Photo read' in st or 'couldn’t' in st or 'doesn’t look' in st: break
         wait(pg, 500)
-    pg.click('form[data-f=case] button[type=submit]'); wait(pg)
+    ok('Photo read. Check the details below.' in st and pg.locator('form[data-f=doc]').count() == 1 and pg.input_value('#doc-ref') == 'CU98765432' and pg.input_value('#doc-vrm') == 'LK70 XYZ', 'a photo of a notice is read into a review, not into the case (%s)' % st[:50])
+    pg.click('form[data-f=doc] button[type=submit]'); wait(pg, 700)
     if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
     if pg.locator('[data-a=vague-go]').count(): pg.click('[data-a=vague-go]'); wait(pg)
-    pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 450)
+    if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 450)
     t2 = case(pg, 'Camden PCN · CU98765432')
     ok(t2 is not None, 'a photo of a notice names the case too')
-    chk = pg.inner_text('.cf-check') if pg.locator('.cf-check').count() else ''
-    ok('All from the photo you added' in chk and 'CU98765432' in chk and 'LK70 XYZ' in chk, 'details from a photo say they came from the photo')
+    f2 = (t2 or {}).get('cf', {}).get('f', {})
+    ok(t2 is not None and pg.locator('.cf-check').count() == 0 and pg.locator('.cf-facts').count() == 1 and f2.get('ref', {}).get('v') == 'CU98765432' and f2.get('vrm', {}).get('v') == 'LK70 XYZ' and all(x.get('st') == 'confirmed' and x.get('src') == 'the photo you added' for x in f2.values()), 'the details you checked are confirmed facts from the photo, with no second "Are they right?"')
     # 6 ordinary cases are left alone
     start(pg, "Currys refund hasn't arrived, order 445566")
     t3 = case(pg, 'Currys refund · 445566')

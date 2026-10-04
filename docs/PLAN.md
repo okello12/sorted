@@ -328,10 +328,30 @@ and `#contact` take the domain as it is); the lawyer's read of the terms and pri
 the phone check in `docs/PHONE_CHECK.md` on a real iPhone and Android phone. Four weeks of use against the targets,
 then the separate platform assessment the plan describes.
 
+## Remediation (the hardening report of 4 October 2026)
+
+The report's findings are taken in its order: the Phase A stop-ship items first, the PCN failure first of all; then
+Phase B (the fact ledger and obligations), Phase C (first-use checks with real people, Baldwin's) and Phase D (the
+hostile journey tests). Each item is listed here with its evidence once done.
+
+**A1. Photo and document intake (v121, done).** A read is evidence, never a fact: Tesseract's text goes through
+`docAssess()` (quality, notice terms, usable fields) and then a review, "Check the notice", with every field editable;
+nothing becomes a case fact until "These are right, continue". A bad read says "We couldn’t read this photo clearly.
+Your case hasn’t been changed." with Retake photo, Choose another file and Enter the details manually, and no
+Continue; retail text in the notice flow is "not a notice" and never a refund case; partial reads show what was found
+and leave the rest blank. The "8 characters is a read" rule is gone. Status is its own live region on the screen.
+Copy: "Sorted tries to read the notice. Check the details before continuing." Usage records: the six `document_*`
+steps (migration 18, live and staging), codes and counts only. Evidence: test 77, test 22 step 5, test 18.
+
+**A2 to A10.** In progress, in the report's order: one local clean-up (`clearLocalUserData`), kind changes that keep
+knowledge, "Whose move is it now?" with the open-step conflict, the fact ledger, the landing hierarchy, no
+jurisdiction-specific links before the nation is known, ordinary navigation instead of ARIA tabs, the trust wording,
+and staging as a real gate (last, because it makes releases red until the staging secrets exist).
+
 ## Where things stand after v120
 
 Done: Phases 0 to 4, each released through a pull request with green checks and verified on the live site by the
-`live` job (v114 to v120). Live: sorted-pilot.vercel.app serves v120.
+`live` job (v114 to v120), then the remediation items above as they are released (v121 onwards).
 
 Outstanding, for Baldwin: branch protection; staging (secrets, anonymous sign-in, `01_run_by_hand.sql`); the Resend
 delivery webhook and `resend_events_secret`; a domain and support address; the lawyer; Supabase Pro (backups);

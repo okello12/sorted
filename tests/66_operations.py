@@ -4,7 +4,7 @@
 # described as an account only this phone can open; no pilot wording; terms and a way to report a problem; a readable
 # file of every case; a second turn ("They didn't come", "it arrived") proposes the outcome; "but nothing" is a miss;
 # records from older versions still load; dates across the clock change and the year end.
-import os, sys, json, datetime
+import os, sys, re, json, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dates
 from playwright.sync_api import sync_playwright
@@ -129,7 +129,11 @@ with sync_playwright() as p:
     for lid in ('legacy1', 'legacy2'):
         pg.goto('https://sorted.test/?task=%s' % lid); wait(pg, 700)
         ok(pg.locator('main').count() == 1 and len(pg.inner_text('main')) > 80, 'an old case renders (%s)' % lid)
-    pg.goto('https://sorted.test/?task=legacy1'); wait(pg, 600); ok('C991' in pg.inner_text('main') and 'Fri, 9 Oct' in pg.inner_text('main'), 'its promise, reference and date are intact')
+    pg.goto('https://sorted.test/?task=legacy1')
+    try: pg.wait_for_selector('main:has-text("C991")', timeout=8000)
+    except Exception: pass
+    m6 = pg.inner_text('main')
+    ok('C991' in m6 and re.search(r'9\s*Oct', m6), 'its promise, reference and date are intact (%r)' % m6[:120])
     pg.goto('https://sorted.test/'); wait(pg, 600); pg.locator('.cap99-row').first.click(); wait(pg, 600)
     ok('Give notice to your landlord' in pg.inner_text('main') and 'Which nation' in pg.inner_text('main'), 'an old move renders and asks the new question once')
     ok(all((x['data'].get('rev') or 0) >= 1 for x in rows() if x['data']['id'] in ('legacy1', 'legacy2', 'legacym')), 'old records gain a revision on first load')

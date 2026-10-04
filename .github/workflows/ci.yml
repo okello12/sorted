@@ -47,3 +47,40 @@ jobs:
           if(actual!==m[1]) throw new Error('generated '+actual+' != '+file+' EXPECT '+m[1]);
           console.log(file+' pinned '+actual);
           NODE
+
+  engines:
+    # The same page in Safari's engine and in Firefox: a short walk (tests/engine_smoke.py) that a Chromium-only suite
+    # cannot see break. Not an iPhone: a real phone with VoiceOver is still checked by hand before a wider release.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [webkit, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps ${{ matrix.engine }}
+      - name: Build the page for tests
+        run: |
+          node all.js >/dev/null
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+      - name: Walk through Sorted in ${{ matrix.engine }}
+        env:
+          SORTED_ENGINE: ${{ matrix.engine }}
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: |
+          out=$(python3 tests/engine_smoke.py 2>&1) || true
+          echo "$out"
+          echo "$out" | grep -q "FAILS \[\]" && echo "$out" | grep -q "ERRORS \[\]"
+

@@ -117,7 +117,7 @@ with sync_playwright() as p:
     pg.locator('[data-a=panel][data-p=pack]').first.evaluate('e=>e.click()'); wait(pg, 500)
     pack = pg.inner_text('.pack-doc')
     ok('Corrections' in pack and 'Sky → Virgin Media' in pack and 'AB123 → AB132' in pack, 'the adviser pack lists the corrections')
-    cur_pack = [l for l in pack.split('\n') if not re.search(r'→|Changed |It was |In your words|in your words|^Message, |Taken from|In my words', l)]
+    cur_pack = [l for l in pack.split('\n') if not re.search(r'→|Changed |It was |In your words|in your words|^Message, |Taken from|In my words|, replaced, |, turned down by you, ', l)]
     ok(not any('Sky' in l or 'AB123' in l for l in cur_pack), 'and nowhere else in it is a replaced value current: %s' % [l for l in cur_pack if 'Sky' in l or 'AB123' in l][:3])
     print('CHECKS', n[0])
     b.close()

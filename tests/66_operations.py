@@ -42,7 +42,7 @@ with sync_playwright() as p:
     # 1 errors reach the operator, never case text
     pg.evaluate("setTimeout(function(){throw new Error('test boom \"Sky said secret things\"')},0)"); wait(pg, 400)
     e = errlog()
-    ok(e and e[-1]['p_source'] == 'page' and e[-1]['p_kind'] == 'Error' and 'secret' not in e[-1]['p_detail'] and 'test boom' in e[-1]['p_detail'] and e[-1]['p_build'].startswith('v109'), 'a page error is reported with its kind, the screen and the build, quoted words removed: %s' % json.dumps(e[-1:])[:200])
+    ok(e and e[-1]['p_source'] == 'page' and e[-1]['p_kind'] == 'Error' and 'secret' not in e[-1]['p_detail'] and 'test boom' in e[-1]['p_detail'] and re.match(r'v1[0-9][0-9] ', e[-1]['p_build']), 'a page error is reported with its kind, the screen and the build, quoted words removed: %s' % json.dumps(e[-1:])[:200])
     pg.evaluate("setTimeout(function(){Promise.reject(new TypeError('late'))},0)"); wait(pg, 400)
     ok(errlog()[-1]['p_kind'] == 'TypeError', 'an unhandled rejection too')
     for i in range(6): pg.evaluate("setTimeout(function(){throw new Error('flood')},0)")
@@ -113,7 +113,7 @@ with sync_playwright() as p:
     ok('How Sorted works, in writing' in d and 'Reminders are best efforts' in d and '10 working days' in d and 'law of England and Wales' in d, 'terms in plain English, with a complaints route')
     ok(pg.locator('a[href^="mailto:"][href*="Sorted%20problem"]').count() >= 1, '"Report a problem" composes an email')
     href = pg.locator('a[href^="mailto:"][href*="Sorted%20problem"]').first.get_attribute('href')
-    ok('v109' in href and 'Sky' not in href and 'AB1' not in href, 'the report carries the version and never case words')
+    ok(re.search(r'v1[0-9][0-9]', href) and 'Sky' not in href and 'AB1' not in href, 'the report carries the version and never case words')
     ok(pg.locator('[data-a=export-file]').count() == 1 and 'plain text' in d, 'a readable file of every case is offered')
     with pg.expect_download() as dl: pg.click('[data-a=export-file]')
     path = dl.value.path(); txt = open(path, encoding='utf8').read()

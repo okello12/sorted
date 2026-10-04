@@ -5,18 +5,21 @@ var session=JSON.parse(localStorage.getItem("__mocksession")||"null");
 var listeners=[];window.__otp=[];
 function q(table){
   var op="select",payload=null,filters=[],self={};
+  function fmatch(r,f){if(f[0].indexOf("data->>")===0){var k=f[0].slice(7);return String(r.data&&r.data[k])===String(f[1])}return r[f[0]]===f[1]}
   function run(){
+    try{var fresh=localStorage.getItem("__mockdb");if(fresh)DB=JSON.parse(fresh)}catch(e){}  /* the "server" is localStorage, so a test can play another device */
+    if(!DB[table])DB[table]=[];
     var rows=DB[table];
     if(op==="select"){var fr=rows.filter(r=>filters.every(f=>r[f[0]]===f[1]));return {data:(table==="tasks"||table==="shares")?fr.map(r=>({data:r.data,card:r.card})):fr.map(r=>Object.assign({},r)),error:null}}
     if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
     if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
     if(op==="insert"){rows.push(Object.assign({},payload,{updated_at:new Date().toISOString()}));persist();return {data:null,error:null}}
-    if(op==="update"){rows.forEach(r=>{if(filters.every(f=>r[f[0]]===f[1])){Object.assign(r,payload,{updated_at:new Date().toISOString()})}});persist();return {data:null,error:null}}
+    if(op==="update"){if(table==="tasks"&&localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};var hit=[];rows.forEach(r=>{if(filters.every(f=>fmatch(r,f))){Object.assign(r,payload,{updated_at:new Date().toISOString()});hit.push({id:r.id})}});persist();return {data:hit,error:null}}
     if(op==="delete"&&table==="shares"&&localStorage.getItem("__failShareDelete")==="1")return {data:null,error:{message:"test: delete refused"}};
     if(op==="delete"){DB[table]=rows.filter(r=>!filters.every(f=>r[f[0]]===f[1]));persist();return {data:null,error:null}}
   }
-  self.select=function(){op="select";return self};
+  self.select=function(){if(op==="update"||op==="insert")return self;op="select";return self};
   self.order=function(){return self};self.limit=function(){return self};self.gte=function(){return self};self.lt=function(){return self};
   self.upsert=function(p){op="upsert";payload=p;return self};
   self.insert=function(p){op="insert";payload=p;return self};
@@ -31,6 +34,7 @@ window.supabase={createClient:function(){
   return {
     from:q,
     rpc:function(name,args){
+      if(name==="report_page_error"){var pe=JSON.parse(localStorage.getItem("__errs")||"[]");pe.push(args);localStorage.setItem("__errs",JSON.stringify(pe));return Promise.resolve({data:null,error:null})}
       if(name==="share_seen"){var sn=JSON.parse(localStorage.getItem("__seen")||"[]");sn.push(args.p_token);localStorage.setItem("__seen",JSON.stringify(sn));return Promise.resolve({data:null,error:null})}
       if(name==="get_share"){var s=DB.shares.find(r=>r.token===args.p_token);return Promise.resolve({data:s?[{card:s.card,updated_at:s.updated_at}]:[],error:null})}
       if(name==="invite_helper"){window.__invites=(window.__invites||0)+1;DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);DB.helpers.push({task_id:args.p_task_id,email:args.p_email.toLowerCase(),inviter_name:args.p_name,status:"pending",token:"tok"+"x".repeat(60)});persist();return Promise.resolve({data:"pending",error:null})}

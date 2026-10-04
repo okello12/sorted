@@ -55,7 +55,7 @@ with sync_playwright() as p:
     pg.evaluate("""localStorage.setItem('__scores',JSON.stringify([{party:'Currys',kept:7,missed:3,people:4,by_via:{phone:{kept:5,n:6},email:{kept:2,n:4}}}]))""")
     c2 = start(pg, "Currys said the engineer will come on Friday to look at the TV")
     sb = pg.inner_text('.sc-block') if pg.locator('.sc-block').count() else ''
-    ok('Across Sorted: Currys' in sb and 'People recorded 10 promises from Currys. 7 were kept (70%).' in sb, 'the totals show on a Currys case')
+    ok('Across Sorted: Currys' in sb and '10 promises from Currys recorded by people using Sorted. 7 were kept (70%).' in sb, 'the totals show on a Currys case')
     ok('Promises made by phone were kept 83% of the time.' in sb and 'by email' not in sb, 'the channel that worked, only with enough of them')
     ok('From 4 people over the last 12 months. It isn’t a review' in sb, 'it says how many people and that it isn’t a review')
     a2 = start(pg, "Argos said the replacement will arrive on Monday")

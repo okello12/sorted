@@ -13,6 +13,8 @@ mkdir -p tests/out
 # 12_audit_fixes.py checks the fingerprint in the real page against the npm package.
 sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
 node tests/make_reader.js
+# a control character in the page means an escaping mistake in a generator (a "\\b" that became a backspace, say)
+if LC_ALL=C grep -qP '[\x00-\x08\x0B\x0C\x0E-\x1F]' public/index.html; then echo "control character in public/index.html: an escaping mistake in a build layer"; exit 1; fi
 fail=0
 findings=""
 for t in tests/[0-9]*.py; do

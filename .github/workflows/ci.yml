@@ -84,3 +84,34 @@ jobs:
           echo "$out"
           echo "$out" | grep -q "FAILS \[\]" && echo "$out" | grep -q "ERRORS \[\]"
 
+
+  staging:
+    # The live suite (tests/live/staging.py) against the STAGING Supabase project: row level security, grants, share
+    # links, deleting an account, and the real page saving a real case. Never against live. Runs when asked (Actions >
+    # Run workflow) and after each push to main, but only if the repository secrets SORTED_STAGING_URL and
+    # SORTED_STAGING_ANON_KEY exist; without them it is skipped, not failed. docs/STAGING.md says how to set them.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runtime
+        run: |
+          python -m pip install --disable-pip-version-check playwright
+          python -m playwright install --with-deps chromium
+      - name: Build the page
+        run: node all.js >/dev/null
+      - name: Run the live suite against staging
+        env:
+          SORTED_STAGING_URL: ${{ secrets.SORTED_STAGING_URL }}
+          SORTED_STAGING_ANON_KEY: ${{ secrets.SORTED_STAGING_ANON_KEY }}
+          TZ: Europe/London
+        run: |
+          if [ -z "$SORTED_STAGING_URL" ]; then echo "No staging secrets set: skipped (see docs/STAGING.md)"; exit 0; fi
+          python3 tests/live/staging.py

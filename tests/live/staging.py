@@ -130,6 +130,17 @@ ok(st in (200, 204), 'Undo drops it')
 st, r = rpc('company_scores', {}, A)
 ok(st == 200 and isinstance(r, list), 'the totals can be read by anyone signed in')
 
+# --- guest activity (v116): opening Sorted signed in is recorded; nobody can read the table ------------------------------
+st, r = rpc('touch_seen', {}, A)
+ok(st in (200, 204), 'a signed-in person can record a visit (touch_seen %s)' % st)
+st, r = rpc('touch_seen', {})
+ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301')), 'with no account it is refused (%s)' % st)
+st, r = rest('GET', 'user_seen?select=user_id', None, A)
+ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST301', 'PGRST205')) or r == [], 'the seen table cannot be read by a signed-in person (%s)' % st)
+st, r = rpc('reminder_delivery_event', {'p_provider_id': 'x', 'p_event': 'email.delivered', 'p_at': '2026-01-01T00:00:00Z'}, A)
+ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202')), 'delivery events cannot be written by a signed-in person (%s)' % st)
+# the deletion rule itself is checked by tests/live/guest_rule.sql in the SQL editor (a transaction that is rolled back)
+
 # --- deleting an account removes everything -------------------------------------------------------------------------
 st, r = rpc('delete_my_account', {}, A)
 ok(st in (200, 204), 'A deletes their account (%s)' % st)

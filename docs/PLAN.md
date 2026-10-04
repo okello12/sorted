@@ -56,24 +56,35 @@ the page), so a change that hasn't reached the server (offline, or mid-save) is 
 
 | Claim | Evidence | Status |
 | --- | --- | --- |
-| Cases are stored in London | Supabase project `boxrwcuhxmimayaxzywu`, region eu-west-2 | Configuration |
+| Cases are stored in London | Supabase project `boxrwcuhxmimayaxzywu`, region eu-west-2 (checked through the API, 4 Oct 2026) | Configuration |
 | A guest has a server account; only the browser that made it holds the key | Supabase anonymous sign-in, `anon-start`; tests 47, 61 | Tested |
 | A guest's cases carry across when they add an email | `stash_carry()`, `claim_carry()`; test 61 | Tested |
-| A guest account is deleted after 30 days without use | Job `sorted-anon-cleanup` (daily 03:37): deletes an anonymous user whose **last sign-in** (or creation) is over 30 days old, unless a case was updated in 30 days or a promise is live; cases go with it | Configuration. Not acceptable as is: see below |
-| Idle cases are deleted after 90 days | Job `sorted-retention-90d`: not updated for 90 days, unless a promise is live | Configuration. "30 without an email" in older copy only happens through guest deletion |
-| Reminder emails are scheduled every 10 minutes | Job `sorted-send-reminders` `*/10 * * * *`; edge function `send-reminders` v9 | Scheduling only. **Unverified: when emails arrive** |
-| Reminder emails contain no case details | `send-reminders` source | Code; add a test on the email body |
+| A guest account is deleted after 30 days without use | Job `sorted-anon-cleanup` (daily 03:37, live and staging since migration 15): deletes an anonymous user with no sign-in, no visit (`user_seen`, written by `touch_seen()` on each load), no case updated and no live promise in 30 days; cases go with it | Configuration (checked 4 Oct 2026 in `cron.job`); the rule checked on staging with `tests/live/guest_rule.sql` (daily opener kept, live promise kept, recent save kept, 31 days away deleted); the page's call tested (test 72); explained in the app (test 72) |
+| Idle cases are deleted after 90 days | Job `sorted-retention-90d` (daily 03:17): not updated for 90 days, unless a promise is live | Configuration (checked 4 Oct 2026). The old "30 without an email" wording is gone (test 72) |
+| Reminder emails are scheduled every 10 minutes | Job `sorted-send-reminders` `*/10 * * * *` (checked 4 Oct 2026); edge function `send-reminders` v10 | Scheduling verified. Arrival: recorded per reminder since v116 (below); **still unmeasured until Resend's delivery webhook is connected** |
+| Reminder emails contain no case details | `send-reminders` source; test 72 checks the body is built from fixed copy, links and ids only | Tested |
 | Photos and PDFs are read on the phone, never uploaded | `readPicture()`, `pdfToText()`; tests 10, 18, 22; CSP (test 13) | Tested |
-| Changes made offline are saved later | Test 56 (failed save kept, saved once online); test 66 (two devices merged; deleted elsewhere) | Tested for these cases only |
+| Changes made offline are saved later | Test 56 (failed save kept, saved once online); test 66 (two devices merged; deleted elsewhere); test 72 (an offline edit does not bring back a case deleted elsewhere); test 71 (sign-out with pending changes) | Tested for these cases |
 | Helper links: anyone with the link, read-only, until switched off or 30 days without a change; deleted after 90 | `get_share()`; job `shares-retention`; tests 60, 61; staging suite | Tested |
-| Usage records hold no case content | `pilot_events`: step name, case and promise ids, small props; tests 31, 51, 60 | Tested. **Not anonymous**: each holds the account id and case id |
+| Usage records hold no case content | `pilot_events`: step name, case and promise ids, small props; tests 31, 51, 60 | Tested. Not anonymous (account id and case id): the notice now says so (test 72) |
 
-**Reminder delivery evidence.** Accepting an email measures sending, not arrival. Record per reminder: the scheduled
+**Reminder delivery evidence (built in v116).** Migration 15 adds `submitted_at`, `delivered_at`, `bounced_at`,
+`delivery_status` and `delivery_detail` to `reminders`; `send-reminders` v10 writes `submitted_at` before the Resend
+call and `sent_at` with `provider_id` on acceptance; the new edge function `resend-events` takes Resend's delivery,
+bounce, failure, delay and complaint webhooks (Svix-signed with the Vault secret `resend_events_secret`) and writes
+them against the reminder by `provider_id`, keeping only the bounce classification, never an address;
+`pilot_health().delivery` reports due, handed over, accepted, delivered, bounced, delayed, unknown after an hour, the
+median lateness and arrival, and whether any webhook has ever arrived; the numbers page shows it. **Still to do, by
+Baldwin:** in Resend, add a webhook endpoint for `https://boxrwcuhxmimayaxzywu.supabase.co/functions/v1/resend-events`
+with the events delivered, bounced, failed, delivery_delayed and complained, and put its signing secret in Vault as
+`resend_events_secret`. Until then the Delivery row says arrival is unmeasured.
+
+**Reminder delivery evidence (the rule).** Accepting an email measures sending, not arrival. Record per reminder: the scheduled
 time, the time it was submitted to Resend, Resend's acceptance (`provider_id`), and delivery, bounce or failure events
 from Resend's webhooks where available. Until that data supports a timing claim, the wording stays: "Sorted sends an
 email at the time it shows. When it arrives depends on email, and it can be late or not arrive."
 
-**Guest deletion: a rule to define, not just reword.** Someone who opens Sorted regularly would expect their cases to
+**Guest deletion: a rule to define, not just reword (done in v116; the evidence is in the table above).** Someone who opens Sorted regularly would expect their cases to
 stay. Before this rule is described or relied on:
 
 1. Define activity: opening Sorted while signed in as the guest (the page refreshes the session, which updates
@@ -85,7 +96,7 @@ stay. Before this rule is described or relied on:
 4. Explain it in the app before it applies: "Without an email, your cases are deleted after 30 days in which you don't
    open Sorted."
 
-**Wording to correct now:**
+**Wording to correct now (done in v116, pinned by test 72):**
 
 - "Sorted keeps nothing you delete" (terms): untrue, usage records remain. Use the deletion answer below.
 - "Nobody running it reads your cases" (About): use the privacy notice's wording everywhere (technical access as any
@@ -96,15 +107,15 @@ stay. Before this rule is described or relied on:
   browser can open them."
 - "Step records" become "usage records without case content", never "anonymous".
 
-**Deletion, answered coherently.**
+**Deletion, answered coherently (the terms, Help and the Undo banner say this since v116).**
 
 *Deleting one case.* It is removed from the database straight away, with its helper link (which stops working) and its
 unsent reminders (`case-del`; test 12). For two minutes Home offers Undo. During that time the only copy is in the open
 page on this phone: **closing or refreshing the page, or tapping anything else, ends recovery**, and the app says so
 next to Undo. Undo saves it back as a new copy without the helper link (test 69). Usage records mentioning the case id
 (no content) remain up to 12 months (`pilot-events-retention`). Emails already sent stay in your inbox.
-Test to add: another device that was offline with the case open must not bring the deleted case back when it
-reconnects (today `saveConflict()` removes it locally when the row is gone; prove it for an edit made offline).
+Proven in test 72: another device that was offline with an edit does not bring the deleted case back when it reconnects
+(`saveConflict()` removes it locally when the row is gone).
 
 *Deleting your account.* Everything goes straight away: cases, helper links, reminders, replies, notes, company-outcome
 contributions and usage records (`delete_my_account()`; cascades). No Undo. Emails already sent stay in your inbox.
@@ -238,3 +249,18 @@ account. A native wrapper is one possible route, not readiness.
 **Outstanding findings after Phase 0:** branch protection and staging secrets (above); the staging suite has never run
 (no secrets); reminder arrival still unmeasured (Phase 1); usage records linkable (Phase 1); guest deletion rule
 (Phase 1).
+
+**Phase 1 (v116, 4 October 2026).**
+
+- The evidence table above is checked against the live project (region, every `cron.job`, the function versions) and
+  each row says what was verified and how.
+- Reminder delivery is now recorded end to end (migration 15, `send-reminders` v10, `resend-events` v1, the Delivery
+  row on the numbers page). Arrival stays unmeasured until Baldwin connects Resend's webhook (above).
+- The guest activity rule is defined (sign-in, a visit, a case saved, a live promise), applied on live and staging,
+  checked on staging with `tests/live/guest_rule.sql` (rolled back, nothing left), and explained in the app.
+- Every wrong sentence is replaced and pinned (test 72): deletion as it works, technical access rather than "nobody",
+  guidance can change, guest copy about access, "usage records" (not anonymous) instead of "step records", reminders
+  sent on time but arrival not promised. The Undo banner says a refresh ends the chance. Email footers no longer say
+  "research pilot" (`send-reminders` v10, `inbound-email` v6).
+- Still open from Phase 1: Supabase's and Resend's retention terms on their free plans (quote both before a backups
+  claim is published); the staging suite has still never run (no secrets).

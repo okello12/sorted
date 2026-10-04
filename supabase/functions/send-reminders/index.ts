@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// v10 (Sorted v116): records when each reminder is handed to Resend (submitted_at) before the call, and Resend's
+// acceptance (sent_at, provider_id) after it; delivery and bounces arrive later through resend-events.
 // v9 (Sorted v71): an "after" reminder for a promise or your own step has two answer links, Yes and No. They open the
 // case, which records the answer once it has loaded and offers Undo. Still no case details in the email.
 // v8: claims reminders and helper invites in the database before sending (needs the reliability fixes of 2 Oct 2026).
@@ -79,8 +81,8 @@ Deno.serve(async (req: Request) => {
   for (const h of (pend ?? []) as any[]) {
     const yes = `${SITE}/?helper=yes&h=${h.token}`;
     const intro = `${h.inviter_name} is using Sorted to keep track of something they're waiting on, and has already sent you a link to it. They'd like Sorted to email you a short nudge when it's due, so you can check in with them.`;
-    const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
+    const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`);
     const r = await send(key, from, h.email, `${h.inviter_name} asked Sorted to keep you in the loop`, text, hb);
     if (r.ok) invites++;
     else await sb.from("helpers").update({ invite_sent_at: null }).eq("task_id", h.task_id).eq("token", h.token);  // try again next run
@@ -118,8 +120,9 @@ Deno.serve(async (req: Request) => {
     const ans = (a: string) => `${link}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
     const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
-    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined);
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined);
+    await sb.from("reminders").update({ submitted_at: new Date().toISOString() }).eq("id", r.id);
     const res = await send(key, from, email, c.subject, text, hb, { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
     if (!res.ok) { failed++; await sb.from("reminders").update({ cancel_reason: `send failed: ${res.err}` }).eq("id", r.id); continue; }
     await sb.from("reminders").update({ sent_at: new Date().toISOString(), provider_id: res.id ?? null }).eq("id", r.id);
@@ -133,8 +136,8 @@ Deno.serve(async (req: Request) => {
         const hstop = `${SITE}/?helper=stop&h=${h.token}`;
         const hlink = `${SITE}/?share=${sh.token}`;
         const hintro = isMove ? `Something ${h.inviter_name} planned to do is due soon. You said you'd like a nudge so you can check in with them.` : `Something ${h.inviter_name} is waiting on is due soon. You said you'd like a nudge so you can check in with them.`;
-        const htext = `${hintro}\n\nSee it here: ${hlink}\n\nTo stop these nudges: ${hstop}\n\nSorted is a small research pilot run by Baldwin Thompson-Addo.`;
-        const hhtml = html(`A nudge about ${h.inviter_name}`, hintro, "See it", hlink, `To stop these nudges: <a href="${esc(hstop)}" style="color:#2A3990">stop them here</a>.<br><br>Sorted is a small research pilot run by Baldwin Thompson-Addo.`);
+        const htext = `${hintro}\n\nSee it here: ${hlink}\n\nTo stop these nudges: ${hstop}\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+        const hhtml = html(`A nudge about ${h.inviter_name}`, hintro, "See it", hlink, `To stop these nudges: <a href="${esc(hstop)}" style="color:#2A3990">stop them here</a>.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`);
         const hr = await send(key, from, h.email, `A nudge about ${h.inviter_name}`, htext, hhtml, { "List-Unsubscribe": `<${hstop}>` });
         if (hr.ok) { await sb.from("reminders").update({ helper_sent_at: new Date().toISOString() }).eq("id", r.id); nudged++; }
       }

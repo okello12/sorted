@@ -1,6 +1,6 @@
 # v112: the basics. Rename a case; reopen a finished one; remove a saved message and put it back; a promise cancelled
 # or no longer needed (not a miss, nothing sent to company totals, no chase); Undo after deleting a case; Account in
-# three parts (Account, Settings with reminders and appearance, Help & About with eight questions and who runs Sorted);
+# three parts (Account, Settings with reminders and appearance, Help & About with nine questions and who runs Sorted);
 # Help & About on the signed-out site.
 import os, sys, json, datetime, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -99,9 +99,9 @@ with sync_playwright() as p:
     pg.click('.acct112-nav [data-v=help]'); wait(pg, 700)
     ok(pg.evaluate("document.activeElement&&document.activeElement.id==='help-h'"), 'a jump puts focus on that part’s heading')
     ok('Sign out' in m or 'Add my email' in m, 'sign-in details sit under Your account')
-    ok('Reminders' in m and 'Appearance' in m and 'Step records' in m, 'Settings has reminders, appearance and step records')
-    ok(pg.locator('.acct112-q').count() == 8 and 'Report a problem' in m and 'kofiniiakwei@gmail.com' in m and 'How Sorted works, in writing' in m and 'How your data is handled' in m, 'Help & About has eight questions, contact, Report a problem, privacy and terms')
-    ok('information rights' in m and 'Northumbria' in m and 'nobody running it reads your cases' in m, 'About Sorted says who runs it and why that matters for your data')
+    ok('Reminders' in m and 'Appearance' in m and 'Usage records' in m, 'Settings has reminders, appearance and usage records')
+    ok(pg.locator('.acct112-q').count() == 9 and 'Report a problem' in m and 'kofiniiakwei@gmail.com' in m and 'How Sorted works, in writing' in m and 'How your data is handled' in m, 'Help & About has nine questions, contact, Report a problem, privacy and terms')
+    ok('information rights' in m and 'Northumbria' in m and 'doesn’t use it to read your cases' in m, 'About Sorted says who runs it and why that matters for your data')
     pg.locator('.acct112-q summary').first.click(); wait(pg, 200)
     ok(pg.locator('.acct112-q[open]').count() == 1, 'a question opens to its answer')
     # 7 appearance

@@ -29,7 +29,7 @@ a person to confirm statements that delete. **Still to do, once, by the person r
 Until step 3 is done the `staging` job in CI is **skipped** (a `secrets-check` job sees the secrets are missing and
 says so in a warning). It is never reported as passed without running.
 
-Progress on step 1 (4 October 2026, through the Supabase API): `shares_drop_helper` with its trigger, `remove_helper`
+Migration 15 (`15_delivery_seen_v116.sql`) is fully applied on staging (4 October 2026). Progress on step 1 (the same day, through the Supabase API): `shares_drop_helper` with its trigger, `remove_helper`
 and `drop_outcome` are on staging. Supabase's tooling refused the rest without a person's confirmation, so still to run
 in the SQL editor from `01_run_by_hand.sql`: `delete_my_account`, `stash_carry`, `claim_carry`, the `revoke` and
 `grant` lines, and the retention jobs. Running the whole file again is safe (`create or replace`; `cron.schedule`

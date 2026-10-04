@@ -82,7 +82,7 @@ with sync_playwright() as p:
     hp.goto('https://sorted.test/?share=' + tok); wait(hp, 700)
     ok('Add a note for them' not in hp.inner_text('main'), 'with notes off, the helper has no form')
     # 5 privacy notice
-    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg)
+    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg); pg.click('.acct112-nav [data-v=help]'); pg.wait_for_timeout(400); 
     n = pg.inner_text('main')
     ok('Sorted adds that case’s own address in Cc. Their replies to it are received by Resend and kept for 30 days' in n and 'If you let a helper add notes' in n, 'the privacy notice explains replies and notes')
     b.close()

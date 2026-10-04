@@ -141,6 +141,20 @@ st, r = rpc('reminder_delivery_event', {'p_provider_id': 'x', 'p_event': 'email.
 ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202')), 'delivery events cannot be written by a signed-in person (%s)' % st)
 # the deletion rule itself is checked by tests/live/guest_rule.sql in the SQL editor (a transaction that is rolled back)
 
+# --- the email reminders switch (v118): a signed-in person can stop and restart their own emails, nobody else's ---
+st, r = rpc('set_email_optout', {'p_off': True}, A)
+ok(st == 200 and r is True, 'A switches email reminders off (%s)' % st)
+st, r = rest('GET', 'email_optouts?select=user_id', None, A)
+ok(st == 200 and isinstance(r, list) and len(r) == 1 and r[0].get('user_id') == uid_a, 'A can see only their own opt-out row')
+if B:
+    st, r = rest('GET', 'email_optouts?select=user_id', None, B)
+    ok(st == 200 and r == [], 'B sees no row for A')
+st, r = rpc('set_email_optout', {'p_off': False}, A)
+st2, r2 = rest('GET', 'email_optouts?select=user_id', None, A)
+ok(st == 200 and r is False and r2 == [], 'A switches them back on and the row goes')
+st, r = rpc('set_email_optout', {'p_off': True})
+ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301')), 'with no account it is refused (%s)' % st)
+
 # --- deleting an account removes everything -------------------------------------------------------------------------
 st, r = rpc('delete_my_account', {}, A)
 ok(st in (200, 204), 'A deletes their account (%s)' % st)

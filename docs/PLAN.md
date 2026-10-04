@@ -283,3 +283,10 @@ account. A native wrapper is one possible route, not readiness.
 - Not done in Phase 2, carried to Phase 3: several people with their own references inside one case (today a second
   party is a second case, linked by name), several open actions at once, and editing the matter in place (rename
   covers the title).
+
+**Phase 3, part 1 (v118, 4 October 2026).** Account, Settings and Help & About are three views with a selected tab.
+Settings has the email reminders switch for every case (state, destination, UK time, arrival not promised; migration
+17 `set_email_optout`), appearance, usage records with their state, and an Owner section for the admin. The case
+lists the dates and times its emails go. Export is "Download my cases" and "Copy to clipboard" with the contents
+explained; "Delete my account" is restrained until tapped and confirms with the deletion answer. Home shows the sync
+state while something is pending or the phone is offline (test 74; the staging suite checks the switch's permissions).

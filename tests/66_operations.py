@@ -109,11 +109,12 @@ with sync_playwright() as p:
     ok(any(q['status'] == 'missed' for q in c2['promises']) and pg.locator('#f-ask').count() == 1, 'Yes records the miss and gets the chase ready')
     # 6 the data page: wording, terms, report, file
     pg.goto('https://sorted.test/'); wait(pg, 500); pg.locator('[data-a=data]').first.evaluate('e=>e.click()'); wait(pg, 500)
-    d = pg.inner_text('main')
+    d = pg.inner_text('main'); pg.click('.acct112-nav [data-v=help]'); wait(pg, 400); d += '\n' + pg.inner_text('main')
     ok('How Sorted works, in writing' in d and 'Reminders are best efforts' in d and '10 working days' in d and 'law of England and Wales' in d, 'terms in plain English, with a complaints route')
     ok(pg.locator('a[href^="mailto:"][href*="Sorted%20problem"]').count() >= 1, '"Report a problem" composes an email')
     href = pg.locator('a[href^="mailto:"][href*="Sorted%20problem"]').first.get_attribute('href')
     ok(re.search(r'v1[0-9][0-9]', href) and 'Sky' not in href and 'AB1' not in href, 'the report carries the version and never case words')
+    pg.click('.acct112-nav [data-v=acct-you]'); wait(pg, 400)
     ok(pg.locator('[data-a=export-file]').count() == 1 and 'plain text' in d, 'a readable file of every case is offered')
     with pg.expect_download() as dl: pg.click('[data-a=export-file]')
     path = dl.value.path(); txt = open(path, encoding='utf8').read()

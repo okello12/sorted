@@ -14,7 +14,7 @@ with sync_playwright() as p:
         pg.goto('about:blank'); pg.goto('https://sorted.test/'+where); pg.evaluate("localStorage.clear()"); pg.reload(); pg.wait_for_timeout(300)
         n=pg.locator('a[href="mailto:kofiniiakwei@gmail.com"]').count(); ok(n>=1,'%s: contact link shown (%d)'%(where or 'landing',n))
     m=pg.inner_text('main'); ok('by emailing kofiniiakwei@gmail.com' in m and 'Contact him at kofiniiakwei@gmail.com' in m,'full notice: contact in Who runs it and Your rights')
-    pg.goto('https://sorted.test/#start'); pg.click('[data-a=anon-start]'); pg.wait_for_timeout(400); pg.click('[data-a=data]'); pg.wait_for_timeout(300)
+    pg.goto('https://sorted.test/#start'); pg.click('[data-a=anon-start]'); pg.wait_for_timeout(400); pg.click('[data-a=data]'); pg.wait_for_timeout(300); pg.click('.acct112-nav [data-v=help]'); pg.wait_for_timeout(400); 
     ok('by emailing kofiniiakwei@gmail.com' in pg.inner_text('main'),'Your data shows the contact')
     b.close()
 print('ERRORS',errs); print('FAILS',fails)

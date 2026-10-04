@@ -73,7 +73,7 @@ with sync_playwright() as p:
     ok('You’ve used the assistant 40 times today' in pg.inner_text('main'), 'daily limit: it says so')
     pg.evaluate("localStorage.removeItem('__aiMode')")
     # 5 the privacy notice says it
-    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg)
+    pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('text=Account'); wait(pg); pg.click('.acct112-nav [data-v=help]'); pg.wait_for_timeout(400); 
     notice = pg.inner_text('main')
     ok('Anthropic runs Sorted’s assistant. All four are US companies' in notice and 'Sorted’s assistant. If you tap one of the assistant’s buttons' in notice and 'Nothing is sent until you tap.' in notice, 'the privacy notice explains the assistant')
     b.close()

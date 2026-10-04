@@ -394,6 +394,13 @@ understood follow the action. The document door says "Start with your document",
 first-page limit for scanned PDFs; a failed read shows one set of choices; manual PCN entry is a form. A previous error
 no longer blocks a second submit of the notice form. Evidence: tests 83, 77, 82.
 
+**v126 (public pages).** The landing page leads with "Keep everyday admin moving." and the everyday problems, one
+main action ("Start with your problem", carried through sign-in to the box for your own words), "See an example", three
+common problems, one labelled worked example, and the full catalogue (six ways in, 32 examples, life moments) behind
+"Browse more". No more "Tue 14:00–16:00" sample. Help: questions first, in four groups. How it works: shorter, example
+kept. About: why Sorted exists first. Contact: a copyable address and what to do if no email app opens. Privacy points
+at Account and Settings. Terms describe all of Sorted. Evidence: tests 84, 44, 76.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

@@ -29,8 +29,8 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); wait(pg, 800)
     m = pg.inner_text('main'); ch = pg.locator('#cap82-start')
     ok(ch.count() == 1 and ch.evaluate("e=>getComputedStyle(e).display") != 'none', 'a newcomer sees the ways in on Home')
-    ok('Life admin has a habit of piling up. Sorted helps you keep it moving.' in m, 'the purpose comes before the choices')
-    ok(m.index('Life admin has a habit') < m.index("Something's broken") < m.index('Waiting for a repair? Save what they promised'), 'purpose, then the routes, then one concrete example')
+    ok('Keep everyday admin moving.' in m, 'the purpose comes before the choices')
+    ok(m.index('Keep everyday admin moving.') < m.index("Something's broken") < m.index('Waiting for a repair? Save what they promised'), 'purpose, then the routes, then one concrete example')
     ok(ch.locator('.cap82-card').count() == 6 and ch.locator('.cap82-card').evaluate_all("es=>es.every(e=>{var s=e.querySelector('strong');return s.scrollWidth<=s.clientWidth+1&&e.getBoundingClientRect().right<=innerWidth})"), 'six routes, every label fully readable, none cut off')
     ok('Swipe for more' not in m, 'no "Swipe for more"')
     ok(pg.locator('.navq[data-a=data]').inner_text().strip() == 'Account', 'the top right says Account')
@@ -115,7 +115,7 @@ with sync_playwright() as p:
     poke("d.tasks.forEach(y=>{var x=y.data;if(x.kind!=='moment'){x.board='done';x.outcome='Sorted';(x.promises||[]).forEach(q=>{if(q.status==='open')q.status='kept'});(x.moves||[]).forEach(q=>{if(q.status==='open')q.status='done'})}})")
     pg.goto('https://sorted.test/'); wait(pg, 800); m = pg.inner_text('main')
     ok('You’re all caught up.' in m and pg.locator('#cap82-start').count() == 1 and pg.locator('.home44-done[open]').count() == 1 and pg.locator('.home111-newbtn').count() == 1, 'with every case finished: all caught up, the ways in, Done open, + New')
-    ok('Life admin has a habit' not in m, 'a person with finished cases is not treated as a newcomer')
+    ok('Keep everyday admin moving.' not in m, 'a person with finished cases is not treated as a newcomer')
     # 9 narrow and large text; keyboard
     for vw in (320, 390):
         pg.set_viewport_size({'width': vw, 'height': 844}); pg.goto('https://sorted.test/'); wait(pg, 600)

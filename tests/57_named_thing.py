@@ -22,7 +22,7 @@ with sync_playwright() as p:
     pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
     # 1 a choice on the landing page carries through sign-in to its own questions
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 700)
-    pg.locator('#cap82-landing [data-cap82=fix]').first.click(); wait(pg, 900)
+    pg.click('#browse126 > summary'); wait(pg, 150); pg.locator('#cap82-landing [data-cap82=fix]').first.click(); wait(pg, 900)
     if pg.locator('[data-a=anon-start]').count(): pg.click('[data-a=anon-start]'); wait(pg, 900)
     ok(pg.locator('.gi-form').count() == 1 and pg.locator('input[name=gi-item]').count() == 4, '"Something’s broken" on the landing page opens the broken questions after sign-in')
     # 2 the screen: kept, said back, filled in

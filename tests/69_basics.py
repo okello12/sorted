@@ -104,7 +104,7 @@ with sync_playwright() as p:
     pg.click('.acct112-nav [data-v=help]'); wait(pg, 700); m = pg.inner_text('main')
     ok(pg.evaluate("document.activeElement&&document.activeElement.id==='help-h'"), 'a tab puts focus on that part’s heading')
     ok(pg.locator('.acct112-q').count() >= 9 and 'Report a problem' in m and 'kofiniiakwei@gmail.com' in m and 'How Sorted works, in writing' in m and 'How your data is handled' in m, 'Help & About has the questions, contact, Report a problem, privacy and terms')
-    ok('information rights' in m and 'Northumbria' in m and 'doesn’t use it to read your cases' in m, 'About Sorted says who runs it and why that matters for your data')
+    ok('Why it exists.' in m and 'Who runs it.' in m and 'data protection' in m and 'doesn’t use it to read your cases' in m and m.index('Why it exists.') < m.index('Who runs it.'), 'About Sorted says why it exists first, then who runs it and why that matters for your data (v126)')
     pg.locator('.acct112-q summary').first.click(); wait(pg, 200)
     ok(pg.locator('.acct112-q[open]').count() == 1, 'a question opens to its answer')
     # 7 appearance

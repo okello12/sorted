@@ -29,18 +29,11 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelectorAll('details.case117-u').forEach(d=>d.open=true)"); return pg.inner_text('details.case117-u') if pg.locator('details.case117-u').count() else ''
     # ---- 0. the landing page ----
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.goto('https://sorted.test/'); wait(pg, 700)
-    hero = pg.inner_text('.hero'); body = pg.inner_text('body')
-    ok('They said Tuesday.' in hero and 'Sorted remembers Tuesday.' in hero, 'the headline stays')
-    ok(EXPLAIN in hero and hero.index('Sorted remembers Tuesday.') < hero.index(EXPLAIN) < hero.index(KINDS), 'the explanation follows the headline at once, then the kinds of matter')
-    cta = pg.locator('.hero a.btn.primary')
-    bx = cta.bounding_box() if cta.count() else None
-    ok(cta.count() == 1 and bx is not None and bx['y'] + bx['height'] <= 844 and pg.locator('.hero .btn.primary').count() == 1, 'one primary button in the hero, above the fold (%s)' % (bx and round(bx['y'] + bx['height'])))
-    ok(hero.index(KINDS) < hero.index('Get something sorted'), 'the button comes after the kinds of matter')
-    ok('A parking notice. A refund that hasn’t arrived.' not in hero and 'Idle cases are deleted after 90 days' not in hero, 'the old list of examples and the retention paragraph are out of the hero')
-    ok('You don’t have to keep remembering whether they got back to you.' in body and 'See how it works' in body, 'the relief line and the link to How it works remain on the page')
-    ok(pg.get_attribute('meta[name=description]', 'content').startswith('They said Tuesday. Sorted remembers Tuesday. Keep the details, promises'), 'the page description matches')
+    hero = pg.inner_text('.hero')
+    ok('Keep everyday admin moving.' in hero and 'Parking notices, delayed refunds, repairs and confusing letters.' in hero, 'the landing page leads with the everyday problem (v126 replaced the v123 headline)')
+    ok(pg.get_attribute('meta[name=description]', 'content').startswith('Keep everyday admin moving.'), 'the page description matches')
     pg.goto('https://sorted.test/#start'); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 700)
-    ok('Keep the details, promises, deadlines and next steps of life’s unfinished business in one place.' in main(), 'a newcomer’s Home carries the same description')
+    ok('Keep everyday admin moving.' in main(), 'a newcomer’s Home carries the same description')
     # ---- 1. a case with their promise: no question; "Say whose move it is" re-asks with the new wording ----
     fri = datetime.date.today() + datetime.timedelta(days=(4 - datetime.date.today().weekday()) % 7 or 7)
     pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg, 300)

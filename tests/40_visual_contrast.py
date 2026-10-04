@@ -35,7 +35,7 @@ with sync_playwright() as p:
         pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.goto('https://sorted.test/'); wait(pg, 600)
         ok(pg.evaluate("document.documentElement.scrollWidth<=innerWidth"), '%s: the landing page doesn’t scroll sideways' % scheme)
-        ok(pg.locator('section[aria-labelledby="ex-h"] .slip.needs').count() == 1 and (pg.evaluate(CR, 'section[aria-labelledby="ex-h"] .slip.needs .slip-kind') or 0) >= 4.5, '%s: the landing examples use the same colours as Home, readable' % scheme)
+        ok(pg.locator('.ex126').count() == 1 and (pg.evaluate(CR, '.ex126 p') or 0) >= 4.5 and (pg.evaluate(CR, '.hero126 .hero-sub') or 0) >= 4.5, '%s: the landing example and the hero text are readable (v126)' % scheme)
         ok(pg.evaluate("(()=>{const r=document.querySelector('.hero .eyebrow');if(!r)return true;const h=parseFloat(getComputedStyle(r).lineHeight)||16;return r.getBoundingClientRect().height<h*2.6})()"), '%s: the line above the headline is balanced' % scheme)
         pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 200); pg.click('[data-a=anon-start]'); wait(pg)
         a = start(pg, "Currys promised a refund of £89 by Friday, order 445566")

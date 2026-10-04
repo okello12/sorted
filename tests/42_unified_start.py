@@ -21,7 +21,7 @@ with sync_playwright() as p:
     ok(pg.locator('#cap82-landing .cap82-art svg').count()==6,'every starting point has its own visual scene')
     ok(pg.locator('#cap82-landing [data-cap82="other"]').count()==1,'landing keeps a freeform Something else escape hatch')
     ok(no_overflow(pg),'visual landing does not overflow at 390px')
-    pg.click('#cap82-landing [data-cap82="promise"]'); wait(pg,180)
+    pg.click('#browse126 > summary'); wait(pg,150); pg.click('#cap82-landing [data-cap82="promise"]'); wait(pg,180)
     ok('#start' in pg.url,'choosing a visual from the public landing starts the existing flow')
 
     # Enter the pilot and create the existing example so Home has real cases.

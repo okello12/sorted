@@ -370,8 +370,19 @@ well or mark it no longer needed; their promise is never touched by the answer. 
 promises, deadlines and next steps of life’s unfinished business in one place. Sorted shows what needs you, what you’re
 waiting for and when to follow up.", the kinds of matter, one primary button above the fold. Evidence: test 80, test 44.
 
-**A5 (the fact ledger, Phase B), A10 (staging as a real gate; last, because it makes releases red until the staging
-secrets exist), then Phase D.** Next.
+**A5 / Phase B. The fact ledger (v124, done).** Every detail has a row with where it came from, when, its status and
+what it replaced. Nothing silently disappears; a reading or suggestion is never confirmed without the person; a thing
+ruled out is recorded as ruled out. Older cases gain a ledger on opening without anything else changing. Shown on the
+case page and in the adviser pack. Evidence: test 81.
+
+**Phase D. Hostile journeys (v124, done).** Parking (bad photo → manual → challenge → rejection), repair (safety stop →
+missed appointment → new date → kind changed and back), two moves in two nations. Refund cycle: test 47; two devices:
+test 66. Evidence: test 82.
+
+**Phase C (first-use checks with real people) is Baldwin's**, with `docs/PHONE_CHECK.md`.
+
+**A10. Staging as a real gate.** Last, because a missing staging environment then makes every release red until the
+staging secrets exist.
 
 ## Where things stand after v120
 

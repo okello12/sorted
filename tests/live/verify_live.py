@@ -16,7 +16,12 @@ def ok(c, m):
     n[0] += 1; print(('PASS ' if c else 'FAIL ') + m)
     if not c: fails.append(m)
 def done():
-    print('CHECKS', n[0]); print('ERRORS', errs); print('FAILS', fails); sys.exit(1 if fails or errs else 0)
+    print('CHECKS', n[0]); print('ERRORS', errs); print('FAILS', fails)
+    if os.environ.get('GITHUB_ACTIONS'):
+        # the reasons as annotations, readable without the raw log
+        for m in (fails + errs)[:8]: print('::error title=live::%s' % m.replace('\n', ' ')[:900])
+        if not fails and not errs: print('::notice title=live::%d checks passed on %s' % (n[0], URL))
+    sys.exit(1 if fails or errs else 0)
 
 local = open('public/index.html', 'rb').read()
 want = hashlib.sha1(local).hexdigest()

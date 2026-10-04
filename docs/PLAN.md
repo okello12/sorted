@@ -384,6 +384,19 @@ test 66. Evidence: test 82.
 **A10. Staging as a real gate.** Last, because a missing staging environment then makes every release red until the
 staging secrets exist.
 
+## The remaining-pages review (4 October 2026, evening)
+
+**v125 (signed in).** Unfinished work is kept: a next-step or other case form keeps its words when you leave it, the
+case or reload, and offers them back. Moving home keeps answers after a missing date. Case pickers (a shared-in
+message, a forwarded email) list every open case with a search. Deletion says what Undo does. A new parking case no
+longer opens call preparation. A case leads with its status and one next step; the first response and What Sorted
+understood follow the action. The document door says "Start with your document", keeps the choice and shows the
+first-page limit for scanned PDFs; a failed read shows one set of choices; manual PCN entry is a form. A previous error
+no longer blocks a second submit of the notice form. Evidence: tests 83, 77, 82.
+
+**Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
+current build.
+
 ## Where things stand after v120
 
 Done: Phases 0 to 4, each released through a pull request with green checks and verified on the live site by the

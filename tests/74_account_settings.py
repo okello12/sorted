@@ -46,7 +46,7 @@ with sync_playwright() as p:
     ok('Email reminders are on.' in m and fri.strftime('%A %-d %B') in m and '(UK time)' in m and 'When it arrives depends on email.' in m, 'the case lists the dates and times its emails go, UK time, and that arrival depends on email')
     # 2 three views with a selected tab
     account()
-    ok(pg.locator('.acct112-nav [role=tab][aria-selected=true]').inner_text() == 'Account' and pg.locator('main h1').inner_text() == 'Account' and pg.locator('#acct-settings').count() == 0 and pg.locator('#help').count() == 0, 'Account opens on its own view, the others not rendered')
+    ok(pg.locator('.acct112-nav [aria-current=page]').inner_text() == 'Account' and pg.locator('[role=tab], [role=tablist], [role=tabpanel]').count() == 0 and pg.locator('main h1').inner_text() == 'Account' and pg.locator('#acct-settings').count() == 0 and pg.locator('#help').count() == 0, 'Account opens on its own view, the others not rendered; ordinary navigation, no ARIA tabs (v122)')
     ok('1 case, linked to that email.' in main() and 'Everything is saved to your account.' in main(), 'the case count in ordinary text, with the sync state')
     pg.click('.acct112-nav [data-v=acct-settings]'); wait(pg, 400)
     ok(pg.locator('main h1').inner_text() == 'Settings' and pg.evaluate("document.activeElement&&document.activeElement.id") == 'acct-settings-h' and pg.locator('#acct-you').count() == 0, 'Settings is its own view, focus on its heading')

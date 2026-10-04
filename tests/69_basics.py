@@ -96,7 +96,7 @@ with sync_playwright() as p:
     ok(pg.locator('[data-a=del-undo]').count() == 0 and not case(cid), 'any other tap lets the deletion stand')
     # 6 Account in three parts
     pg.goto('https://sorted.test/'); wait(pg, 400); pg.click('[data-a=data]'); wait(pg, 600); m = pg.inner_text('main')
-    ok(pg.locator('.acct112-nav [role=tab]').all_inner_texts() == ['Account', 'Settings', 'Help & About'] and pg.locator('main h2.h2').all_inner_texts() == ['Your account'], 'Account has three parts, one shown at a time: Your account first')
+    ok(pg.locator('.acct112-nav [data-a=acct-jump]').all_inner_texts() == ['Account', 'Settings', 'Help & About'] and pg.locator('main h2.h2').all_inner_texts() == ['Your account'], 'Account has three parts, one shown at a time: Your account first')
     ok(pg.locator('.acct112-nav [data-a=acct-jump]').count() == 3, 'three tabs switch between them')
     ok('Sign out' in m or 'Add my email' in m, 'sign-in details sit under Your account')
     pg.click('.acct112-nav [data-v=acct-settings]'); wait(pg, 500); m = pg.inner_text('main')

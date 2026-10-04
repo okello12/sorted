@@ -343,10 +343,27 @@ and leave the rest blank. The "8 characters is a read" rule is gone. Status is i
 Copy: "Sorted tries to read the notice. Check the details before continuing." Usage records: the six `document_*`
 steps (migration 18, live and staging), codes and counts only. Evidence: test 77, test 22 step 5, test 18.
 
-**A2 to A10.** In progress, in the report's order: one local clean-up (`clearLocalUserData`), kind changes that keep
-knowledge, "Whose move is it now?" with the open-step conflict, the fact ledger, the landing hierarchy, no
-jurisdiction-specific links before the nation is known, ordinary navigation instead of ARIA tabs, the trust wording,
-and staging as a real gate (last, because it makes releases red until the staging secrets exist).
+**A2. One local clean-up (v122, done).** `clearLocalUserData()` is the one place that removes what Sorted keeps on this
+phone for a person (the copy of cases and moves, drafts, carried copies, a shared-in text, the step queue, start choices,
+per-case notes, anything read from a photo). Called at sign-out, account deletion, the move from a guest to an email
+account, draft expiry (the draft is removed, not ignored), a failed photo read, and from Settings ("Remove the copy from
+this phone"). Evidence: test 78.
+
+**A3. Kind changes keep knowledge (v122, done).** The old kind's answers go dormant on the case (`t.kept`) and return if
+the person comes back to that kind; promises, references, facts, counts, goal, whose move and history are never touched.
+Evidence: test 79.
+
+**A7. No jurisdiction before it is known (v122, done).** Moving home asks "Where is your new home?" first; until it is
+answered, the GP, licence, voting and council steps show no link and say to say where. Evidence: test 64.
+
+**A8. Ordinary navigation (v122, done).** Account, Settings and Help & About are a plain `nav` with `aria-current`; no
+ARIA tabs. Evidence: tests 74 and 65.
+
+**A9. Trust wording (v122, done).** "Sorted doesn’t turn an uncertain suggestion into a confirmed fact until you confirm
+it." replaces "nothing on a case changes without your tap"; "hold them to it" and "holds them to" are gone. Evidence: test 72.
+
+**A4 (whose move, with the open-step conflict), A5 (the fact ledger, Phase B), A6 (the landing hierarchy), A10 (staging
+as a real gate; last, because it makes releases red until the staging secrets exist), then Phase D.** Next.
 
 ## Where things stand after v120
 

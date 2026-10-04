@@ -27,19 +27,20 @@ with sync_playwright() as p:
     if pg.locator('[data-a=anon-start]').count(): pg.click('[data-a=anon-start]'); wait(pg, 700)
     pg.locator('[data-a=mom-start]').first.evaluate('e=>e.click()'); wait(pg, 600)
     m = pg.inner_text('main')
-    ok('Where is the new home?' in m and pg.locator('input[name=mv-nation]').count() == 4 and 'Northern Ireland' in m, 'the move form asks which nation the new home is in, with four choices')
+    ok('Where is your new home?' in m and pg.locator('input[name=mv-nation]').count() == 4 and 'Northern Ireland' in m, 'the move form asks which nation the new home is in, with four choices')
     pg.fill('#mv-date', (datetime.date.today() + datetime.timedelta(days=20)).isoformat()); pg.click('label.chip:has(input[name=mv-car][value=yes])'); pg.click('label.chip:has(input[name=mv-council][value=new])')
     pg.click('form[data-f=mom] button[type=submit]'); wait(pg)
     mv = moms()[0]; mid = mv['id']
-    ok('nation' not in mv['ans'] and 'Which nation is the new home in?' in pg.inner_text('main') and pg.locator('.cap108-nation [data-a=mom-edit]').count() == 1, 'with no answer the move asks once, and the answer is not invented')
+    ok('nation' not in mv['ans'] and 'Where is your new home?' in pg.inner_text('main') and pg.locator('.cap108-nation [data-a=mom-edit]').count() == 1, 'with no answer the move asks once, and the answer is not invented')
     links = {h.split('/')[2] for h in pg.locator('main a[href^=http]').evaluate_all('es=>es.map(e=>e.href)')}
-    ok('www.gov.uk' in links and 'www.nhs.uk' in links, 'until then it uses the GOV.UK and NHS England pages')
+    m = pg.inner_text('main')
+    ok('www.nhs.uk' not in links and not [h for h in links if 'driving-licence' in h] and 'Say where your new home is to see the official page.' in m and 'www.royalmail.com' in links, 'until then no nation-specific link is shown (GP, licence, voting, council), only the UK-wide ones, and each such step says to say where (v122)')
     def hrefs(): return pg.locator('main a[href^=http]').evaluate_all('es=>es.map(e=>e.href)')
     def set_nation(code):
         pg.click('[data-a=mom-edit]'); wait(pg); pg.click('label.chip:has(input[name=mv-nation][value=%s])' % code); pg.click('form[data-f=mom] button[type=submit]'); wait(pg, 600)
     for code, name in [('ni', 'Northern Ireland'), ('sc', 'Scotland'), ('wa', 'Wales'), ('en', 'England')]:
         set_nation(code); m = pg.inner_text('main'); hs = hrefs()
-        ok(moms()[0]['ans'].get('nation') == code and name in m and 'Which nation' not in m, '%s is saved and shown, and the question goes' % name)
+        ok(moms()[0]['ans'].get('nation') == code and name in m and 'Where is your new home?' not in m, '%s is saved and shown, and the question goes' % name)
         want = LINKS[code]
         missing = [k for k, u in want.items() if u not in hs]
         wrong = [u for o, L in LINKS.items() if o != code for k, u in L.items() if u != want[k] and u in hs]

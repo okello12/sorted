@@ -45,7 +45,7 @@ try:
         b = p.chromium.launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, timezone_id='Europe/London')
         pg = ctx.new_page(); perr = []; pg.on('pageerror', lambda e: perr.append(str(e)))
         pg.goto(URL + '#start'); pg.wait_for_timeout(2000)
-        ok(pg.evaluate('typeof SORTED_V!=="undefined"&&SORTED_V') == ver, 'the page running in the browser says %s' % ver)
+        ok(('var SORTED_V="%s"' % ver) in pg.content(), 'the page in the browser is %s' % ver)
         if pg.locator('[data-a=anon-start]').count(): pg.click('[data-a=anon-start]'); pg.wait_for_timeout(3000)
         try:
             if pg.locator('[data-cap82=other]').count(): pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()')
@@ -63,8 +63,18 @@ try:
             ok('RC123' in pg.inner_text('main'), 'a reload brings it back from the database')
             ok(not perr, 'no page errors: %s' % perr[:2])
         finally:
-            # tidy up from inside the page's own session, whatever happened above
-            pg.evaluate("typeof sb!=='undefined'&&sb.rpc('delete_my_account').then(function(){return sb.auth.signOut()})"); pg.wait_for_timeout(2500)
+            # tidy up the way a person would, whatever happened above: Account > Delete my account and cases
+            # (the page's code lives inside a closure, so there is no global to call)
+            gone = False
+            try:
+                pg.goto(URL); pg.wait_for_timeout(2500)
+                pg.locator('[data-a=data]').first.click(); pg.wait_for_timeout(800)
+                pg.locator('[data-a=wipe-ask]').first.click(); pg.wait_for_timeout(500)
+                pg.locator('[data-a=wipe]').first.click(); pg.wait_for_timeout(4000)
+                gone = not pg.evaluate("Object.keys(localStorage).some(function(k){return /^sb-.*-auth-token$/.test(k)})")
+            except Exception as e:
+                errs.append('tidy up: ' + str(e)[:200])
+            ok(gone, 'the throwaway account deleted itself')
         b.close()
 except ImportError:
     print('note: Playwright not installed, the browser walk was skipped')

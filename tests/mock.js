@@ -27,7 +27,8 @@ function q(table){
   self.delete=function(){op="delete";return self};
   self.eq=function(k,v){filters.push([k,v]);return self};
   self.is=function(k,v){filters.push([k,v]);return self};
-  self.then=function(a,b){return Promise.resolve(run()).then(a,b)};
+  /* __slowWrites (ms) holds case saves in flight, so a test can act mid-save */
+  self.then=function(a,b){var d=+(localStorage.getItem("__slowWrites")||0);if(d&&table==="tasks"&&(op==="update"||op==="upsert"))return new Promise(function(r){setTimeout(r,d)}).then(run).then(a,b);return Promise.resolve(run()).then(a,b)};
   return self;
 }
 window.supabase={createClient:function(){

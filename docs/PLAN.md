@@ -196,3 +196,19 @@ account. A native wrapper is one possible route, not readiness.
 - A lawyer's read of the terms and privacy notice.
 - Targets for the usage signals.
 - Whether and when to pay for app-store developer accounts.
+
+## Progress
+
+**Phase 0 (v114, 4 October 2026).**
+
+- 0.1 The gate is in place. Releases go through a pull request; the `staging` job now runs on pull requests too
+  (it passes with a note until the staging secrets exist); the new CI job `live` (`tests/live/verify_live.py`) runs
+  after each push to `main`, waits until the live page is byte for byte that commit's build, then walks it with a
+  throwaway guest account that deletes itself. Not done: GitHub branch protection that *forces* the checks before a
+  merge. That is a repository setting, left for Baldwin to approve.
+- 0.2 Isolation proven on v113: every file's output kept separately (`tests/runner.py`), one serial run and two runs
+  six at a time in different random orders (seeds 11 and 29). All 72 files green in all three; the only differences
+  were random case ids in two messages and one timing (60-case Home 1.14s serial, 1.85s parallel, inside its
+  budget). Nothing was shared: generated images and PDFs have names unique to their file, `tests/out/index.html` and
+  `reader.html` are only read, there are no ports. Serial 22 minutes, six at a time about 6. CI runs four at a time.
+- 0.3 Sign-out keeps unsaved work (build114, test 71).

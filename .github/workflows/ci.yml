@@ -49,7 +49,7 @@ jobs:
 
   engines:
     concurrency:
-      group: sorted-engines-${{ github.ref }}
+      group: sorted-engines-${{ matrix.engine }}-${{ github.ref }}
       cancel-in-progress: true
     # The same page in Safari's engine and in Firefox: a short walk (tests/engine_smoke.py) that a Chromium-only suite
     # cannot see break. Not an iPhone: a real phone with VoiceOver is still checked by hand before a wider release.

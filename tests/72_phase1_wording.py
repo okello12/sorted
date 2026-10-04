@@ -13,7 +13,7 @@ def ok(c, m):
     n[0] += 1; print(('PASS ' if c else 'FAIL ') + m)
     if not c: fails.append(m)
 def wait(pg, ms=450): pg.wait_for_timeout(ms)
-WRONG = ['Sorted keeps nothing you delete', 'the official page is always right', 'Nobody running Sorted reads', 'step records', 'Step records', 'deleted after 30 days away', 'can’t be recovered', 'or 30 if you haven’t added an email']
+WRONG = ['Sorted keeps nothing you delete', 'the official page is always right', 'Nobody running Sorted reads', 'nobody running Sorted reads', '(30 without an email)', '30 if you haven’t added an email', 'step records', 'Step records', 'deleted after 30 days away', 'can’t be recovered', 'or 30 if you haven’t added an email']
 RIGHT = {
   'terms: deletion as it works': 'for two minutes Home offers Undo, and closing or refreshing the page ends that',
   'terms: usage records remain': 'Usage records about the case (its id and the steps you used, never its content) stay for up to 12 months',

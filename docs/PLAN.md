@@ -300,3 +300,13 @@ reminder or message is driven by it until the person has seen it and the proposa
 Carried forward (not built): several people with their own references in one case, and several open actions at once.
 Today a second party is a second case, and one promise or step is open at a time; the plan's Phase 2 structure holds
 the rest. These are the first items for a Phase 3 follow-up once real use shows they are needed.
+
+**Phase 4 (v120, 4 October 2026).** One description everywhere (the landing page, a newcomer's Home, Help). "How it
+works" in three steps and one worked example labelled Example, on the public site and in the app. The full FAQ (29
+questions), each answer written from what Sorted does and the ones that matter pinned by test 76; the bracketed
+questions in the draft copy are answered with verified facts (photos and PDFs read on the phone and reviewed first;
+cases on Supabase in London with a copy on the phone; a guest's key in the browser; offline changes kept and sent
+later; who can access what; free; a reply within 10 working days). Separate pages with stable addresses and a date:
+`#about`, `#how`, `#help`, `#privacy`, `#terms`, `#contact`, all in the footer. The hero and footer no longer say
+"nobody reads" or "30 without an email". Not done: a real domain for those addresses (Baldwin's decision) and a
+lawyer's read of the terms and notice.

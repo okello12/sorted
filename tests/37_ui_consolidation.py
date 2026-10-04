@@ -28,7 +28,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); wait(pg,250)
     hero=pg.locator('.hero').text_content() or ''
     ok('They said Tuesday.' in (pg.locator('.hero .h1').text_content() or '') and 'Sorted remembers Tuesday.' in (pg.locator('.hero .h1').text_content() or ''),'landing uses the sharp promise as the headline')
-    ok('Life gets messy. Sorted keeps up.' in hero,'generic landing line is secondary')
+    ok('Life admin has a habit of piling up. Sorted helps you keep it moving.' in hero,'generic landing line is secondary')
 
     # The research baseline still exists, but its choices fit the case rather than offering repair actions for a refund.
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)

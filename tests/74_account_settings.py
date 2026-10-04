@@ -80,7 +80,7 @@ with sync_playwright() as p:
     ok(pg.locator('[data-a=wipe]').count() == 0 and cases(), 'Keep it keeps it')
     # 6 Help & About is the third view; the top-bar Help lands there
     pg.goto('https://sorted.test/'); wait(pg, 500); pg.locator('.bar [data-a=help]').first.click(); wait(pg, 500)
-    ok(pg.locator('main h1').inner_text() == 'Help & About' and pg.locator('.acct112-q').count() == 9 and pg.locator('#acct-you').count() == 0, 'Help lands on Help & About, its own view')
+    ok(pg.locator('main h1').inner_text() == 'Help & About' and pg.locator('.acct112-q').count() >= 9 and pg.locator('#acct-you').count() == 0, 'Help lands on Help & About, its own view')
     # 7 Home shows the sync state only when something is pending or offline
     pg.goto('https://sorted.test/'); wait(pg, 500)
     ok(pg.locator('.home118-sync').count() == 0, 'Home shows no sync line while everything is saved')

@@ -18,11 +18,11 @@ with sync_playwright() as p:
     ok(pg.locator('.home44-spot').count()==1,'one spotlight case is present')
     ok(pg.locator('h1').count()==1,'v47: exactly one page heading on Home (%d)'%pg.locator('h1').count())
     ok(pg.evaluate("document.querySelector('main').textContent.split('Needs you').length-1")==1,'v48: "Needs you" appears once')
-    ok('One thing needs you.' in pg.inner_text('main'),'v48: one active case says it is the only thing')
+    ok('One thing needs a quick answer.' in pg.inner_text('main'),'v130: one due case says it needs a quick answer')
     ok('The rest of your open cases are below' not in pg.inner_text('main'),'v48: no "rest of your cases are below" line')
     spot=pg.inner_text('.home44-spot')
     ok('Washing machine' in spot and 'Did they turn up?' in spot,'spotlight explains the case and outcome question')
-    ok(pg.locator('.home44-spot [data-a=home-ans]').count()==3,'spotlight exposes the three outcome actions')
+    ok(pg.locator('.home44-spot .q130-acts .btn').count()==4 and pg.locator('.home44-spot [data-a=q-date]').count()==1 and pg.locator('.home44-spot [data-a=q-later]').count()==1,'v130: the spotlight answers in place: yes, no, a new date, later')
     # A future promise should sit quietly in Waiting rather than compete with the spotlight.
     pg.click('[data-a=compose]'); wait(pg); pg.fill('#f-case','British Gas said the engineer will come tomorrow morning, ref BG-44'); pg.click('form[data-f=case] button[type=submit]'); wait(pg); pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg,450); pg.click('[data-a=sug-yes]'); wait(pg,450); pg.click('[data-a=home]'); wait(pg,450)
     ok(pg.locator('.home44-row.waiting').count()>=1,'future promise appears as a quiet Waiting row')
@@ -30,7 +30,7 @@ with sync_playwright() as p:
     ok('Waiting' in w and 'British Gas' in w,'Waiting section names the held case')
     ok('You can put this down until' in pg.inner_text('main'),'Waiting state gives permission to stop thinking about it')
     ok(pg.locator('h1').count()==1,'v47: still one page heading with a Waiting case')
-    ok(re.search(r'need(?:s)? you\.', pg.inner_text('main')) is not None and pg.locator('.tab129 [data-a=new-case]').count()==1,'v48: with other cases held, "Deal with this first"')
+    ok(re.search(r'need(?:s)? (?:you|a quick answer)\.', pg.inner_text('main')) is not None and pg.locator('.tab129 [data-a=new-case]').count()==1,'v48: with other cases held, "Deal with this first"')
     ok(pg.evaluate("document.querySelector('main').textContent.split('Needs you').length-1")==1,'v48: still one "Needs you"')
     pg.screenshot(path=HERE+'/tests/out/home44.png',full_page=True)
     # Mobile enlargement must not force horizontal page scrolling.

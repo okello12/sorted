@@ -1,3 +1,4 @@
+import re
 # v107: uncertain dates stay uncertain. "Sometime next week", "in 2-4 working days", "in the next few days" become a
 # window from the first day to the end of the last, shown as "Sometime between X and Y", too early to chase before it
 # starts, asked about only after it ends, carried into the shared link; a firm day or a "by" is unchanged; no date at
@@ -50,7 +51,8 @@ with sync_playwright() as p:
     ok(p.get('win') and p['allDay'] and not p.get('by') and p['dueEnd'] > p['dueAt'], 'the saved promise is a window')
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 600); m = pg.inner_text('main')
     ok('Sometime between' in m and ('waits until' in m or 'Due by' in m), 'the case says it is a window and when Sorted will ask')
-    ok('Did they come?' not in m and 'Nobody came' not in m, 'it does not ask whether they came before the window ends')
+    mq = re.sub(r'Sorted brings it back and asks: “[^”]*”', '', m)  # saying what it will ask later is not asking now
+    ok('Did they come?' not in mq and 'Nobody came' not in mq, 'it does not ask whether they came before the window ends')
     pg.goto('https://sorted.test/'); wait(pg, 600)
     ok('Sometime between' in pg.inner_text('main'), 'Home shows the window')
     # past the end of the window, it asks

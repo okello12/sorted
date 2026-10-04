@@ -418,6 +418,19 @@ the place marked; the top bar the logo plus Back on deeper screens; Cases with s
 Settings, Help and the public pages; a refresh keeps the case, Cases or More; "<Who> said they would Nothing" never
 shown; the guest note one compact card. Evidence: test 87 and the twelve journeys in it.
 
+**v130 (the quick actions note).** Updating reality should be easier than ignoring the app. Home leads with "N things
+need a quick answer" and each one is answered where it is: the obvious answer in one tap (then "Is this case finished
+now?", or the playbook's own question such as "Has all of it arrived?"); "Not yet" records the miss and opens the chase
+with the reference already in it; "New date" asks only for the date (the old promise is replaced and kept in the
+history, the case waits again); "Later" (Tonight, Tomorrow morning, This weekend, or a day) is an attention promise:
+the case leaves the top of Home for a Later section until then, the real deadline is shown and never moved, an option
+after the deadline says so, and any real update ends it. "Something changed" and "Can’t do this now" sit on every open
+case, with choices that fit a refund, a parking notice, a repair or anything else. A parking notice due within a week
+offers Pay (the hand-checked official page), Review options and Later; back from paying Sorted asks "Did you finish
+paying…?"; Yes records the payment with an optional confirmation number, and a card number is refused. Evidence: test
+88. Not yet: answers inside the reminder emails themselves stay Yes and No (build71), and "Later" is not yet read by
+`send-reminders`; it creates no extra emails, but a reminder already set for a deadline still comes, and the sheet says so.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

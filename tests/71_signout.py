@@ -57,7 +57,7 @@ with sync_playwright() as p:
     ok(not signed_in() and not ask_shown() and not cache_left(), 'with nothing pending, Sign out signs out at once and leaves no copy')
 
     # 2 mid-save: the case says Saving…, sign-out asks, Wait for saving signs out once the save lands
-    sign_in(); pg.evaluate("localStorage.setItem('__slowWrites','2500')")
+    sign_in(); pg.evaluate("localStorage.setItem('__slowWrites','6000')")
     rename(cid, 'Currys kettle refund')
     ok(sync() == 'Saving…', 'mid-save the case says "Saving…", not "Saved to your account" (%r)' % sync())
     account(); pg.click('[data-a=signout]'); wait(pg, 300)
@@ -67,7 +67,7 @@ with sync_playwright() as p:
     ok(all(pg.locator('[data-a=%s]' % a).count() == 1 for a in ('signout-wait', 'signout-stay', 'signout-discard')) and 'Discard 1 unsaved case and sign out' in m, 'three choices: Wait for saving, Stay signed in, Discard 1 unsaved case')
     pg.click('[data-a=signout-wait]'); wait(pg, 200)
     ok('Saving now. Sorted signs you out once it’s saved.' in pg.inner_text('main') and signed_in(), 'Wait for saving says what happens and keeps you signed in meanwhile')
-    wait(pg, 3200)
+    wait(pg, 7000)
     ok(not signed_in() and srv_title(cid) == 'Currys kettle refund' and not cache_left(), 'once the save lands it signs out, the change is on the server and no copy is left')
     pg.evaluate("localStorage.removeItem('__slowWrites')")
 

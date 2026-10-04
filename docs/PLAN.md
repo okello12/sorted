@@ -290,3 +290,13 @@ Settings has the email reminders switch for every case (state, destination, UK t
 lists the dates and times its emails go. Export is "Download my cases" and "Copy to clipboard" with the contents
 explained; "Delete my account" is restrained until tapped and confirms with the deletion answer. Home shows the sync
 state while something is pending or the phone is offline (test 74; the staging suite checks the switch's permissions).
+
+**Phase 3, part 2 (v119, 4 October 2026).** Drafts are kept on this phone until Start: a reload refills the box, a
+tap on Home keeps the open form, and a closed Home offers "Continue draft" or "Discard it"; nothing reaches the server
+until Start. The kind of case can be corrected in place (someone else owes the next move, something needs fixing, your
+own task) without starting again, keeping the words, messages and history (test 75). Extracted text from a photo or
+PDF was already placed in the box for review before "Read it" or "Start" (`ocrDone`; tests 10, 18, 22), so no date,
+reminder or message is driven by it until the person has seen it and the proposal card is confirmed.
+Carried forward (not built): several people with their own references in one case, and several open actions at once.
+Today a second party is a second case, and one promise or step is open at a time; the plan's Phase 2 structure holds
+the rest. These are the first items for a Phase 3 follow-up once real use shows they are needed.

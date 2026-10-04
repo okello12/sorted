@@ -56,7 +56,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/#start'); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 800); m = pg.inner_text('main')
     ok(D1 in m and D2 in m, 'a newcomer’s Home carries the description')
     # signed in: Help & About has the steps, the example, contact and the date
-    pg.locator('.bar [data-a=help]').first.click(); wait(pg, 500); pg.evaluate("document.querySelectorAll('details').forEach(d=>d.open=true)"); m = pg.inner_text('main')
+    pg.locator('.tab129 [data-a=data]').first.click(); wait(pg, 500); pg.click('.acct112-nav [data-v=help]'); wait(pg, 500); pg.evaluate("document.querySelectorAll('details').forEach(d=>d.open=true)"); m = pg.inner_text('main')
     ok('How it works' in m and pg.locator('.how120 li').count() == 3 and 'Example' in m and 'Contact and problems' in m and 'Help & About updated 4 October 2026' in m and len(pg.locator('.acct112-q').all_inner_texts()) == 29, 'signed in: Help & About has the same steps, example, contact, questions and date')
     for w in WRONG: ok(w not in m, 'help & about: gone, “%s”' % w)
     ok(not errs, 'no page errors')

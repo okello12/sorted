@@ -40,12 +40,10 @@ with sync_playwright() as p:
 
     # Anonymous Home warning: full once, then one slim line.
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg,200); pg.click('[data-a=anon-start]'); wait(pg)
-    pg.click('[data-a=example]'); wait(pg,450)
-    ok(pg.locator('.note').filter(has_text='Without an email, only this phone can open your cases.').count()==1,'no-email warning is full on first exposure')
-    ok(pg.locator('.case75-email-slim').count()==0,'slim warning is not shown at the same time')
+    pg.click('[data-a=example]'); wait(pg,450); pg.goto('https://sorted.test/'); wait(pg,500)
+    ok(pg.locator('.anon129').count()==1 and pg.locator('.anon129').bounding_box()['height']<150,'v129: the no-email note is one compact card')
     pg.reload(); wait(pg,450)
-    ok(pg.locator('.case75-email-slim').count()==1,'later visits get the slim no-email line')
-    ok(pg.locator('.note').filter(has_text='Without an email, only this phone can open your cases.').count()==0,'large no-email warning does not dominate later visits')
+    ok(pg.locator('.anon129').count()==1 and pg.locator('.case75-email-slim').count()==0,'later visits get the same compact card, nothing larger')
 
     # Title/reference separation and the two-group case hierarchy.
     pg.evaluate("""()=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var t=db.tasks[0].data;t.title='Currys refund · 445566';localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}""")

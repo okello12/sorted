@@ -26,7 +26,7 @@ def settle_case(pg):
     n=pg.get_by_text('Not now',exact=True)
     if n.count() and n.first.is_visible():n.first.click();wait(pg,180)
 def user_home(pg,label):
-    h=pg.locator('[data-cap87=home]:visible')
+    h=pg.locator('.tab129 [data-a=go-home]:visible, [data-cap87=home]:visible')
     if h.count():h.first.click();wait(pg,500)
     else:pg.goto('https://sorted.test/#start');wait(pg,500)
     c=visible_chooser(pg)
@@ -54,7 +54,7 @@ with sync_playwright() as p:
     pg=ctx.new_page();pg.on('pageerror',lambda e:errs.append(str(e)))
     pg.goto('https://sorted.test/#start');pg.evaluate("localStorage.clear();localStorage.setItem('__emailReady','1')");pg.reload();wait(pg,500)
     if pg.locator('[data-a=anon-start]:visible').count():pg.locator('[data-a=anon-start]:visible').first.click();wait(pg,500)
-    ok(pg.locator('.cap87-appnav:visible').count()==1,'standalone toolbar survives fresh launch');ok(visible_chooser(pg).count()>=1,'fresh standalone launch exposes the start chooser')
+    ok(pg.locator('.cap87-appnav:visible, .tab129:visible').count()>=1,'standalone toolbar survives fresh launch');ok(visible_chooser(pg).count()>=1,'fresh standalone launch exposes the start chooser')
     for w in (320,360,390,430):pg.set_viewport_size({'width':w,'height':844});wait(pg,90);ok(no_overflow(pg),'no horizontal overflow at %spx'%w)
     pg.set_viewport_size({'width':390,'height':844})
     open_generic(pg,'first start');ok(pg.locator('#f-case:visible').count()==1,'generic intake is reachable under standalone pressure')
@@ -69,7 +69,7 @@ with sync_playwright() as p:
         ta=pg.locator('#f-case:visible');ta.fill(longtext);ok(len(ta.input_value())>=500,'intake accepts a realistically long account of a problem');pg.locator('form[data-f=case]:visible button[type=submit]:visible').first.click();settle_case(pg)
     ok(len(cases(pg))==n2+1,'long input completes without duplicate or lost case');ok(no_overflow(pg),'long input/result stays within 390px')
     expected=len(cases(pg))
-    for i in range(5):pg.reload();wait(pg,320);ok(len(cases(pg))==expected,'reload %d preserves all cases'%(i+1));ok(pg.locator('.cap87-appnav:visible [data-cap87=home]').count()==1,'reload %d restores standalone controls'%(i+1))
+    for i in range(5):pg.reload();wait(pg,320);ok(len(cases(pg))==expected,'reload %d preserves all cases'%(i+1));ok(pg.locator('.cap87-appnav:visible [data-cap87=home], .tab129:visible [data-a=go-home]').count()>=1,'reload %d restores standalone controls'%(i+1))
     keys=pg.evaluate("Object.keys(localStorage).filter(k=>k.indexOf('sorted.cache.')===0)")
     if keys:
         pg.evaluate("ks=>ks.forEach(k=>localStorage.setItem(k,'{not-json'))",keys);pg.reload();wait(pg,520);ok(pg.locator('main').count()==1 and bool(pg.locator('body').inner_text().strip()),'corrupt cache does not blank/freeze the app');ok(len(cases(pg))==expected,'corrupt cache recovers cases from backing data')
@@ -80,7 +80,7 @@ with sync_playwright() as p:
         if chooser2 is not None and chooser2.locator('[data-cap82=call]:visible').count():chooser2.locator('[data-cap82=call]:visible').first.click();wait(pg,380);ok(pg.get_by_text('Who do you need to call?',exact=True).count()>=1 and pg.locator('#gi-who:visible').count()==1,'call route replaces broken-route context with the intended call intake')
     else:ok(False,'category chooser remains available after repeated case activity')
     for i in range(3):
-        if pg.locator('[data-cap87=home]:visible').count():pg.locator('[data-cap87=home]:visible').first.click();wait(pg,180)
+        if pg.locator('.tab129 [data-a=go-home]:visible, [data-cap87=home]:visible').count():pg.locator('.tab129 [data-a=go-home]:visible, [data-cap87=home]:visible').first.click();wait(pg,180)
         r=pg.locator('[data-cap87=reload]:visible')
         if r.count():
             r.first.click();pg.wait_for_load_state('domcontentloaded');wait(pg,650)

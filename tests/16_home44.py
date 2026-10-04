@@ -30,7 +30,7 @@ with sync_playwright() as p:
     ok('Waiting' in w and 'British Gas' in w,'Waiting section names the held case')
     ok('You can put this down until' in pg.inner_text('main'),'Waiting state gives permission to stop thinking about it')
     ok(pg.locator('h1').count()==1,'v47: still one page heading with a Waiting case')
-    ok(re.search(r'need(?:s)? you\.', pg.inner_text('main')) is not None and pg.locator('.home111-newbtn').count()==1,'v48: with other cases held, "Deal with this first"')
+    ok(re.search(r'need(?:s)? you\.', pg.inner_text('main')) is not None and pg.locator('.tab129 [data-a=new-case]').count()==1,'v48: with other cases held, "Deal with this first"')
     ok(pg.evaluate("document.querySelector('main').textContent.split('Needs you').length-1")==1,'v48: still one "Needs you"')
     pg.screenshot(path=HERE+'/tests/out/home44.png',full_page=True)
     # Mobile enlargement must not force horizontal page scrolling.

@@ -73,7 +73,7 @@ with sync_playwright() as p:
     cid = cases()[-1]['id']
     # 4 the guest copy is about access
     pg.goto('https://sorted.test/'); wait(pg, 500); m = pg.inner_text('main')
-    ok('Saved on Sorted’s servers, to an account only this phone can open' in m or 'only this browser holds the key' in m, 'the guest note says the cases are on the server and only this browser can open them')
+    ok('saved on Sorted’s servers, but only this phone can open them' in m or 'only this browser holds the key' in m, 'the guest note says the cases are on the server and only this browser can open them')
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 500)
     pg.evaluate("document.querySelectorAll('details.case56-more').forEach(d=>d.open=true)")
     pg.click('[data-a=panel][data-p=delcase]'); wait(pg, 300); pg.click('[data-a=case-del]'); wait(pg, 700)

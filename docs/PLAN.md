@@ -407,6 +407,12 @@ picker is open, the box carries its own handler, big camera photos are scaled be
 the email sign-in link, the box heading no longer shows a leftover "What did they promise?", and the parking screen has
 one photo button. Evidence: test 85, which fails on v126.
 
+**v128 (files in and out).** Saving the adviser pack, all cases or a calendar reminder used to drop the file link
+after one second (before an iPhone's "Download?" answer), said "Downloaded" before anything was, and often did nothing
+from the Home Screen app. Now a phone uses its share sheet ("Save to Files", or the calendar), a computer downloads
+with the link kept for a minute, and the message is honest. A photo from Files or Google Drive with no type is read by
+its name, and an iPhone HEIC photo is converted on the phone where Safari can open it. Evidence: test 86.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

@@ -7,15 +7,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: sorted-ci-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
 jobs:
   regression:
+    concurrency:
+      group: sorted-regression-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -49,6 +48,9 @@ jobs:
           NODE
 
   engines:
+    concurrency:
+      group: sorted-engines-${{ github.ref }}
+      cancel-in-progress: true
     # The same page in Safari's engine and in Firefox: a short walk (tests/engine_smoke.py) that a Chromium-only suite
     # cannot see break. Not an iPhone: a real phone with VoiceOver is still checked by hand before a wider release.
     runs-on: ubuntu-24.04
@@ -85,12 +87,31 @@ jobs:
           echo "$out" | grep -q "FAILS \[\]" && echo "$out" | grep -q "ERRORS \[\]"
 
 
+  secrets-check:
+    # Says whether the staging secrets exist, so the staging job below is skipped (and shows as skipped) without them.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    outputs:
+      staging: ${{ steps.s.outputs.staging }}
+    steps:
+      - id: s
+        env:
+          U: ${{ secrets.SORTED_STAGING_URL }}
+          K: ${{ secrets.SORTED_STAGING_ANON_KEY }}
+        run: |
+          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::warning title=staging::The staging job was skipped: the repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set (docs/STAGING.md)"; fi
+
   staging:
     # The live suite (tests/live/staging.py) against the STAGING Supabase project: row level security, grants, share
     # links, deleting an account, and the real page saving a real case. Never against live. Runs on every pull request
-    # (part of the release gate, docs/PLAN.md 0.1), when asked, and after each push to main, but only if the repository
-    # secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY exist; without them it says so and passes.
-    # docs/STAGING.md says how to set them.
+    # (part of the release gate, docs/PLAN.md 0.1), when asked, and after each push to main. Without the repository
+    # secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY it is skipped and says so (secrets-check above); it never
+    # passes without running. docs/STAGING.md says how to set them.
+    needs: secrets-check
+    if: needs.secrets-check.outputs.staging == 'yes'
+    concurrency:
+      group: sorted-staging-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -112,15 +133,17 @@ jobs:
           SORTED_STAGING_URL: ${{ secrets.SORTED_STAGING_URL }}
           SORTED_STAGING_ANON_KEY: ${{ secrets.SORTED_STAGING_ANON_KEY }}
           TZ: Europe/London
-        run: |
-          if [ -z "$SORTED_STAGING_URL" ]; then echo "No staging secrets set: skipped (see docs/STAGING.md)"; exit 0; fi
-          python3 tests/live/staging.py
+        run: python3 tests/live/staging.py
 
   live:
     # Step 5 of the release gate: after a push to main, wait until Vercel serves exactly the page this commit built,
-    # then walk it once against the real backend with a throwaway guest account that deletes itself
-    # (tests/live/verify_live.py). A red "live" means the release is not finished.
+    # then walk it once against the real backend with a throwaway guest account that deletes itself and proves it
+    # (tests/live/verify_live.py). A red "live" means the release is not finished. A later push queues behind this
+    # job rather than cancelling it, and the last step always runs, so a guest from a cut-short walk is still deleted.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: sorted-live
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -140,4 +163,10 @@ jobs:
       - name: Check the live site is this build, and walk it
         env:
           TZ: Europe/London
+          SORTED_LIVE_SESSION: ${{ runner.temp }}/live-session.json
         run: python3 tests/live/verify_live.py
+      - name: Delete the guest account if the walk was cut short
+        if: always()
+        env:
+          SORTED_LIVE_SESSION: ${{ runner.temp }}/live-session.json
+        run: python3 tests/live/verify_live.py --cleanup

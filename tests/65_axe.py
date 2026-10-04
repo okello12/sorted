@@ -19,6 +19,8 @@ def axe(pg, label):
     bad = [v for v in r if v['impact'] in ('serious', 'critical')]
     mild = [v for v in r if v['impact'] not in ('serious', 'critical')]
     ok(not bad, '%s: no serious or critical accessibility violations %s' % (label, json.dumps(bad, ensure_ascii=False)[:600]))
+    # v115: the two moderate findings from v114 (no h1 on a guided start, h3 after h1 on the promise card) are fixed and must stay fixed
+    ok(not [v for v in mild if v['id'] in ('page-has-heading-one', 'heading-order')], '%s: headings in order, with an h1' % label)
     for v in mild: finding('%s: %s (%s) %s' % (label, v['id'], v['impact'], v['nodes'][:2]))
 with sync_playwright() as p:
     b = p.chromium.launch()

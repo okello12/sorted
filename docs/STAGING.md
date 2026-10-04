@@ -26,7 +26,14 @@ a person to confirm statements that delete. **Still to do, once, by the person r
    project's publishable key (Project settings > API keys). The publishable key is the one the page ships with, so it
    is not secret in the way the service key is; it still goes in a GitHub secret, not in a file or a chat.
 
-Until step 3 is done the `staging` job in CI prints "skipped" and passes.
+Until step 3 is done the `staging` job in CI is **skipped** (a `secrets-check` job sees the secrets are missing and
+says so in a warning). It is never reported as passed without running.
+
+Progress on step 1 (4 October 2026, through the Supabase API): `shares_drop_helper` with its trigger, `remove_helper`
+and `drop_outcome` are on staging. Supabase's tooling refused the rest without a person's confirmation, so still to run
+in the SQL editor from `01_run_by_hand.sql`: `delete_my_account`, `stash_carry`, `claim_carry`, the `revoke` and
+`grant` lines, and the retention jobs. Running the whole file again is safe (`create or replace`; `cron.schedule`
+replaces a job of the same name).
 
 ## The live suite
 

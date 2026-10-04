@@ -199,16 +199,42 @@ account. A native wrapper is one possible route, not readiness.
 
 ## Progress
 
-**Phase 0 (v114, 4 October 2026).**
+**Phase 0 (v114 and v115, 4 October 2026).**
 
-- 0.1 The gate is in place. Releases go through a pull request; the `staging` job now runs on pull requests too
-  (it passes with a note until the staging secrets exist); the new CI job `live` (`tests/live/verify_live.py`) runs
-  after each push to `main`, waits until the live page is byte for byte that commit's build, then walks it with a
-  throwaway guest account that deletes itself. Not done: GitHub branch protection that *forces* the checks before a
-  merge. That is a repository setting, left for Baldwin to approve.
+- 0.1 The gate is in place and has been used: v114 and the two live-check fixes each went through a pull request
+  (#19, #20, #21) whose checks were green before the merge; v115 likewise. The `staging` job now runs on pull requests
+  too, and is **skipped** (shown as skipped, with a warning) until the staging secrets exist, never passed without
+  running. The CI job `live` (`tests/live/verify_live.py`) runs after each push to `main`: it waits until the live page
+  is byte for byte that commit's build, then walks it as a throwaway guest.
+  **Live result for v114:** green on the third attempt, 8 checks, 12:29 UTC: the live page was the v114 build; a guest
+  started a case, confirmed a promise, saw "Saved to your account", reloaded and found it; the account deleted itself.
+  The first two attempts failed on the check itself (it read `SORTED_V` and `sb` as globals; the page keeps them in a
+  closure), and their clean-up silently did nothing, leaving two guest accounts behind.
+  **Clean-up outcome:** with Baldwin's approval, the two accounts from those runs (`ea3116de…`, created 11:46:02
+  UTC, and `d9883f0c…`, 12:11:55 UTC; both anonymous, no email, one case each created inside the run's window, three
+  usage records each, no shares or reminders) were deleted on 4 October with their cases and usage records; a check
+  afterwards found no user, case, usage record or orphaned reminder for either id. A third guest account created at
+  12:05 UTC did not come from a check run and was left untouched.
+  **Hardened since (v115):** the walk requires "Saved to your account", reads the case from the server with the guest's
+  own session, clears the local copy before the reload, deletes through Account and proves the account and case are
+  gone from the server; a cut-short run's guest is deleted by a step that always runs; the `live` job is never cancelled
+  by a later push.
+  **Still to do, by Baldwin (the repository API refuses these from here):** GitHub branch protection on `main`
+  requiring `regression`, `engines (webkit)` and `engines (firefox)` (Settings > Branches, or Rules); the two staging
+  secrets. Until then the gate is followed by hand.
 - 0.2 Isolation proven on v113: every file's output kept separately (`tests/runner.py`), one serial run and two runs
   six at a time in different random orders (seeds 11 and 29). All 72 files green in all three; the only differences
   were random case ids in two messages and one timing (60-case Home 1.14s serial, 1.85s parallel, inside its
   budget). Nothing was shared: generated images and PDFs have names unique to their file, `tests/out/index.html` and
-  `reader.html` are only read, there are no ports. Serial 22 minutes, six at a time about 6. CI runs four at a time.
-- 0.3 Sign-out keeps unsaved work (build114, test 71).
+  `reader.html` are only read, there are no ports. Serial 22 minutes, six at a time about 6. CI runs four at a time
+  (7 minutes on GitHub).
+- 0.3 Sign-out keeps unsaved work (build114, test 71). Live since 12:00 UTC on 4 October.
+- Also in v115: the two moderate axe findings (no h1 on a guided start; h3 straight after h1 on the promise card) are
+  fixed in both themes and test 65 now fails if they return.
+- Staging (from Phase 1's evidence table, brought forward): `shares_drop_helper` with its trigger, `remove_helper`
+  and `drop_outcome` were applied on 4 October; Supabase's tooling refused the remaining functions and the jobs without
+  a person's confirmation. The rest of `01_run_by_hand.sql` and anonymous sign-in are Baldwin's (docs/STAGING.md).
+
+**Outstanding findings after Phase 0:** branch protection and staging secrets (above); the staging suite has never run
+(no secrets); reminder arrival still unmeasured (Phase 1); usage records linkable (Phase 1); guest deletion rule
+(Phase 1).

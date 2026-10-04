@@ -51,7 +51,7 @@ revoke all on function public.shares_drop_helper(), public.delete_my_account(), 
 grant execute on function public.delete_my_account(), public.stash_carry(), public.claim_carry(text,jsonb), public.remove_helper(text), public.drop_outcome(text) to authenticated;
 grant execute on function public.shares_drop_helper(), public.delete_my_account(), public.stash_carry(), public.claim_carry(text,jsonb), public.remove_helper(text), public.drop_outcome(text) to service_role;
 
-create trigger shares_drop_helper after delete on public.shares for each row execute function public.shares_drop_helper();
+create or replace trigger shares_drop_helper after delete on public.shares for each row execute function public.shares_drop_helper();
 
 -- Retention jobs (the same as live) -----------------------------------------------------------------------------------
 

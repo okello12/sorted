@@ -13,7 +13,7 @@ def ok(c, m):
     if not c: fails.append(m)
 def wait(pg, ms=450): pg.wait_for_timeout(ms)
 D1 = 'Life admin has a habit of piling up. Sorted helps you keep it moving.'
-D2 = 'Keep the details, messages, references, deadlines and next steps together'
+D2 = 'Keep the details, promises, deadlines and next steps of life’s unfinished business in one place.'
 WRONG = ['nobody running Sorted reads', 'Nobody running Sorted reads', '(30 without an email)', '30 if you haven’t added an email', 'research pilot', 'step records']
 PAGES = {'#about': ['About Sorted', 'Baldwin Thompson-Addo', 'About updated 4 October 2026'], '#how': ['How Sorted works', 'Tell Sorted what is happening.', 'Example', 'How it works updated 4 October 2026'], '#help': ['Help', 'Questions people ask', 'Help updated 4 October 2026'], '#privacy': ['How Sorted handles your data', 'Who runs it.', 'The privacy notice updated 4 October 2026'], '#terms': ['Terms of use', 'Version 1, 4 October 2026'], '#contact': ['Contact', 'kofiniiakwei@gmail.com', 'Report a problem', 'Contact updated 4 October 2026']}
 FAQ_MUST = {

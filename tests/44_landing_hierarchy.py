@@ -20,12 +20,13 @@ with sync_playwright() as p:
         ok(pg.locator('html.cap85-public').count()==1,scheme+': public landing gets v85 hierarchy')
         if hero.count() and chooser.count():
             hb=hero.bounding_box(); cb=chooser.bounding_box()
-            ok(hb is not None and hb['height']<650,scheme+': hero is compact enough to stop owning the first screen')
+            ok(hb is not None and hb['height']<720,scheme+': hero is compact enough to stop owning the first screen (v123: headline, explanation, kinds, one button, art, a quiet line; the harness has no web fonts, so this is pessimistic)')
+            cta=hero.locator('a.btn.primary').bounding_box(); ok(cta is not None and cta['y']+cta['height']<700,scheme+': the one primary button sits above the fold')
             ok(hb is not None and cb is not None and cb['y']-(hb['y']+hb['height'])<35,scheme+': chooser follows the proposition immediately')
             hyp=hero.locator('.h1').evaluate("e=>getComputedStyle(e).hyphens")
             ok(hyp=='none',scheme+': headline cannot hyphenate remembers mid-word')
             top=hero.locator('.cap85-top-cta')
-            ok(top.count()==1 and top.evaluate("e=>getComputedStyle(e).display")=='none',scheme+': duplicate hero CTA is removed from view')
+            ok(top.count()==1 and top.evaluate("e=>getComputedStyle(e).display")!='none' and hero.locator('.btn.primary').count()==1,scheme+': one primary CTA in the hero, shown (v123)')
             ok(hero.locator('.cap85-pilot-note').count()==0,scheme+': pilot retention notice no longer interrupts the opening proposition')
         ok(chooser.locator('.cap82-card').count()==6,scheme+': all six real-life starting points remain')
         ok(chooser.locator('.cap85-scene svg').count()==6,scheme+': each starting point uses the new miniature 3D scene')
@@ -35,11 +36,11 @@ with sync_playwright() as p:
         if ex.count():
             ok(ex.locator('.cap85-ex-rail .slip').count()==3,scheme+': examples are limited to three concise cases')
             ok(ex.locator('.cap85-ex-rail').evaluate("e=>e.scrollWidth>e.clientWidth"),scheme+': example cases use their own compact horizontal rail')
-        pilot=pg.locator('.cap85-pilot-note')
-        ok(pilot.count()==1,scheme+': research-pilot information is preserved lower on the page')
-        if pilot.count() and ex.count():
-            py=pilot.bounding_box()['y']; ey=ex.bounding_box()['y']
-            ok(py>ey,scheme+': pilot information now comes after the product examples')
+        foot=pg.inner_text('footer')
+        ok('stored in London' in foot and '90 days' in foot and 'small UK service' in foot,scheme+': the service and retention information is preserved lower on the page, in the footer (v123)')
+        if ex.count():
+            py=pg.locator('footer').bounding_box()['y']; ey=ex.bounding_box()['y']
+            ok(py>ey,scheme+': that information comes after the product examples')
         ok(no_overflow(pg),scheme+': hierarchy and 3D scenes do not create page-level horizontal scrolling')
         ctx.close()
     b.close()

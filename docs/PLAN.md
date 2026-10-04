@@ -362,8 +362,16 @@ ARIA tabs. Evidence: tests 74 and 65.
 **A9. Trust wording (v122, done).** "Sorted doesn’t turn an uncertain suggestion into a confirmed fact until you confirm
 it." replaces "nothing on a case changes without your tap"; "hold them to it" and "holds them to" are gone. Evidence: test 72.
 
-**A4 (whose move, with the open-step conflict), A5 (the fact ledger, Phase B), A6 (the landing hierarchy), A10 (staging
-as a real gate; last, because it makes releases red until the staging secrets exist), then Phase D.** Next.
+**A4. Whose move is it now? (v123, done).** Mine, Theirs or Both, asked again at any time from What Sorted understood;
+an answer that conflicts with an open step of yours is never applied silently: Sorted asks whether to keep the step as
+well or mark it no longer needed; their promise is never touched by the answer. Evidence: test 80, test 73.
+
+**A6. The landing hierarchy (v123, done).** "They said Tuesday. Sorted remembers Tuesday.", then "Keep the details,
+promises, deadlines and next steps of life’s unfinished business in one place. Sorted shows what needs you, what you’re
+waiting for and when to follow up.", the kinds of matter, one primary button above the fold. Evidence: test 80, test 44.
+
+**A5 (the fact ledger, Phase B), A10 (staging as a real gate; last, because it makes releases red until the staging
+secrets exist), then Phase D.** Next.
 
 ## Where things stand after v120
 

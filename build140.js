@@ -29,8 +29,8 @@ readCase=function(text,f){
   return r;
 };
 function truthRelevant140(t){
-  if(!t||isMom(t)||t.example)return false;if(t.truthV||t.truthPlan||t.truthCheck)return true;var p=t.sugP||openPromise(t);
-  if(p&&(p.truthV||p.sourceText||p.sourceWhen||p.tentative||p.win||p.legacyTimingReview||p.precision==='window'||p.precision==='tentative'))return true;
+  if(!t||isMom(t)||t.example)return false;if(t.truthPlan||t.truthCheck)return true;var p=t.sugP||openPromise(t);
+  if(p&&(p.tentative||p.win||p.legacyTimingReview||p.precision==='window'||p.precision==='tentative'||p.sourceType==='provider_account'||p.sourceType==='user_review'))return true;
   var q=truthWhen138(String(t.said||''));return q.precision==='window'||q.precision==='tentative'||q.precision==='negated';
 }
 truthSync138=function(t){if(!truthRelevant140(t))return false;return _truthSync140(t)};
@@ -56,7 +56,7 @@ var _viewTask140=viewTask;
 uCard=function(t){return _uCard138(t)};
 viewTask=function(){
   var h=_viewTask140();if(!S.view||S.view.name!=='task')return h;
-  var t=task(S.view.id),card=t?truthCard138(t):'';if(!card)return h;
+  var t=task(S.view.id),card=t&&truthRelevant140(t)?truthCard138(t):'';if(!card)return h;
   var p=h.lastIndexOf('</main>');return p>=0?h.slice(0,p)+card+h.slice(p):h+card;
 };
 `;

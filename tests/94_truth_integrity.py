@@ -46,7 +46,7 @@ with sync_playwright() as p:
     t=case(c1); op=[q for q in t.get('promises',[]) if q.get('status')=='open'][0]; due0=op.get('dueAt'); end0=op.get('dueEnd')
     ok(op.get('win') and op.get('sourceWhen','').lower()=='sometime next week','confirmation keeps the promise as a window rather than a firm Friday')
     m=main()
-    ok('What was actually said' in m and 'sometime next week' in m and 'There is no confirmed appointment day' in m,'the confirmed case separates source wording from interpretation (%s)'%m[:500].replace('\n',' / '))
+    ml=m.lower(); ok('what was actually said' in ml and 'sometime next week' in ml and 'there is no confirmed appointment day' in ml,'the confirmed case separates source wording from interpretation (%s)'%m[:500].replace('\n',' / '))
     ok('check the provider’s app and latest email for the booking' in m.lower() and 'get the call ready' not in m.lower(),'checking existing information comes before contacting the provider')
     ok(pg.locator('[data-a=truth-check-found]').count()==1 and pg.locator('[data-a=truth-check-none]').count()==1 and pg.locator('[data-a=truth-remind]').count()==1,'the three fast outcomes are available')
 
@@ -65,7 +65,7 @@ with sync_playwright() as p:
     ok('Prepare a message' in main(),'after no booking is found, Sorted offers contact')
     before=json.dumps(t,sort_keys=True)
     pg.click('[data-a=truth-draft]'); wait(pg,300); m=main()
-    ok('Draft — check before sending' in m and 'This is Sorted’s proposed message' in m,'a generated message is visibly a draft, not source evidence (%s)'%m[-700:].replace('\n',' / '))
+    ml=m.lower(); ok('draft — check before sending' in ml and 'this is sorted’s proposed message' in ml,'a generated message is visibly a draft, not source evidence (%s)'%m[-700:].replace('\n',' / '))
     draft=pg.input_value('#truth138-draft')
     ok('sometime next week' in draft.lower() and 'confirm the appointment day, time window and booking reference' in draft.lower(),'the draft quotes the uncertainty and asks for confirmation')
     ok('call' not in draft.lower(),'an app/email check does not silently become a call')

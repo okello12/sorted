@@ -449,6 +449,18 @@ it again?" with Reopen this case (everything kept: history, messages, references
 ended) and Save the full record (the adviser pack, to copy, download or print for evidence), and says finished cases
 stay under Done in Cases for 90 days after the last change, or 30 without an email. Evidence: test 87.
 
+**v133 (reminders that reach people).** Reminders were email only, and a guest had none at all. Now a phone can say yes
+once ("Get reminders on this phone", in Settings and offered once a case has a date): the page registers
+`public/sw.js` (shows a notification, opens the case, caches nothing), subscribes with Sorted's public VAPID key and
+saves the push address with `push_save()` (migration 19: `push_subs`, private, only the big browser push services;
+`push_state()`, `push_drop()`). `send-reminders` v11 sends each due reminder to those phones as well as by email, so a
+guest gets reminders too; the message is fixed words, the case link and, after the time, Yes and Not yet buttons, never
+what the case is; a phone the push service has forgotten is removed. The after email also offers "Choose when Sorted
+reminds you" (Later) and "They gave a new date? Add it". On an iPhone this needs Sorted on the Home Screen (iOS 16.4
+and later), and the page says how. A guest is asked once for an email when a case first has a date. Evidence: test 89,
+`tests/webpush_check.mjs` (RFC 8291's example) and `tests/fn/send_reminders_check.mjs` (the function run in Node,
+decrypting the push it sends). The private key is `vapid_private_jwk` in Vault; the public key is `VAPID_PUB` in the page.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

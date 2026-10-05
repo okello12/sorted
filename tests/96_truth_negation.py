@@ -1,5 +1,5 @@
-# v139: a negated alternative must not erase the actual date. "Wednesday, not Tuesday" keeps Wednesday; a sentence
-# with only "not Tuesday" has no positive date. This closes the edge found during review of the truth-integrity patch.
+# v140: a negated alternative must not erase the actual date. "Wednesday, not Tuesday" keeps Wednesday; a sentence
+# with only "not Tuesday" has no positive date; and a weak "probably" statement remains information, not an obligation.
 import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from playwright.sync_api import sync_playwright
@@ -17,8 +17,8 @@ with sync_playwright() as p:
     ok(r.get('due') and r.get('prec')=='exact_day' and 'Wednesday' in r.get('src',''),'Wednesday, not Tuesday keeps the positive Wednesday (%s)'%json.dumps(r))
     r=read('Virgin said the engineer would come, but not Tuesday') or {}
     ok(not r.get('due'),'not Tuesday on its own never becomes a positive appointment (%s)'%json.dumps(r))
-    r=read('EE said the engineer would probably come Tuesday, not Wednesday') or {}
-    ok(r.get('tent') and r.get('cand') and not r.get('due') and 'Tuesday' in r.get('src',''),'probably Tuesday, not Wednesday stays tentative Tuesday (%s)'%json.dumps(r))
+    r=read('EE said the engineer would probably come Tuesday, not Wednesday')
+    ok(r is None,'probably Tuesday, not Wednesday is not promoted into a provider promise (%s)'%json.dumps(r))
     ok(not errs,'no page errors: %s'%errs)
     print('CHECKS',n[0]); b.close()
 print('ERRORS',errs); print('FAILS',fails)

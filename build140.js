@@ -15,8 +15,17 @@ readCase=function(text,f){
   var r=_readCase140.apply(this,arguments);if(!r)return r;
   var src=String(text||'').trim(),meta=truthWhen138(src);
   r.sourceText=src;r.sourceWhen=meta.phrase||r.sourceWhen||'';r.precision=meta.precision!=='unknown'?meta.precision:(r.precision||truthPrec138(r));r.truthV=1;
-  /* The mature date parser is authoritative for dueAt/dueEnd/by/win. In particular, do not reinterpret prices as times
-     or turn its working-day/date rules into a different range here. */
+  /* The mature parser already understands windows. One older path still flattened "sometime next week" when extra
+     sentences followed the promise. Repair that accepted promise only; never create a promise that the reader rejected. */
+  if(meta.precision==='window'&&!r.win&&/\b(?:sometime\s+)?next week\b/i.test(meta.phrase||'')){
+    var w=parseWhen(meta.phrase,new Date());
+    if(w&&w.wstart&&w.date){
+      var a=w.wstart.split('-').map(Number),z=w.date.split('-').map(Number),st=new Date(a[0],a[1]-1,a[2]),en=new Date(z[0],z[1]-1,z[2]);
+      en.setHours(23,59,59,999);r.dueAt=st.toISOString();r.dueEnd=en.toISOString();r.allDay=true;r.by=false;r.win=true;
+    }
+  }
+  /* Outside that compatibility edge, the mature date parser remains authoritative. In particular, do not reinterpret
+     prices as times or turn its working-day/date rules into a different range here. */
   return r;
 };
 function truthRelevant140(t){
@@ -39,6 +48,17 @@ syncAll=function(){
 try{document.removeEventListener('click',truthClick138,false)}catch(e){}
 function truthCapture140(e){var b=e.target&&e.target.closest?e.target.closest('[data-a]'):null,a=b&&b.getAttribute('data-a');if(!a||a.indexOf('truth-')!==0)return;truthClick138(e);e.stopPropagation()}
 document.addEventListener('click',truthCapture140,true);
+
+/* v125 deliberately moves informational cards into a quieter secondary region. That region can be collapsed on some
+   mature case layouts, which hid the truth review and its draft after confirmation. Keep the existing secondary cards,
+   but render the truth card once at top-level so source, interpretation and user actions are always reachable. */
+var _viewTask140=viewTask;
+uCard=function(t){return _uCard138(t)};
+viewTask=function(){
+  var h=_viewTask140();if(!S.view||S.view.name!=='task')return h;
+  var t=task(S.view.id),card=t?truthCard138(t):'';if(!card)return h;
+  var p=h.lastIndexOf('</main>');return p>=0?h.slice(0,p)+card+h.slice(p):h+card;
+};
 `;
 R("boot();\n})();\n</script>",PATCH+"\nboot();\n})();\n</script>");
 fs.writeFileSync('public/index.html',s);

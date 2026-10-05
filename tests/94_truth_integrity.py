@@ -1,5 +1,5 @@
-# v138: truth integrity. What was said, Sorted's interpretation, confirmed details, the person's own reminder/plan and
-# an outbound draft stay separate. Vague/tentative dates never become firm appointments; checking an existing booking
+# v140: truth integrity. What was said, Sorted's interpretation, confirmed details, the person's own reminder/plan and
+# an outbound draft stay separate. Date precision never manufactures a provider promise; checking an existing booking
 # happens before a chase; guest save wording matches the real storage model; legacy vague dates are reviewed, not erased.
 import os, sys, json, datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -42,13 +42,13 @@ with sync_playwright() as p:
     c1=start(src,False); t=case(c1); sp=t.get('sugP') or {}
     ok(sp.get('win') and sp.get('precision')=='window' and sp.get('sourceWhen','').lower()=='sometime next week','sometime next week remains a window, with its source phrase (%s)'%json.dumps({k:sp.get(k) for k in ('win','precision','sourceWhen')}))
     ok(sp.get('sourceText')==src,'the original wording is kept separately')
-    m=main()
-    ok('What was actually said' in m and 'sometime next week' in m and 'There is no confirmed appointment day' in m,'the screen separates source wording from interpretation')
-    ok('check the provider’s app and latest email for the booking' in m.lower() and 'get the call ready' not in m.lower(),'checking existing information comes before contacting the provider')
-    ok(pg.locator('[data-a=truth-check-found]').count()==1 and pg.locator('[data-a=truth-check-none]').count()==1 and pg.locator('[data-a=truth-remind]').count()==1,'the three fast outcomes are available')
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg,650)
     t=case(c1); op=[q for q in t.get('promises',[]) if q.get('status')=='open'][0]; due0=op.get('dueAt'); end0=op.get('dueEnd')
     ok(op.get('win') and op.get('sourceWhen','').lower()=='sometime next week','confirmation keeps the promise as a window rather than a firm Friday')
+    m=main()
+    ok('What was actually said' in m and 'sometime next week' in m and 'There is no confirmed appointment day' in m,'the confirmed case separates source wording from interpretation (%s)'%m[:500].replace('\n',' / '))
+    ok('check the provider’s app and latest email for the booking' in m.lower() and 'get the call ready' not in m.lower(),'checking existing information comes before contacting the provider')
+    ok(pg.locator('[data-a=truth-check-found]').count()==1 and pg.locator('[data-a=truth-check-none]').count()==1 and pg.locator('[data-a=truth-remind]').count()==1,'the three fast outcomes are available')
 
     # 2. A user's reminder is an attention choice, not the provider's appointment.
     pg.goto('https://sorted.test/?task=%s'%c1); wait(pg,600); pg.click('[data-a=truth-remind]'); wait(pg,350)
@@ -65,22 +65,17 @@ with sync_playwright() as p:
     ok('Prepare a message' in main(),'after no booking is found, Sorted offers contact')
     before=json.dumps(t,sort_keys=True)
     pg.click('[data-a=truth-draft]'); wait(pg,300); m=main()
-    ok('Draft — check before sending' in m and 'This is Sorted’s proposed message' in m,'a generated message is visibly a draft, not source evidence')
+    ok('Draft — check before sending' in m and 'This is Sorted’s proposed message' in m,'a generated message is visibly a draft, not source evidence (%s)'%m[-700:].replace('\n',' / '))
     draft=pg.input_value('#truth138-draft')
     ok('sometime next week' in draft.lower() and 'confirm the appointment day, time window and booking reference' in draft.lower(),'the draft quotes the uncertainty and asks for confirmation')
     ok('call' not in draft.lower(),'an app/email check does not silently become a call')
     after=json.dumps(case(c1),sort_keys=True)
     ok(before==after,'opening the outbound draft changes no case facts or history')
 
-    # 4. A tentative day is not promoted to an appointment/deadline.
-    c2=start('Sky said an engineer would probably come Tuesday.',False); t=case(c2); sp=t.get('sugP') or {}
-    ok(sp.get('tentative') and sp.get('precision')=='tentative' and sp.get('candidateDueAt') and not sp.get('dueAt'),'probably Tuesday is a candidate day, not a confirmed appointment (%s)'%json.dumps({k:sp.get(k) for k in ('tentative','precision','candidateDueAt','dueAt')}))
-    ok('not a confirmed appointment' in main().lower() and 'probably' in main().lower(),'the UI describes the day as tentative')
-    if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg,600)
-    t=case(c2); opens=[q for q in t.get('promises',[]) if q.get('status')=='open']
-    if opens:
-        q=opens[0]; ok(q.get('tentative') and not q.get('dueAt') and q.get('candidateDueAt'),'confirming what was said does not turn probably Tuesday into a firm Tuesday')
-    else: ok(True,'the tentative statement stays unconfirmed rather than becoming a dated promise')
+    # 4. Timing uncertainty does not manufacture an obligation. "Probably" is information, not their promise.
+    c2=start('Sky said an engineer would probably come Tuesday.',False); t=case(c2)
+    ok(not t.get('sugP'),'probably Tuesday is not promoted to a provider promise')
+    ok('probably come Tuesday' in t.get('said',''),'the uncertain wording remains in the case instead of being rewritten as a firm date')
 
     # 5. A negated day can never become the current positive date.
     c3=start('Virgin said an engineer would come, but not Tuesday.',False); t=case(c3); cand=[]

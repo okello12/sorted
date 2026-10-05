@@ -3,25 +3,12 @@
 Things Sorted needs that cost money, need a person's judgement, or need your approval. In order of what matters most
 before more people use Sorted. Updated 5 October 2026 (v137).
 
-## 1. Approve the server changes for v133 to v135
+## 1. Server changes for v133 to v135: done (5 October 2026)
 
-The app updates for lock-screen reminders, forwarding and kept documents need these on Supabase. Claude applies them
-when you approve the prompts. Nothing here touches case content. v133 to v137 are built and tested on pull request 42
-and are released together once these are in place (v137 itself needs no server change). On 5 October the approval
-for migration 19 came back "cancelled" four times, so nothing has been applied yet: say "go ahead with Supabase" in a
-session where you can approve the prompts as they appear.
-
-| Change | Live | Staging |
-|---|---|---|
-| Migration 19 `push_subs`, `push_save/drop/state` (`supabase/parked/19_push_v133.sql`) | yes | yes |
-| Vault secret `vapid_private_jwk` (the notification signing key; never shown) | yes | no |
-| Deploy `send-reminders` v11 (with `webpush.ts`) | yes | no |
-| Migration 20 `inbound_address_new()` (`supabase/parked/20_forwarding_v134.sql`) | yes | yes |
-| Deploy `inbound-email` v7 | yes | no |
-| Migration 21 bucket `originals` and its rules (`supabase/parked/21_originals_v135.sql`) | yes | yes |
-| Deploy `originals-cleanup` v1, then schedule `sorted-originals-cleanup` (27 3 * * *) | yes | no |
-
-Forwarding also needs Resend inbound mail on the `inbound_domain` already set for case replies; nothing new there.
+Applied through the Supabase SQL editor with you watching, because the connector's approval prompts never reached
+you: migrations 19 to 21 on live and staging, migration 22 and the daily clean-up on live, the push key made inside
+Supabase (nobody saw it), and send-reminders v11, inbound-email v7 and originals-cleanup v1 deployed. Forwarding
+still relies on Resend inbound mail on the `inbound_domain` already set for case replies.
 
 ## 2. Backups: Supabase Pro
 

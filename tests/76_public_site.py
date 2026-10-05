@@ -35,7 +35,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.goto('https://sorted.test/'); wait(pg, 600)
     body = pg.inner_text('body')
     ok(D1.lower() in body.lower() and D2 in body, 'the landing page carries the description')
-    ok('See an example' in body and pg.locator('main a[href="#how"]').count() >= 1 and pg.locator('footer a[href="#how"]').count() == 1, 'the landing page points at the example and How it works')
+    ok('Try an example' in body and pg.locator('main a[href="#how"]').count() >= 1 and pg.locator('footer a[href="#how"]').count() == 1, 'the landing page points at the example and How it works')
     for w in WRONG: ok(w not in body, 'landing: gone, “%s”' % w)
     ok(all(pg.locator('footer a[href="%s"]' % h).count() == 1 for h in PAGES), 'the footer links to every page')
     for h, must in PAGES.items():

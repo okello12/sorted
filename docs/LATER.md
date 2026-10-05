@@ -19,9 +19,9 @@ around the due date. Most items below should wait for that result.
 | # | Item | Status | Blocked on |
 |---|---|---|---|
 | 1 | Replies come back into the case | Built in v70: the case's own address in Cc, replies shown in the case as proposals | Baldwin: run `08_replies_notes_v70.sql`, set `case_replies_on` to `yes`, point Resend inbound at `inbound-email` |
-| 2 | Forwarding emails to a personal Sorted address | Switched off since v28; addresses removed 2 Oct 2026 | A check that the forwarder really is the account owner, or drop it in favour of item 1 |
+| 2 | Forwarding emails to a personal Sorted address | Back in v134 as a secret address per person; nothing trusts the sender, so every email is a suggestion | |
 | 3 | WhatsApp | Not started | Baldwin: Meta business account, verification, a number, running costs |
-| 4 | Share into Sorted from other apps | iPhone done in v40 (Apple Shortcut); Android not started | Android needs an installed app or a manifest (see below) |
+| 4 | Share into Sorted from other apps | iPhone done in v40 (Apple Shortcut); Android in v134 (the manifest's share target, once Sorted is installed) | |
 | 5 | Share a case with roles | Notes from a helper built in v70 (through the helper link, switched on per case); named roles not started | Named roles need an accept flow, after the pilot |
 | 6 | The other party replies inside Sorted | Not started | Proof the consumer side works |
 | 7 | Promise data and a public scoreboard | Built in v69 as in-case company totals (counts only, 5 promises from 3 people) | Baldwin: run `07_scores_v69.sql`; enough real cases; legal review before any public page |

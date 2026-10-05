@@ -449,6 +449,57 @@ it again?" with Reopen this case (everything kept: history, messages, references
 ended) and Save the full record (the adviser pack, to copy, download or print for evidence), and says finished cases
 stay under Done in Cases for 90 days after the last change, or 30 without an email. Evidence: test 87.
 
+**v133 (reminders that reach people).** Reminders were email only, and a guest had none at all. Now a phone can say yes
+once ("Get reminders on this phone", in Settings and offered once a case has a date): the page registers
+`public/sw.js` (shows a notification, opens the case, caches nothing), subscribes with Sorted's public VAPID key and
+saves the push address with `push_save()` (migration 19: `push_subs`, private, only the big browser push services;
+`push_state()`, `push_drop()`). `send-reminders` v11 sends each due reminder to those phones as well as by email, so a
+guest gets reminders too; the message is fixed words, the case link and, after the time, Yes and Not yet buttons, never
+what the case is; a phone the push service has forgotten is removed. The after email also offers "Choose when Sorted
+reminds you" (Later) and "They gave a new date? Add it". On an iPhone this needs Sorted on the Home Screen (iOS 16.4
+and later), and the page says how. A guest is asked once for an email when a case first has a date. Evidence: test 89,
+`tests/webpush_check.mjs` (RFC 8291's example) and `tests/fn/send_reminders_check.mjs` (the function run in Node,
+decrypting the push it sends). The private key is `vapid_private_jwk` in Vault; the public key is `VAPID_PUB` in the page.
+
+**v134 (getting things in).** Forwarding comes back, as `docs/LATER.md` item 2 asked, without trusting the sender: each
+person has a secret address (`my_inbound_address()`, `log-<16 hex>@<inbound domain>`, already in the database), shown
+in Settings with Copy and "Get a new address" (`inbound_address_new()`, migration 20: the old address stops at once).
+`inbound-email` v7 stores what arrives there for that person, unassigned, at most 30 a day; Home shows it as "An email
+came to your Sorted address from <website>" with the existing case picker. Android: the manifest gains icons and a
+`share_target` (`/?st=&sx=&su=`), which `grabShared()` reads like the iPhone Shortcut's `#new=`. An iPhone Home Screen
+icon (`/icon-180.png`). The privacy notice describes forwarding and lock-screen reminders. Evidence: test 90 and
+`tests/fn/inbound_check.mjs` (inbound-email run in Node).
+
+**v135 (keeping the original documents).** For evidence, the record of what was said isn't enough. A case's "What's
+happened" now has "Documents kept with this case" with "Keep a document with this case": the file goes unchanged to
+the private storage bucket `originals` under `<user>/<case>/` (migration 21: private, 10 MB, images and PDFs, 200 a
+person, each person only in their own folder, no updates), listed with date and size, opened through a 5-minute signed
+link, removed after a second tap, with a history line each way. A daily job (`sorted-originals-cleanup` →
+`originals-cleanup`) removes files whose case has gone. The privacy notice says so. Free plan storage is 1 GB in all.
+Evidence: test 91 and `tests/fn/originals_check.mjs`.
+
+**v136 (a simpler first visit, and what only Baldwin can do).** A newcomer's Home now leads only with the ways in and
+the box: "Planning something bigger? Moving home" moves below the ideas fold, and the guest note waits until there is a
+case to keep. `docs/OWNER_CHECKLIST.md` lists, in order: approving the Supabase changes for v133 to v135, Supabase Pro
+for backups, a name search and domain, a lawyer's read, the real-phone check, and what was already open. Evidence:
+test 92.
+
+**v137 (the review of 5 October 2026).** Six points from Baldwin's review. (1) An open case leads with one "Now" card:
+what happened ("Currys promised it by Friday 9 October. That time has passed."), who acts next ("Next: tell Sorted
+whether Currys did it", or "Waiting for Currys: nothing for you to do until …"), and "Add what they just said",
+"Something changed" and "Can’t do this now"; the promise or step card with the one main button follows, then Sorted's
+reading, the history, the ledger and documents. (2) An old reminder or notification (Yes, No, Later or New date) for a
+promise or step that has since moved on changes nothing, says what happened since ("you recorded that Currys did it",
+"the date changed: Amazon now say …") and shows the case as it is. (3) The public page's "Try an example": four steps
+of a refund that hasn't arrived (what you type, Friday passes, "Not yet" in the history, the follow-up quoting the
+order number), with "It arrived" as the other ending; nothing saved, no sign-in. (4) "Add what they just said" on
+every open case (the existing paste box: a message, a screenshot or a PDF, read and proposed, confirmed by a tap); the
+guest note says "Keep your cases if you lose this phone." (5) "Send this summary" under Tools: the issue, what was
+promised, what happened, the reference and "What I’m asking for now" (prefilled, theirs to change), previewed, then
+Copy or Share; Sorted sends nothing. (6) A helper link can carry "What I’m asking them to do" (`t.helpAsk`, in the
+card as `q`); the helper sees it first and replies with their name; the reply comes back under "You asked: …" to keep
+or remove. Saving a request with a link switches replies on. No server changes. Evidence: test 93.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

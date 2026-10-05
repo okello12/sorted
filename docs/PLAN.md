@@ -431,6 +431,19 @@ paying…?"; Yes records the payment with an optional confirmation number, and a
 88. Not yet: answers inside the reminder emails themselves stay Yes and No (build71), and "Later" is not yet read by
 `send-reminders`; it creates no extra emails, but a reminder already set for a deadline still comes, and the sheet says so.
 
+**v131 (Baldwin's iPhone after v130).** Safari's back arrow was greyed out inside Sorted: v129 wrote each place
+(`#case-<id>`, `#cases`, `#more`, `#move-<id>`) with `replaceState`, so moving between places made no history and the
+phone's Back and swipe did nothing ("I can't move away from this site"). Now `navHash()` pushes each place and a
+`popstate` listener opens it again, so Back goes case → Home and Cases → the case, and Forward works. "+ New" writes
+its place too. An older title "<Who> said they would nothing" reads "Waiting for <Who>" wherever the title shows
+(`case75TitleParts()`; v129 had only fixed `home54Title()`). Evidence: `tests/engine_nav.py`, a touch-phone tap walk
+(iPhone 13 in WebKit, Firefox and Chromium on GitHub) through Open this case, the bar's Home, the top Home, Cases,
+More, New, Back and Forward, and test 87. A returning Home with the ways in folded ended in a blank gap under the
+one case, so it felt like the only place to go: it now shows "+ Start something new" and "See all my cases" there. In the bar, New was a filled violet tile and so looked like the
+selected place while Home's mark was faint: the current place is now the only filled item, violet with a line above
+it, and New is a round + with a plain label. A finished case now leads with "Done, back to Home" and "+ Start something new"
+above the recap, and an older title "<Who> said they would <Typed words>" reads "<Who>: <Typed words>" (`title131()`).
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

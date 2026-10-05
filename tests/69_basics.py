@@ -80,7 +80,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 500); more(); pg.click('[data-a=panel][data-p=done]'); wait(pg, 300)
     pg.fill('#f-outcome', 'Bought it elsewhere'); pg.locator('form[data-f=done] button[type=submit]').click(); wait(pg, 600)
     ok(case(cid)[0]['board'] == 'done', 'finished')
-    more(); ok(pg.locator('[data-a=case-reopen]').count() == 1, 'a finished case offers Reopen')
+    more(); ok(pg.locator('[data-a=case-reopen]').count() >= 1 and pg.locator('.rc132 [data-a=case-reopen]').count() == 1, 'a finished case offers Reopen, on its finished card too (v132)')
     pg.click('[data-a=case-reopen]'); wait(pg, 600); c = case(cid)[0]
     ok(c['board'] != 'done' and not c.get('outcome') and any(l.startswith('Reopened.') and 'Bought it elsewhere' in l for l in labels(cid)), 'Reopen brings it back and the history keeps how it had ended')
     pg.goto('https://sorted.test/'); wait(pg, 600)

@@ -39,7 +39,10 @@ readCase=function(text,f){
   if(!r)return r;
   r.sourceText=src;r.sourceWhen=meta.phrase||r.sourceWhen||'';r.precision=meta.precision!=='unknown'?meta.precision:(r.precision||truthPrec138(r));r.truthV=1;
   if(meta.precision==='window'){
-    bounds=truthBounds140(src);if(bounds){r.dueAt=bounds.start.toISOString();r.dueEnd=bounds.end.toISOString();r.allDay=true;r.by=false;r.win=true;r.tentative=false;delete r.candidateDueAt;delete r.candidateDueEnd}
+    /* Keep a window already produced by the mature date parser (including its working-day/bank-holiday rules). Only
+       reconstruct when an older/later parser flattened or dropped the interval. */
+    if(!(r.win&&r.dueAt&&r.dueEnd)){bounds=truthBounds140(src);if(bounds){r.dueAt=bounds.start.toISOString();r.dueEnd=bounds.end.toISOString();r.allDay=true;r.by=false;r.win=true}}
+    r.tentative=false;delete r.candidateDueAt;delete r.candidateDueEnd;
   }else if(meta.precision==='tentative'){
     cand=r.candidateDueAt?new Date(r.candidateDueAt):r.dueAt?new Date(r.dueAt):truthCandidate140(meta.phrase||src);if(cand&&!isNaN(cand)){cand.setHours(0,0,0,0);r.candidateDueAt=cand.toISOString()}
     r.candidateDueEnd=r.candidateDueEnd||null;r.dueAt=null;r.dueEnd=null;r.allDay=true;r.by=false;r.win=false;r.tentative=true;

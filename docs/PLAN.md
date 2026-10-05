@@ -461,6 +461,15 @@ and later), and the page says how. A guest is asked once for an email when a cas
 `tests/webpush_check.mjs` (RFC 8291's example) and `tests/fn/send_reminders_check.mjs` (the function run in Node,
 decrypting the push it sends). The private key is `vapid_private_jwk` in Vault; the public key is `VAPID_PUB` in the page.
 
+**v134 (getting things in).** Forwarding comes back, as `docs/LATER.md` item 2 asked, without trusting the sender: each
+person has a secret address (`my_inbound_address()`, `log-<16 hex>@<inbound domain>`, already in the database), shown
+in Settings with Copy and "Get a new address" (`inbound_address_new()`, migration 20: the old address stops at once).
+`inbound-email` v7 stores what arrives there for that person, unassigned, at most 30 a day; Home shows it as "An email
+came to your Sorted address from <website>" with the existing case picker. Android: the manifest gains icons and a
+`share_target` (`/?st=&sx=&su=`), which `grabShared()` reads like the iPhone Shortcut's `#new=`. An iPhone Home Screen
+icon (`/icon-180.png`). The privacy notice describes forwarding and lock-screen reminders. Evidence: test 90 and
+`tests/fn/inbound_check.mjs` (inbound-email run in Node).
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

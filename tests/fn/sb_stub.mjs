@@ -1,17 +1,21 @@
 // A tiny in-memory stand-in for supabase-js, enough for send-reminders: from().select/update/delete with eq, is, lt,
 // maybeSingle; rpc; auth.admin.getUserById. The test fills globalThis.__DB before calling the handler.
 function q(table) {
-  const st = { op: "select", filters: [], vals: null, single: false };
+  const st = { op: "select", filters: [], vals: null, single: false, head: false };
   const rows = () => (globalThis.__DB[table] ||= []);
-  const match = (r) => st.filters.every(([k, op, v]) => op === "eq" ? r[k] === v : op === "is" ? (r[k] ?? null) === v : op === "lt" ? r[k] < v : true);
+  const match = (r) => st.filters.every(([k, op, v]) => op === "eq" ? r[k] === v : op === "is" ? (r[k] ?? null) === v : op === "lt" ? r[k] < v : op === "gte" ? r[k] >= v : true);
   const run = () => {
     const hit = rows().filter(match);
     if (st.op === "update") { hit.forEach((r) => Object.assign(r, st.vals)); return { data: hit, error: null }; }
+    if (st.op === "insert") { const row = Object.assign({ id: "i" + Math.random().toString(36).slice(2), received_at: new Date().toISOString() }, st.vals); rows().push(row); return { data: [row], error: null }; }
+    if (st.head) return { data: null, count: hit.length, error: null };
     if (st.op === "delete") { globalThis.__DB[table] = rows().filter((r) => !match(r)); return { data: hit, error: null }; }
     return { data: st.single ? (hit[0] ?? null) : hit, error: null };
   };
   const self = {
-    select() { if (st.op === "select") st.op = "select"; return self; },
+    select(c, o) { if (o && o.head) st.head = true; return self; },
+    insert(v) { st.op = "insert"; st.vals = v; return self; },
+    gte(k, v) { st.filters.push([k, "gte", v]); return self; },
     update(v) { st.op = "update"; st.vals = v; return self; },
     delete() { st.op = "delete"; return self; },
     eq(k, v) { st.filters.push([k, "eq", v]); return self; },

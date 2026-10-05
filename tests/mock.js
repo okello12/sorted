@@ -41,6 +41,7 @@ window.supabase={createClient:function(){
       if(name==="invite_helper"){window.__invites=(window.__invites||0)+1;DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);DB.helpers.push({task_id:args.p_task_id,email:args.p_email.toLowerCase(),inviter_name:args.p_name,status:"pending",token:"tok"+"x".repeat(60)});persist();return Promise.resolve({data:"pending",error:null})}
       if(name==="remove_helper"){DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);persist();return Promise.resolve({data:null,error:null})}
       if(name==="helper_respond"){var hh=DB.helpers.find(h=>h.token===args.p_token);if(!hh)return Promise.resolve({data:"unknown",error:null});hh.status=args.p_action==="yes"?"confirmed":"stopped";persist();return Promise.resolve({data:hh.status,error:null})}
+      if(name==="inbound_address_new"){var nn=String((+localStorage.getItem("__inboundN")||0)+1);localStorage.setItem("__inboundN",nn);return Promise.resolve({data:"log-new"+nn+"abcdef0123@inbound.getsorted.uk",error:null})}
       if(name==="my_inbound_address")return Promise.resolve({data:localStorage.getItem("__inbound")==="1"?"log-abc123@inbound.getsorted.uk":null,error:null});
       if(name==="stash_carry"){window.__stash=(window.__stash||0)+1;var tk="tok-"+(session&&session.user.id);localStorage.setItem("__stashfor",session&&session.user.id);return Promise.resolve({data:tk,error:null})}
       if(name==="claim_carry"){var from=localStorage.getItem("__stashfor");var mp={};(args.p_pairs||[]).forEach(p=>mp[p[0]]=p[1]);DB.pilot_events.forEach(e=>{if(e.actor===from){if(mp[e.case_id])e.case_id=mp[e.case_id];e.actor=session.user.id}});persist();localStorage.setItem("__claimed",JSON.stringify(args));return Promise.resolve({data:true,error:null})}
@@ -61,6 +62,13 @@ window.supabase={createClient:function(){
       if(name==="email_reminders_ready")return Promise.resolve({data:localStorage.getItem("__emailReady")==="1",error:null});
       if(name==="delete_my_account"){DB={tasks:[],shares:[],reminders:[],helpers:[],inbound_items:[]};persist();return Promise.resolve({data:null,error:null})}
     },
+    /* v135: storage for kept documents, in localStorage (__storage: [{bucket,name,size,type,at}]); __storageFail makes uploads fail */
+    storage:{from:function(bucket){var all=function(){return JSON.parse(localStorage.getItem("__storage")||"[]")},put=function(a){localStorage.setItem("__storage",JSON.stringify(a))};return {
+      upload:function(path,file,o){if(localStorage.getItem("__storageFail")==="1")return Promise.resolve({data:null,error:{message:"new row violates row-level security policy"}});var uid=session&&session.user&&session.user.id;if(String(path).split("/")[0]!==uid)return Promise.resolve({data:null,error:{message:"new row violates row-level security policy"}});var a=all();if(a.find(x=>x.name===path))return Promise.resolve({data:null,error:{message:"The resource already exists"}});a.push({bucket:bucket,name:path,size:file.size,type:(o&&o.contentType)||file.type,at:new Date().toISOString()});put(a);window.__uploads=(window.__uploads||[]).concat([path]);return Promise.resolve({data:{path:path},error:null})},
+      list:function(prefix){var pre=String(prefix).replace(/\/$/,"")+"/";return Promise.resolve({data:all().filter(x=>x.bucket===bucket&&x.name.indexOf(pre)===0).map(x=>({name:x.name.slice(pre.length),created_at:x.at,metadata:{size:x.size,mimetype:x.type}})),error:null})},
+      remove:function(paths){put(all().filter(x=>paths.indexOf(x.name)<0));return Promise.resolve({data:paths,error:null})},
+      createSignedUrl:function(path,sec){window.__signed=(window.__signed||[]).concat([[path,sec]]);return Promise.resolve({data:{signedUrl:"https://sorted.test/__signed/"+path},error:null})}
+    }}},
     functions:{invoke:function(name,o){window.__ai=(window.__ai||[]);window.__ai.push({name:name,body:o&&o.body});var mode=localStorage.getItem('__aiMode')||'ok';
       if(mode!=='ok')return Promise.resolve({data:null,error:{context:{json:function(){return Promise.resolve({error:mode})}}}});
       var b=o.body;return Promise.resolve({data:{text:b.task==='improve'?'Dear Southwark Council,\n\nImproved: '+b.text.split('\n')[2]:'[assistant '+b.task+'] It says: '+(b.text||b.question).slice(0,60)},error:null})}},

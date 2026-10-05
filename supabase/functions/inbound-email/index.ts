@@ -4,12 +4,14 @@ import { replyKind } from "./readers.mjs";
 
 // Resend webhook for email.received. A user forwards a company's email to their own
 // secret Sorted address; we keep the subject and text for up to 30 days so the app
-// can offer to log it as a promise. Security: signed webhook (Svix), secret address,
-// and the forwarder must be the account's own email address.
+// can offer to log it as a promise. Security: signed webhook (Svix) and the secret address; the sender is never
+// trusted, so everything arrives as a suggestion the owner accepts or removes (v134).
 // Failures and rejections are logged to ops_errors as a kind and a time only (no addresses, no content).
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
-const FORWARDING_OFF = true;  // personal forwarding (log-) addresses stay off; case- replies are separate (v4)
+// v7 (Sorted v134): forwarding is back, to a secret address per person (log-<16 hex>, from my_inbound_address(), new
+// one any time with inbound_address_new()). The address is the key, not the From line, so nothing trusts the sender: each
+// email lands as a suggestion the owner accepts or removes, at most 30 a day per person.
 
 async function oops(kind: string) { try { await sb.from("ops_errors").insert({ source: "inbound", kind }); } catch { /* never block mail on logging */ } }
 async function secret(name: string): Promise<string | null> {
@@ -96,7 +98,18 @@ async function handle(req: Request): Promise<Response> {
     const at = a.lastIndexOf("@");
     if (at < 0 || a.slice(at + 1) !== domain) continue;
     const local = a.slice(0, at);
-    if (local.startsWith("log-")) { if (FORWARDING_OFF) continue; }
+    if (local.startsWith("log-")) {
+      if (!/^log-[0-9a-f]{16}$/.test(local)) { await oops("unknown_address"); continue; }
+      const { data: ia } = await sb.from("inbound_addresses").select("user_id").eq("token", local).maybeSingle();
+      if (!ia) { await oops("unknown_address"); continue; }
+      const { count: day } = await sb.from("inbound_items").select("id", { count: "exact", head: true }).eq("user_id", ia.user_id).gte("received_at", new Date(Date.now() - 86400000).toISOString());
+      if ((day ?? 0) >= 30) { await oops("daily_limit"); continue; }
+      if (text === null) text = await bodyText(d);
+      const { error: fe } = await sb.from("inbound_items").insert({ user_id: ia.user_id, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: (text || "").slice(0, 8000) });
+      if (fe) { await oops("store_failed"); continue; }
+      stored++;
+      continue;
+    }
     if (!local.startsWith("case-") || !on) continue;
     const { data: cm } = await sb.from("case_mail").select("task_id,user_id").eq("token", local).maybeSingle();
     if (!cm) { await oops("unknown_address"); continue; }

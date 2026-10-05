@@ -444,6 +444,11 @@ selected place while Home's mark was faint: the current place is now the only fi
 it, and New is a round + with a plain label. A finished case now leads with "Done, back to Home" and "+ Start something new"
 above the recap, and an older title "<Who> said they would <Typed words>" reads "<Who>: <Typed words>" (`title131()`).
 
+**v132 (reopening a finished case).** Reopen was hidden under Tools for this case. The finished card now asks "Need
+it again?" with Reopen this case (everything kept: history, messages, references, dates; the history notes how it had
+ended) and Save the full record (the adviser pack, to copy, download or print for evidence), and says finished cases
+stay under Done in Cases for 90 days after the last change, or 30 without an email. Evidence: test 87.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

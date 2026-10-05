@@ -29,8 +29,8 @@ readCase=function(text,f){
   return r;
 };
 function truthRelevant140(t){
-  if(!t||isMom(t)||t.example)return false;if(t.truthPlan||t.truthCheck)return true;var p=t.sugP||openPromise(t);
-  if(p&&(p.tentative||p.win||p.legacyTimingReview||p.precision==='window'||p.precision==='tentative'||p.sourceType==='provider_account'||p.sourceType==='user_review'))return true;
+  if(!t||isMom(t)||t.example)return false;if(t.truthV||t.truthPlan||t.truthCheck)return true;var p=t.sugP||openPromise(t);
+  if(p&&(p.truthV||p.sourceText||p.sourceWhen||p.tentative||p.win||p.legacyTimingReview||p.precision==='window'||p.precision==='tentative'))return true;
   var q=truthWhen138(String(t.said||''));return q.precision==='window'||q.precision==='tentative'||q.precision==='negated';
 }
 truthSync138=function(t){if(!truthRelevant140(t))return false;return _truthSync140(t)};
@@ -53,10 +53,12 @@ document.addEventListener('click',truthCapture140,true);
    mature case layouts, which hid the truth review and its draft after confirmation. Keep the existing secondary cards,
    but render the truth card once at top-level so source, interpretation and user actions are always reachable. */
 var _viewTask140=viewTask;
-uCard=function(t){return _uCard138(t)};
 viewTask=function(){
   var h=_viewTask140();if(!S.view||S.view.name!=='task')return h;
   var t=task(S.view.id),card=t&&truthRelevant140(t)?truthCard138(t):'';if(!card)return h;
+  /* uCard already evaluated the truth card while building the existing secondary region. Move that exact card rather
+     than disabling uCard: older case flows rely on the same sync pass, and this keeps one visible copy only. */
+  var old=h.indexOf(card);if(old>=0)h=h.slice(0,old)+h.slice(old+card.length);
   var p=h.lastIndexOf('</main>');return p>=0?h.slice(0,p)+card+h.slice(p):h+card;
 };
 `;

@@ -110,6 +110,12 @@ with sync_playwright() as p:
     if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)
     pg.goto('https://sorted.test/'); wait(pg, 600); tap('cases')
     ok('said they would Nothing' not in main() and 'said they would nothing' not in main().lower() and 'Evri' in main(), '“Evri said they would Nothing” is never shown')
+    # an older case saved with that title (v128 and before) is shown as "Waiting for Evri" on Home, Cases and the case (v131)
+    pg.evaluate("(()=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var r=db.tasks.find(x=>x.data.id==='%s');r.data.title='Evri said they would Nothing';localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))})()" % c1)
+    pg.goto('https://sorted.test/'); wait(pg, 700); hm = main()
+    pg.goto('https://sorted.test/?task=%s' % c1); wait(pg, 600); cm = pg.inner_text('main h1')
+    tap('cases'); km = main()
+    ok(all('would Nothing' not in x and 'would nothing' not in x for x in (hm, cm, km)) and 'Waiting for Evri' in hm and cm == 'Waiting for Evri' and 'Waiting for Evri' in km, 'an old “Evri said they would Nothing” title reads “Waiting for Evri” on Home, the case and Cases')
     # ---- the guest note ----
     pg.goto('https://sorted.test/'); wait(pg, 600)
     ok(pg.locator('.anon129').count() == 1 and pg.locator('.anon129').bounding_box()['height'] < 150, 'the guest note is one compact card')

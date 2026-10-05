@@ -478,6 +478,12 @@ link, removed after a second tap, with a history line each way. A daily job (`so
 `originals-cleanup`) removes files whose case has gone. The privacy notice says so. Free plan storage is 1 GB in all.
 Evidence: test 91 and `tests/fn/originals_check.mjs`.
 
+**v136 (a simpler first visit, and what only Baldwin can do).** A newcomer's Home now leads only with the ways in and
+the box: "Planning something bigger? Moving home" moves below the ideas fold, and the guest note waits until there is a
+case to keep. `docs/OWNER_CHECKLIST.md` lists, in order: approving the Supabase changes for v133 to v135, Supabase Pro
+for backups, a name search and domain, a lawyer's read, the real-phone check, and what was already open. Evidence:
+test 92.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

@@ -85,6 +85,15 @@ jobs:
           out=$(python3 tests/engine_smoke.py 2>&1) || true
           echo "$out"
           echo "$out" | grep -q "FAILS \[\]" && echo "$out" | grep -q "ERRORS \[\]"
+      - name: Tap through Home, Cases, More and New in ${{ matrix.engine }} on a touch phone
+        env:
+          SORTED_ENGINE: ${{ matrix.engine }}
+          TZ: Europe/London
+          PYTHONPATH: ${{ github.workspace }}/tests
+        run: |
+          out=$(python3 tests/engine_nav.py 2>&1) || true
+          echo "$out"
+          echo "$out" | grep -q "FAILS \[\]" && echo "$out" | grep -q "ERRORS \[\]"
 
 
   secrets-check:

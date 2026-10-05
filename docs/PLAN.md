@@ -484,6 +484,22 @@ case to keep. `docs/OWNER_CHECKLIST.md` lists, in order: approving the Supabase 
 for backups, a name search and domain, a lawyer's read, the real-phone check, and what was already open. Evidence:
 test 92.
 
+**v137 (the review of 5 October 2026).** Six points from Baldwin's review. (1) An open case leads with one "Now" card:
+what happened ("Currys promised it by Friday 9 October. That time has passed."), who acts next ("Next: tell Sorted
+whether Currys did it", or "Waiting for Currys: nothing for you to do until …"), and "Add what they just said",
+"Something changed" and "Can’t do this now"; the promise or step card with the one main button follows, then Sorted's
+reading, the history, the ledger and documents. (2) An old reminder or notification (Yes, No, Later or New date) for a
+promise or step that has since moved on changes nothing, says what happened since ("you recorded that Currys did it",
+"the date changed: Amazon now say …") and shows the case as it is. (3) The public page's "Try an example": four steps
+of a refund that hasn't arrived (what you type, Friday passes, "Not yet" in the history, the follow-up quoting the
+order number), with "It arrived" as the other ending; nothing saved, no sign-in. (4) "Add what they just said" on
+every open case (the existing paste box: a message, a screenshot or a PDF, read and proposed, confirmed by a tap); the
+guest note says "Keep your cases if you lose this phone." (5) "Send this summary" under Tools: the issue, what was
+promised, what happened, the reference and "What I’m asking for now" (prefilled, theirs to change), previewed, then
+Copy or Share; Sorted sends nothing. (6) A helper link can carry "What I’m asking them to do" (`t.helpAsk`, in the
+card as `q`); the helper sees it first and replies with their name; the reply comes back under "You asked: …" to keep
+or remove. Saving a request with a link switches replies on. No server changes. Evidence: test 93.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

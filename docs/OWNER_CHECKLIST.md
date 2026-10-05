@@ -1,12 +1,15 @@
 # What only Baldwin can do
 
 Things Sorted needs that cost money, need a person's judgement, or need your approval. In order of what matters most
-before more people use Sorted. Updated 5 October 2026 (v136).
+before more people use Sorted. Updated 5 October 2026 (v137).
 
 ## 1. Approve the server changes for v133 to v135
 
 The app updates for lock-screen reminders, forwarding and kept documents need these on Supabase. Claude applies them
-when you approve the prompts. Nothing here touches case content.
+when you approve the prompts. Nothing here touches case content. v133 to v137 are built and tested on pull request 42
+and are released together once these are in place (v137 itself needs no server change). On 5 October the approval
+for migration 19 came back "cancelled" four times, so nothing has been applied yet: say "go ahead with Supabase" in a
+session where you can approve the prompts as they appear.
 
 | Change | Live | Staging |
 |---|---|---|

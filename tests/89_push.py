@@ -78,9 +78,10 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/?task=%s' % c1); wait(pg, 700)
     ok(pg.locator('.nudge133').count() == 0, 'Maybe later means the offer doesn’t come back')
     # ---- answers from a reminder: Later, New date, and a tap on the notification ----
-    pg.goto('https://sorted.test/?task=%s&src=email&ans=later&p=x' % c1); wait(pg, 900)
+    p1 = [q['id'] for c in cases() if c['id'] == c1 for q in c['promises'] if q['status'] == 'open'][0]  # v137: a reminder carries its promise; an old one is out of date (test 93)
+    pg.goto('https://sorted.test/?task=%s&src=email&ans=later&p=%s' % (c1, p1)); wait(pg, 900)
     ok(pg.locator('.q130-later').count() == 1, 'Later in a reminder opens the case at “When should Sorted bring it back?”')
-    pg.goto('https://sorted.test/?task=%s&src=email&ans=date&p=x' % c1); wait(pg, 900)
+    pg.goto('https://sorted.test/?task=%s&src=email&ans=date&p=%s' % (c1, p1)); wait(pg, 900)
     ok(pg.locator('form[data-f=qdate]').count() == 1, 'New date in a reminder opens the case at “What’s the new date?”')
     pg.goto('https://sorted.test/?task=%s&src=push' % c2); wait(pg, 900)
     ev = [e for c in cases() if c['id'] == c2 for e in c['events']]

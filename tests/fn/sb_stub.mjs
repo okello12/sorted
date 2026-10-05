@@ -33,8 +33,10 @@ export function createClient() {
       if (name === "sorted_secret") return { data: globalThis.__SECRETS[args.p_name] ?? null };
       if (name === "claim_due_reminders") return { data: (globalThis.__DB.reminders || []).filter((r) => !r.sent_at && !r.cancelled_at), error: null };
       if (name === "claim_helper_invites") return { data: [] };
+      if (name === "originals_orphans") { const ids = new Set((globalThis.__DB.tasks || []).map((t) => t.user_id + "/" + t.id)); return { data: (globalThis.__DB.objects || []).filter((o) => !ids.has(o.name.split("/").slice(0, 2).join("/"))).slice(0, args.p_limit).map((o) => ({ name: o.name })), error: null }; }
       return { data: null };
     },
+    storage: { from: (b) => ({ remove: async (names) => { globalThis.__REMOVED = (globalThis.__REMOVED || []).concat(names); globalThis.__DB.objects = (globalThis.__DB.objects || []).filter((o) => !names.includes(o.name)); return { data: names, error: null }; } }) },
     auth: { admin: { getUserById: async (id) => ({ data: { user: { id, email: globalThis.__EMAILS[id] || null } } }) } },
   };
 }

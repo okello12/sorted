@@ -470,6 +470,14 @@ came to your Sorted address from <website>" with the existing case picker. Andro
 icon (`/icon-180.png`). The privacy notice describes forwarding and lock-screen reminders. Evidence: test 90 and
 `tests/fn/inbound_check.mjs` (inbound-email run in Node).
 
+**v135 (keeping the original documents).** For evidence, the record of what was said isn't enough. A case's "What's
+happened" now has "Documents kept with this case" with "Keep a document with this case": the file goes unchanged to
+the private storage bucket `originals` under `<user>/<case>/` (migration 21: private, 10 MB, images and PDFs, 200 a
+person, each person only in their own folder, no updates), listed with date and size, opened through a 5-minute signed
+link, removed after a second tap, with a history line each way. A daily job (`sorted-originals-cleanup` →
+`originals-cleanup`) removes files whose case has gone. The privacy notice says so. Free plan storage is 1 GB in all.
+Evidence: test 91 and `tests/fn/originals_check.mjs`.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

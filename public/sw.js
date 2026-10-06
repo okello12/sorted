@@ -12,7 +12,7 @@ self.addEventListener("push", function (e) {
     body: String(m.b || "Something in Sorted needs a look.").slice(0, 160),
     tag: String(m.g || "sorted").slice(0, 64),
     renotify: true,
-    data: { u: typeof m.u === "string" && m.u.charAt(0) === "/" ? m.u : "/", a: m.a && typeof m.a === "object" ? m.a : {} },
+    data: { u: typeof m.u === "string" && /^\/(?![\/\\])/.test(m.u) ? m.u : "/", a: m.a && typeof m.a === "object" ? m.a : {} },
     actions: Array.isArray(m.x) ? m.x.slice(0, 2).map(function (x) { return { action: String(x[0]).slice(0, 12), title: String(x[1]).slice(0, 30) }; }) : []
   };
   e.waitUntil(self.registration.showNotification(title, opts));
@@ -21,7 +21,7 @@ self.addEventListener("push", function (e) {
 self.addEventListener("notificationclick", function (e) {
   e.notification.close();
   var d = e.notification.data || {}, path = d.u || "/";
-  if (e.action && d.a && typeof d.a[e.action] === "string" && d.a[e.action].charAt(0) === "/") path = d.a[e.action];
+  if (e.action && d.a && typeof d.a[e.action] === "string" && /^\/(?![\/\\])/.test(d.a[e.action])) path = d.a[e.action];
   var url = new URL(path, self.location.origin).href;
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
     for (var i = 0; i < list.length; i++) {

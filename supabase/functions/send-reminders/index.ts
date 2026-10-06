@@ -2,6 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendPush } from "./webpush.ts";
 
+// v12 (Sorted v141): an Idempotency-Key per reminder for Resend; a push already sent for a reminder is not repeated; only
+// a refused subscription (400, 401, 403, 413) counts towards removing it; push TTL 6 hours before, a day after; the
+// footer links to Settings to stop all reminder emails.
 // v11 (Sorted v133): each reminder also goes to the phones that switched on "Get reminders on this phone" (Web Push,
 // push_subs, the private key `vapid_private_jwk` in Vault). The notification never says what the case is: fixed text,
 // the case link and, after the time, the answer buttons. A guest with no email gets reminders this way. A phone the push
@@ -37,10 +40,11 @@ function html(heading: string, intro: string, button: string, link: string, foot
   return `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px;margin-right:8px">${esc(button)}</a>${two}${extra}${second ? "" : `<p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p>`}</td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${footer}</td></tr></table></td></tr></table></body></html>`;
 }
 
-async function send(key: string, from: string, to: string, subject: string, text: string, htmlBody: string, headers?: Record<string, string>): Promise<{ ok: boolean; id?: string; err?: string }> {
+async function send(key: string, from: string, to: string, subject: string, text: string, htmlBody: string, headers?: Record<string, string>, idem?: string): Promise<{ ok: boolean; id?: string; err?: string }> {
+  // v141: an idempotency key per reminder, so a retry after a lost response never sends the same email twice.
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...(idem ? { "Idempotency-Key": idem } : {}) },
     body: JSON.stringify({ from, to: [to], subject, text, html: htmlBody, headers }),
   });
   const body = await res.text();
@@ -132,13 +136,16 @@ Deno.serve(async (req: Request) => {
     const ask = r.kind === "after" && r.promise_id && target && target.id === r.promise_id && target.src !== "parking";
     const ans = (a: string) => `${link}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
+    const settings = `${SITE}/#more-settings`;
     const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
     const more = ask ? [{ label: "Can’t deal with it now? Choose when Sorted reminds you", link: ans("later") }].concat(isMove ? [] : [{ label: "They gave a new date? Add it", link: ans("date") }]) : [];
-    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop them, open the case and turn email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
     // The phone first: fixed words, the case link, and after the time the answer buttons. Never what the case is.
     let pushOk = 0, pushTried = 0;
-    if (wantPush) {
+    // v141: a push already delivered for this reminder (a run cut short before the email) is not sent again.
+    if (wantPush && (r as any).push_sent_at) pushOk = 1;
+    else if (wantPush) {
       const rel = `/?task=${encodeURIComponent(r.task_id)}&src=push`;
       const relAns = (a: string) => `${rel}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
       const msg: any = { t: "Sorted", b: c.push, u: rel, g: "case-" + String(r.task_id).slice(0, 40) };
@@ -146,10 +153,11 @@ Deno.serve(async (req: Request) => {
       for (const s of (subs ?? []) as any[]) {
         pushTried++;
         let st = 0;
-        try { st = await sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, msg, vapid!, subject); } catch { st = 0; }
+        try { st = await sendPush({ endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }, msg, vapid!, subject, r.kind === "after" ? 86400 : 21600); } catch { st = 0; }
         if (st >= 200 && st < 300) { pushOk++; await sb.from("push_subs").update({ last_ok_at: new Date().toISOString(), fails: 0 }).eq("id", s.id); }
         else if (st === 404 || st === 410) await sb.from("push_subs").delete().eq("id", s.id);
-        else { await sb.from("push_subs").update({ fails: (s.fails || 0) + 1 }).eq("id", s.id); if ((s.fails || 0) + 1 >= 5) await sb.from("push_subs").delete().eq("id", s.id); }
+        // v141: only a refusal of the subscription itself counts towards removing it; an outage (429, 5xx, no answer) doesn't.
+        else if (st === 400 || st === 401 || st === 403 || st === 413) { await sb.from("push_subs").update({ fails: (s.fails || 0) + 1 }).eq("id", s.id); if ((s.fails || 0) + 1 >= 5) await sb.from("push_subs").delete().eq("id", s.id); }
       }
       await sb.from("reminders").update({ push_sent_at: pushOk ? new Date().toISOString() : null, push_detail: `${pushOk} of ${pushTried}` }).eq("id", r.id);
       if (pushOk) pushed++;
@@ -160,7 +168,7 @@ Deno.serve(async (req: Request) => {
       continue;
     }
     await sb.from("reminders").update({ submitted_at: new Date().toISOString() }).eq("id", r.id);
-    const res = await send(key!, from!, email!, c.subject, text, hb, { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
+    const res = await send(key!, from!, email!, c.subject, text, hb, { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" }, `rem-${r.id}`);
     if (!res.ok) { failed++; await sb.from("reminders").update({ cancel_reason: `send failed: ${res.err}` }).eq("id", r.id); if (pushOk) await sb.from("reminders").update({ sent_at: new Date().toISOString() }).eq("id", r.id); continue; }
     await sb.from("reminders").update({ sent_at: new Date().toISOString(), provider_id: res.id ?? null }).eq("id", r.id);
     sent++;

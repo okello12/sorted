@@ -12,10 +12,10 @@ function q(table){
     var rows=DB[table];
     if(op==="select"){var fr=rows.filter(r=>filters.every(f=>r[f[0]]===f[1]));return {data:(table==="tasks"||table==="shares")?fr.map(r=>({data:r.data,card:r.card})):fr.map(r=>Object.assign({},r)),error:null}}
     if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
-    if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
+    if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};if(localStorage.getItem("__failWrites")==="2")return {data:null,error:{message:"permission denied (test)",code:"42501"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
     if(op==="insert"){rows.push(Object.assign({},payload,{updated_at:new Date().toISOString()}));persist();return {data:null,error:null}}
-    if(op==="update"){if(table==="tasks"&&localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};var hit=[];rows.forEach(r=>{if(filters.every(f=>fmatch(r,f))){Object.assign(r,payload,{updated_at:new Date().toISOString()});hit.push({id:r.id})}});persist();return {data:hit,error:null}}
+    if(op==="update"){if(table==="tasks"&&localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};if(table==="tasks"&&localStorage.getItem("__failWrites")==="2")return {data:null,error:{message:"permission denied (test)",code:"42501"}};var hit=[];rows.forEach(r=>{if(filters.every(f=>fmatch(r,f))){Object.assign(r,payload,{updated_at:new Date().toISOString()});hit.push({id:r.id})}});persist();return {data:hit,error:null}}
     if(op==="delete"&&table==="shares"&&localStorage.getItem("__failShareDelete")==="1")return {data:null,error:{message:"test: delete refused"}};
     if(op==="delete"){DB[table]=rows.filter(r=>!filters.every(f=>r[f[0]]===f[1]));persist();return {data:null,error:null}}
   }
@@ -27,7 +27,7 @@ function q(table){
   self.delete=function(){op="delete";return self};
   self.eq=function(k,v){filters.push([k,v]);return self};
   self.is=function(k,v){filters.push([k,v]);return self};
-  /* __slowWrites (ms) holds case saves in flight, so a test can act mid-save */
+  /* __slowWrites (ms) holds case saves in flight, so a test can act mid-save; __failWrites "1" fails case saves like a lost connection, "2" like a refusal from the server (v141) */
   self.then=function(a,b){var d=+(localStorage.getItem("__slowWrites")||0);if(d&&table==="tasks"&&(op==="update"||op==="upsert"))return new Promise(function(r){setTimeout(r,d)}).then(run).then(a,b);return Promise.resolve(run()).then(a,b)};
   return self;
 }
@@ -42,7 +42,7 @@ window.supabase={createClient:function(){
       if(name==="remove_helper"){DB.helpers=DB.helpers.filter(h=>h.task_id!==args.p_task_id);persist();return Promise.resolve({data:null,error:null})}
       if(name==="helper_respond"){var hh=DB.helpers.find(h=>h.token===args.p_token);if(!hh)return Promise.resolve({data:"unknown",error:null});hh.status=args.p_action==="yes"?"confirmed":"stopped";persist();return Promise.resolve({data:hh.status,error:null})}
       if(name==="inbound_address_new"){var nn=String((+localStorage.getItem("__inboundN")||0)+1);localStorage.setItem("__inboundN",nn);return Promise.resolve({data:"log-new"+nn+"abcdef0123@inbound.getsorted.uk",error:null})}
-      if(name==="my_inbound_address")return Promise.resolve({data:localStorage.getItem("__inbound")==="1"?"log-abc123@inbound.getsorted.uk":null,error:null});
+      if(name==="my_inbound_address"||name==="my_inbound_address_get")return Promise.resolve({data:localStorage.getItem("__inbound")==="ready"&&name==="my_inbound_address_get"?"":localStorage.getItem("__inbound")==="1"?"log-abc123@inbound.getsorted.uk":null,error:null});
       if(name==="stash_carry"){window.__stash=(window.__stash||0)+1;var tk="tok-"+(session&&session.user.id);localStorage.setItem("__stashfor",session&&session.user.id);return Promise.resolve({data:tk,error:null})}
       if(name==="claim_carry"){var from=localStorage.getItem("__stashfor");var mp={};(args.p_pairs||[]).forEach(p=>mp[p[0]]=p[1]);DB.pilot_events.forEach(e=>{if(e.actor===from){if(mp[e.case_id])e.case_id=mp[e.case_id];e.actor=session.user.id}});persist();localStorage.setItem("__claimed",JSON.stringify(args));return Promise.resolve({data:true,error:null})}
       if(name==="pilot_health")return Promise.resolve({data:JSON.parse(localStorage.getItem("__health")||"null"),error:null});

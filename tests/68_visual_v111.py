@@ -30,7 +30,7 @@ with sync_playwright() as p:
     m = pg.inner_text('main'); ch = pg.locator('#cap82-start')
     ok(ch.count() == 1 and ch.evaluate("e=>getComputedStyle(e).display") != 'none', 'a newcomer sees the ways in on Home')
     ok('Keep everyday admin moving.' in m, 'the purpose comes before the choices')
-    ok(m.index('Keep everyday admin moving.') < m.index("Something's broken") < m.index('Waiting for a repair? Save what they promised'), 'purpose, then the routes, then one concrete example')
+    ok(m.index('Keep everyday admin moving.') < m.index("Something’s broken") < m.index('Waiting for a repair? Save what they promised'), 'purpose, then the routes, then one concrete example')
     ok(ch.locator('.cap82-card').count() == 6 and ch.locator('.cap82-card').evaluate_all("es=>es.every(e=>{var s=e.querySelector('strong');return s.scrollWidth<=s.clientWidth+1&&e.getBoundingClientRect().right<=innerWidth})"), 'six routes, every label fully readable, none cut off')
     ok('Swipe for more' not in m, 'no "Swipe for more"')
     ok([x.strip().replace('\n',' ') for x in pg.locator('.tab129 .tab129-l').all_inner_texts()] == ['Home', 'New', 'Cases', 'More'], 'v129: the bottom bar says Home, New, Cases, More')

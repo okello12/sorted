@@ -18,7 +18,7 @@ RIGHT = {
   'terms: deletion as it works': 'for two minutes Home offers Undo, and closing or refreshing the page ends that',
   'terms: usage records remain': 'Usage records about the case (its id and the steps you used, never its content) stay for up to 12 months',
   'terms: official links can change': 'Check the relevant authority’s current guidance before acting',
-  'terms: reminders sent on time, arrival not promised': 'Sorted sends an email at the time it shows. When it arrives depends on email, and it can be late or not arrive',
+  'terms: reminders sent on time, arrival not promised': 'Sorted sends an email, or a notification to a phone where you turned on reminders, at the time it shows. When it arrives depends on email or the phone, and it can be late or not arrive',
   'privacy: technical access, not nobody': 'has technical access to the database, as with any online service, and doesn’t use it to open cases',
   'privacy: the guest activity rule': 'deleted after 30 days in which you don’t open Sorted (opening it signed in, saving a case or a live promise all count)',
   'privacy: usage records are not anonymous': 'They hold your account id and case ids with the steps you used, so they are not anonymous',
@@ -73,7 +73,7 @@ with sync_playwright() as p:
     cid = cases()[-1]['id']
     # 4 the guest copy is about access
     pg.goto('https://sorted.test/'); wait(pg, 500); m = pg.inner_text('main')
-    ok('saved on Sorted’s servers, but only this phone can open them' in m or 'only this browser holds the key' in m, 'the guest note says the cases are on the server and only this browser can open them')
+    ok('saved on Sorted’s servers, but only this browser can open them' in m or 'only this browser holds the key' in m, 'the guest note says the cases are on the server and only this browser can open them')
     pg.goto('https://sorted.test/?task=%s' % cid); wait(pg, 500)
     pg.evaluate("document.querySelectorAll('details.case56-more').forEach(d=>d.open=true)")
     pg.click('[data-a=panel][data-p=delcase]'); wait(pg, 300); pg.click('[data-a=case-del]'); wait(pg, 700)

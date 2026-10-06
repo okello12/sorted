@@ -33,7 +33,7 @@ with sync_playwright() as p:
     ok(t.get('sugP') and not t['sugP']['past'],'"haven’t confirmed" keeps Thursday ahead')
     # prices are not times
     T="We have refunded £12.50 to your card. It will show in 3-5 working days."; start(pg,T); t=task(pg,T)
-    ok(t.get('sugP') and t['sugP']['allDay'] and t['sugP']['by'],'£12.50 is not read as 12:50')
+    ok(t.get('sugP') and t['sugP']['allDay'] and (t['sugP']['by'] or t['sugP'].get('win')),'£12.50 is not read as 12:50 (v141: “in 3-5 working days” is a window)')
     T="Argos promised a refund of £12.50 within 5 days"; start(pg,T); t=task(pg,T)
     ok(t.get('sugP') is not None,'a decimal price doesn’t cut the sentence')
     ok(t['facts'].get('amount')==12.5,'amount with pence read')
@@ -68,7 +68,7 @@ with sync_playwright() as p:
     n0=len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks"))
     pg.locator('.case56-more > summary').click(); wait(pg,100)
     pg.click('[data-a=panel][data-p=delcase]'); wait(pg)
-    ok(pg.evaluate("document.activeElement.getAttribute('data-a')")=='case-del','delete: confirm button focused')
+    ok(pg.evaluate("document.activeElement.id")=='delh','delete: the question takes focus, not the Delete button')
     pg.click('[data-a=case-del]'); wait(pg,600)
     ok(len(pg.evaluate("JSON.parse(localStorage.getItem('__mockdb')).tasks"))==n0-1 and 'Deleted “' in pg.inner_text('main') and pg.locator('[data-a=del-undo]').count()==1,'delete: case removed')
     ok(pg.locator('h1').count()>=1,'Home has a page heading')

@@ -35,6 +35,13 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1');localStorage.setItem('__inbound','1')")
     pg.goto('https://sorted.test/#start'); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 700)
     c1 = start('Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A'))
+    # ---- v141: forwarding ready but no address yet: Settings offers one, nothing is made on page load ----
+    pg.evaluate("localStorage.setItem('__inbound','ready')"); pg.goto('https://sorted.test/'); wait(pg, 700)
+    tap('data'); pg.click('.acct112-nav [data-v=acct-settings]'); wait(pg, 400)
+    ok(pg.locator('.fwd134 [data-a=fwd-new]').count() == 1 and 'Get my Sorted address' in pg.inner_text('.fwd134') and pg.locator('#fwd-addr').count() == 0 and not pg.evaluate("localStorage.getItem('__inboundN')"), 'with no address yet, Settings offers “Get my Sorted address” and nothing is made on load')
+    pg.locator('.fwd134 [data-a=fwd-new]').click(); wait(pg, 400)
+    ok(pg.locator('#fwd-addr').count() == 1 and pg.input_value('#fwd-addr').startswith('log-new') and 'Your Sorted address is ready.' in (pg.inner_text('#toast') or ''), 'tapping it makes the address and says so')
+    pg.evaluate("localStorage.setItem('__inbound','1');localStorage.removeItem('__inboundN')"); pg.goto('https://sorted.test/'); wait(pg, 700)
     # ---- the address in Settings ----
     tap('data'); pg.click('.acct112-nav [data-v=acct-settings]'); wait(pg, 400)
     fb = pg.locator('.fwd134')

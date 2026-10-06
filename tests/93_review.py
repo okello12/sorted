@@ -73,7 +73,7 @@ with sync_playwright() as p:
     # ================= 4. the guest is told what a lost phone means =================
     pg.goto('https://sorted.test/'); wait(pg, 600)
     an = pg.inner_text('.anon129') if pg.locator('.anon129').count() else ''
-    ok('Keep your cases if you lose this phone.' in an and 'only this phone can open them' in an and 'Add an email' in an, 'after the first case, a guest is told how to keep cases if the phone is lost')
+    ok('Keep your cases if you lose this phone.' in an and 'only this browser can open them' in an and 'Add an email' in an, 'after the first case, a guest is told how to keep cases if the phone is lost')
     # ================= 1. the Now card =================
     opencase(c1)
     now = pg.inner_text('.now137') if pg.locator('.now137').count() else ''

@@ -520,6 +520,19 @@ or would take the download past 60 MB is left out and named with the reason. On 
 share it", because a share sheet needs a fresh tap. No server changes (the private bucket's own-folder read rule already
 allows the download). Evidence: test 95.
 
+**v140 (the second walkthrough, 6 October).** A duration is counted from when they told you: "last Wednesday … within
+five working days" is read from that Wednesday, not today, and because it isn't clear whether Wednesday itself counts,
+the case shows what they said, when you were told, Sorted's two readings and "Which should Sorted use?" (either day, or
+"I'm not sure", which opens the check day). There is no confirmed deadline until a tap; until then Sorted waits until
+the later day. A told sentence on its own ("That was last Wednesday.") counts, and "would take 3 to 5 working days" is a
+calculation like "within". The words and the date are said apart ("The words are from the message you pasted. The date
+is Sorted's working"), never "Found in the message" for a worked-out date. The case and Home read one next action
+(`nextStepText()` now has the open step, the date choice and "check their app" in the same order as the Now card).
+"Shop name not in front of me" is not a name. A half-written reminder survives the Home button (it used to clear the
+form before it could be kept) and Home says it was kept. A guest's case says "Saved to Sorted. You can reopen this case
+on this browser. Add an email to open it on another device." Not changed: "Still not there" on a refund still opens the
+chase, as the quick answers (v130) designed; asking first is a separate decision. Evidence: test 96.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

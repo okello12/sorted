@@ -6,7 +6,7 @@
 # 1. Waits (up to SORTED_LIVE_WAIT seconds, default 900) until the page at SORTED_LIVE_URL is byte for byte the page
 #    this commit built (public/index.html), and reports its SORTED_V.
 # 2. Walks it once in Chromium against the real backend as a throwaway guest: starts a case with a promise, confirms
-#    it, requires "Saved to your account", checks the case on the server with the guest's own session (not the page),
+#    it, requires "Saved to Sorted" (a guest; v140), checks the case on the server with the guest's own session (not the page),
 #    clears the page's local copy and reloads so the case must come back from the database, then deletes the account
 #    through Account > Delete my account and cases and proves it is gone: the session no longer belongs to a user and
 #    the case can no longer be read with it.
@@ -109,10 +109,10 @@ with sync_playwright() as p:
         if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); pg.wait_for_timeout(1200)
         ok(pg.locator('[data-a=sug-yes]').count() == 1, 'the promise is proposed')
         if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]')
-        try: pg.locator('main .sync114', has_text='Saved to your account').first.wait_for(timeout=15000)
+        try: pg.locator('main .sync114', has_text='Saved to Sorted').first.wait_for(timeout=15000)
         except Exception: pass
         ok('RC123' in pg.inner_text('main'), 'the promise is confirmed on the case')
-        ok(pg.locator('main .sync114').count() == 1 and pg.inner_text('main .sync114') == 'Saved to your account', 'the case says "Saved to your account" (%r)' % (pg.inner_text('main .sync114') if pg.locator('main .sync114').count() else ''))
+        ok(pg.locator('main .sync114').count() == 1 and pg.inner_text('main .sync114') == 'Saved to Sorted. You can reopen this case on this browser. Add an email to open it on another device.', 'the guest case says "Saved to Sorted" (%r)' % (pg.inner_text('main .sync114') if pg.locator('main .sync114').count() else ''))
         cid = pg.evaluate("(()=>{var k=Object.keys(localStorage).find(function(k){return k.indexOf('sorted.cache.')===0});try{var v=JSON.parse(localStorage.getItem(k)||'[]');var t=v.filter(function(x){return x&&x.kind!=='moment'})[0];return t&&t.id}catch(e){return null}})()")
         ok(bool(cid), 'the case has an id')
         if sess and cid:

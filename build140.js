@@ -49,18 +49,18 @@ try{document.removeEventListener('click',truthClick138,false)}catch(e){}
 function truthCapture140(e){var b=e.target&&e.target.closest?e.target.closest('[data-a]'):null,a=b&&b.getAttribute('data-a');if(!a||a.indexOf('truth-')!==0)return;truthClick138(e);e.stopPropagation()}
 document.addEventListener('click',truthCapture140,true);
 
-/* v125 deliberately moves informational cards into a quieter secondary region. That region can be collapsed on some
-   mature case layouts, which hid the truth review and its draft after confirmation. Relocate the card that uCard already
-   rendered; do not call truthCard a second time, because rendering may synchronise legacy state and must stay single-pass. */
-var _truthCard140=truthCard138,_viewTask140=viewTask;
-truthCard138=function(t){var h=_truthCard140(t);if(h)S._truthCardHtml140=h;return h};
-viewTask=function(){
-  S._truthCardHtml140='';
-  var h=_viewTask140(),card=S._truthCardHtml140||'';S._truthCardHtml140='';
-  if(!card)return h;
-  var old=h.indexOf(card);if(old>=0)h=h.slice(0,old)+h.slice(old+card.length);
-  var p=h.lastIndexOf('</main>');return p>=0?h.slice(0,p)+card+h.slice(p):h+card;
-};
+/* Show truth review in the visible action area without wrapping viewTask. Restrict it to genuinely uncertain/check
+   cases, so ordinary exact-date repairs and correction flows stay on the long-proven legacy path. */
+function truthShow140(t){
+  if(!t||t.example||t.board==='done')return false;
+  var p=openPromise(t)||(t.sugP&&!t.sugDone?t.sugP:null);
+  return !!(truthNeedsCheck138(t)||t.truthCheck||(S.truth138&&S.truth138.id===t.id)||
+    (p&&(p.win||p.tentative||p.legacyTimingReview||p.precision==='window'||p.precision==='tentative')));
+}
+var _keepBanner140=keepBanner;
+uCard=function(t){return _uCard138(t)};
+keepBanner=function(t){return _keepBanner140(t)+(truthShow140(t)?truthCard138(t):'')};
+
 `;
 R("boot();\n})();\n</script>",PATCH+"\nboot();\n})();\n</script>");
 fs.writeFileSync('public/index.html',s);

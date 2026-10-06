@@ -37,7 +37,7 @@ with sync_playwright() as p:
     body = pg.inner_text('body')
     ok('research pilot' not in body and 'taking part in the Sorted pilot' not in body and 'whether the pilot works' not in body, 'no pilot wording anywhere on the page')
     pg.locator('[data-a=data]').first.evaluate('e=>e.click()'); wait(pg, 500)
-    ok('This phone only' not in pg.inner_text('body') and 'only this phone can open' in pg.inner_text('body') and 'research pilot' not in pg.inner_text('body'), 'the anonymous account is described as an account only this phone can open')
+    ok('This phone only' not in pg.inner_text('body') and 'only this browser can open' in pg.inner_text('body') and 'research pilot' not in pg.inner_text('body'), 'the anonymous account is described as an account only this browser can open')
     pg.goto('https://sorted.test/'); wait(pg, 500)
     # 1 errors reach the operator, never case text
     pg.evaluate("setTimeout(function(){throw new Error('test boom \"Sky said secret things\"')},0)"); wait(pg, 400)

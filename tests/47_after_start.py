@@ -49,7 +49,7 @@ with sync_playwright() as p:
         ("Southwark PCN", "London Borough of Southwark PENALTY CHARGE NOTICE PCN Number: SK12345678 Vehicle Registration Mark: AB12 CDE Date of contravention: 30/09/2026 The penalty charge is £130. If paid within 14 days, reduced to £65.", ['parking ticket', 'Paying usually ends your chance to challenge']),
         ("landlord", "My landlord still hasn't fixed the damp in the bedroom. I reported it 3 weeks ago.", ['There’s damp or mould, and it’s your landlord’s job', 'Don’t stop paying rent']),
         ("Currys refund", "Currys said my refund of £89 would arrive within 5 working days, order 445566", ['Currys owes you money: £89', 'Check the promise Sorted found', 'voucher']),
-        ("Washing machine", "My washing machine won't drain", ['Your washing machine isn’t working', 'Answer the questions just below']),
+        ("Washing machine", "My washing machine won't drain", ['Your washing machine isn’t working', 'Answer the questions above']),
         ("Lambeth council tax", "Got a letter from Lambeth Council saying I owe £240 council tax arrears and must pay by 20 October", ['Lambeth Council says you need to act by', 'Don’t let the date pass']),
         ("passport", "My passport expires in March", ['Your passport needs renewing', 'GOV.UK']),
         ("Aviva callback", "Aviva said they'd call me back about my home insurance claim within 48 hours, claim ref HC-77812", ['You need Aviva to do something', 'Check the promise Sorted found']),

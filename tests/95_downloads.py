@@ -67,7 +67,7 @@ with sync_playwright() as p:
     f1 = [x for x in names if x.startswith('01 ')]; f2 = [x for x in names if x.startswith('02 ')]
     ok(len(f1) == 2 and len(f2) == 1 and any(x.endswith('/letter95.pdf') for x in f1) and any(x.endswith('/photo95.png') for x in f1) and f2[0].endswith('/letter95.pdf'), 'each case has a numbered folder with its own documents: %s' % names)
     p1 = [x for x in f1 if x.endswith('/letter95.pdf')][0]
-    src = [s for s in st if s['name'].startswith('%s/%s/' % (uid, c1)) and s['name'].endswith('letter95.pdf')][0]['name']
+    src = [s for s in st if s['name'].startswith('%s/%s/' % (uid, c1)) and s['name'].endswith('.pdf')][0]['name']  # v141: stored under a plain key ending .pdf; c1's only PDF
     ok(z.read(p1) == ('mock file ' + src).encode(), 'each document is the stored file, unchanged')
     txt = z.read('Sorted - all my cases.txt').decode('utf-8')
     ok('DOCUMENTS KEPT WITH THIS CASE' in txt and ('in this download as “%s”' % p1) in txt, 'the record lists each document with where it is in the download')

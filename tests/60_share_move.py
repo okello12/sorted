@@ -68,7 +68,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/?task=%s' % bbid); wait(pg, 700)
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 700)
     v.reload(); wait(v, 800)
-    ok('Waiting on Virgin' in v.inner_text('main'), 'confirming the promise in the case shows "Waiting on Virgin" on the shared move')
+    ok('Waiting for Virgin' in v.inner_text('main'), 'confirming the promise in the case shows "Waiting for Virgin" on the shared move')
     # 4 a step marked done in the move updates it too
     pg.click('[data-a=mom-open]'); wait(pg)
     item(pg, 'Give notice to your landlord').locator('[data-a=mom-done]').click(); wait(pg, 600)

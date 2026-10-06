@@ -77,6 +77,14 @@ NOT_HAND = [
   "Currys said they'd see what they can do.", "The landlord said he'll think about it.",
   "No one has promised anything. I want to call Currys tomorrow.", "They never promised a date.",
   "There is no guarantee the refund arrives tomorrow.", "They wouldn't give me a date for the engineer",
+  # v141: negated telling, "not until", questions and things done to you are not promises to you
+  "They never said they would refund by Friday", "They never told me they'd come on Friday",
+  "They said they will not be able to come until Friday", "They said they can't come before Friday",
+  "When they said Friday did they mean this Friday?", "They said they would deliver last Tuesday",
+  "The landlord said the rent is due on Friday", "British Gas said they will take £120 from my account on Friday",
+  "The bank said they'd charge me £25 on Friday", "Thames Water said they would cut off the water on Friday",
+  "The landlord said he's going to evict me by the end of the month", "The landlord said they will send a bailiff on Friday",
+  "The debt collector said they will visit on Friday", "The landlord said the rent goes up from 1 November",
 ]
 
 YES_TEMPLATES = [
@@ -92,6 +100,14 @@ YES = cyc(YES_TEMPLATES, 6) + [
   "The landlord promised the boiler will be fixed by " + F, "BA promised the refund within 10 working days",
   "Vodafone confirmed the credit will show by Friday", "The letting agent said the plumber will come on Thursday at 10am",
   "Aviva said they will call me back tomorrow afternoon", "John Lewis promised a replacement tomorrow",
+  # v141: a company paying you, "they said I'd get", weeks and windows, money that isn't a time, addresses that aren't months
+  "They said they'd pay the refund by Friday", "Currys promised to pay £50 compensation by Friday",
+  "The insurer said they will pay the claim by " + F, "They said they'll pay it into my account by Thursday",
+  "They said I would get a refund by Friday", "They said I'll get a call back on Friday",
+  "They told me I'd receive a letter within 10 working days", "They said they'd come between Monday and Wednesday",
+  "They said they'd come a week on Monday", "They said they'd come the day after tomorrow",
+  "Currys said they will refund 14.50 by Friday", "The engineer said he'd come to 4 Mayfield Road tomorrow between 8 and 12",
+  "Evri said yesterday it would come tomorrow", "They said they would refund me within a fortnight",
 ]
 
 MSG_YES = [

@@ -36,7 +36,7 @@ with sync_playwright() as p:
         ok(any('In your words' in e['label'] for e in t['events']),'  full sentence kept in history')
         m=pg.inner_text('main')
         if mode=='fix':
-            ok("Won't drain" not in m or 'Washing' in text,'  no washing-machine options unless named')
+            ok("Won’t drain" not in m or 'Washing' in text,'  no washing-machine options unless named')
             iv=pg.input_value('#f-item') if pg.locator('#f-item').count() else '(WM chips)'; print('  item field:',iv); print('  safety q:', pg.inner_text('form[data-f=what]').split('?')[-2][-80:] if pg.locator('form[data-f=what]').count() else '-'); ok(pg.locator('.safety').count()==0,'  no emergency screen')
         else:
             ask=pg.input_value('#f-ask'); who=pg.input_value('#f-who'); print('  who:',who,'| ask:',ask)

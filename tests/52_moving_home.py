@@ -71,7 +71,7 @@ with sync_playwright() as p:
     ok('Part of Moving home' in pg.inner_text('main'), 'the case says it is part of Moving home')
     pg.click('[data-a=mom-open]'); wait(pg)
     w = grp(pg, 'waiting')
-    ok('tracked case' in w.lower() and 'Waiting on Virgin Media' in w and 'VM8211' in w, 'in the container it shows as a tracked case: waiting on Virgin Media, with the ref')
+    ok('tracked case' in w.lower() and 'Waiting for Virgin Media' in w and 'VM8211' in w, 'in the container it shows as a tracked case: waiting on Virgin Media, with the ref')
     # 4 link a case you already have
     pg.click('[data-a=mom-panel][data-p=link]'); wait(pg)
     pg.locator('[data-a=mom-link][data-id="%s"]' % old).click(); wait(pg)

@@ -533,6 +533,21 @@ form before it could be kept) and Home says it was kept. A guest's case says "Sa
 on this browser. Add an email to open it on another device." Not changed: "Still not there" on a refund still opens the
 chase, as the quick answers (v130) designed; asking first is a separate decision. Evidence: test 96.
 
+**v141 (the full audit, 6 October).** Five reviewers went through the reader, the life of a case, saving and sync, the
+server, and wording and navigation; about 120 findings were reproduced and the real ones fixed in one layer. The worst:
+a date said "yesterday" next to a future day became yesterday and already missed; morning and 24-hour times became the
+evening; a company's own payment promise was thrown away as a demand on you; a pasted "the refund arrived" became a new
+promise; the next step said "get the call ready" after a promise closed; the two-device merge kept only a few kinds of
+change and brought back removed messages; a guest's moves were lost when adding an email; forwarding never showed
+because its function had been revoked; and the 90-day clean-up would delete a case whose only due thing was your own
+step or a renewal. Server: migration 23 (live and staging), `email-stop` v2, `send-reminders` v12. Not done, and why:
+kept documents of a guest who adds an email still sit under the guest's folder (moving them needs a service-role
+function; until then they can be removed by the nightly clean-up); the Android share target still sends shared text in
+the URL (POST needs a service worker registered at load); the CSP still allows the whole jsDelivr host; reminders sharing
+a case, kind and minute still collide on the unique key; `case-assistant` has no global daily cap (it isn't live until
+its key is in Vault); `tests/` doesn't check the committed page, because `public/index.html` is not committed (Vercel
+builds it). Evidence: tests 97 to 100.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

@@ -48,7 +48,7 @@ with sync_playwright() as p:
     ok(not store(), 'nothing is stored until a document is chosen')
     pg.set_input_files('input[data-keepdoc="%s"]' % c1, OUT + '/letter91.pdf'); wait(pg, 900)
     st = store()
-    ok(len(st) == 1 and st[0]['name'].startswith('%s/%s/' % (uid, c1)) and st[0]['name'].endswith('-letter91.pdf') and st[0]['type'] == 'application/pdf', 'the file is stored as it is, in this person’s folder for this case')
+    ok(len(st) == 1 and st[0]['name'].startswith('%s/%s/' % (uid, c1)) and re.match(r'^%s/%s/\d+-[a-z0-9]{1,8}\.pdf$' % (uid, c1), st[0]['name']) and st[0]['type'] == 'application/pdf', 'the file is stored as it is, in this person’s folder for this case (since v141 under a plain key; its name is kept with the case)')
     c = [x for x in cases() if x['id'] == c1][0]
     ok(any(e['label'] == 'Kept a document with this case: letter91.pdf.' for e in c['events']), 'the history says a document was kept')
     opencase(c1); txt = pg.inner_text('.docs135')

@@ -40,8 +40,8 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 300)
     if pg.locator('[data-a=anon-start]').count(): pg.click('[data-a=anon-start]'); wait(pg, 700)
     pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg)
-    tue = datetime.date.today() + datetime.timedelta(days=(1 - datetime.date.today().weekday()) % 7 or 7)
-    pg.fill('#f-case', 'Sky said an engineer would come %s between 8 and 12 to fix the boiler, ref AB123, and refund £80' % tue.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg)
+    tue = datetime.date.today() + datetime.timedelta(days=(1 - datetime.date.today().weekday()) % 7 or 7)  # said on a Tuesday, a bare “Tuesday” is today, so the test says “next Tuesday”
+    pg.fill('#f-case', 'Sky said an engineer would come %s between 8 and 12 to fix the boiler, ref AB123, and refund £80' % (('next ' if datetime.date.today().weekday() == 1 else '') + tue.strftime('%A'))); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg)
     if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)
     c = cases()[0]; cid = c['id']; pid = [q for q in c['promises'] if q['status'] == 'open'][0]['id']

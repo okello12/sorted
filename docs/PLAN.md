@@ -500,6 +500,18 @@ Copy or Share; Sorted sends nothing. (6) A helper link can carry "What I’m ask
 card as `q`); the helper sees it first and replies with their name; the reply comes back under "You asked: …" to keep
 or remove. Saving a request with a link switches replies on. No server changes. Evidence: test 93.
 
+**v138 (the date model, 6 October 2026).** Reproduced on v137 before the fix: "by the end of the week" became a firm
+"By Friday 9 October", "by the weekend" a firm Saturday, "Thursday or Friday" a firm Thursday, and "within 15 working
+days" a bare "By Tuesday 27 October". Every promise now records how precise its date is (`prec`: day, window, approx,
+calc, none, notice), their words for it (`phrase`) and whether the day is the person's own check day (`chk`); a
+promise without `prec` is from before v138 and says so. Their words always come first and Sorted's reading is marked
+"about"; "Choose when to check" sets the person's own day without touching their words. "Check the app" is a next
+action. The record's notice line shows only on notices (Baldwin's export, 5 October). Not built yet, on purpose: the
+five objects as separate tables. The source field on other facts already exists in the ledger (v124). Two date bugs
+the Tuesday run of the suite found are fixed too: "on Tuesday … but nobody turned up" said on that Tuesday is already
+missed, and a correction or a move naming only a weekday ("I meant Wednesday", "They moved it to Thursday") is read in
+the week of the date it changes (`corrBase()`). Evidence: test 94, and tests 09 and 62 on any weekday.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

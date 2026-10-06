@@ -24,8 +24,37 @@ readCase=function(text,f){
       en.setHours(23,59,59,999);r.dueAt=st.toISOString();r.dueEnd=en.toISOString();r.allDay=true;r.by=false;r.win=true;
     }
   }
-  /* Outside that compatibility edge, the mature date parser remains authoritative. In particular, do not reinterpret
+  /* A plain weekday plus an explicit no-show is necessarily about a visit that has already failed. On the named
+     weekday itself the older parser can otherwise choose today and keep it "open" until midnight. Use the previous
+     occurrence only for unambiguous no-show language; "hasn't confirmed a time" is deliberately not included. */
+  var noShow=/\b(?:nobody|no one)\s+(?:came|turned up|arrived|showed up)\b|\b(?:didn't|did not|never)\s+(?:come|turn up|arrive|show up|happen)\b|\bno[- ]?show\b/i.test(src);
+  var bareWd=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i.test(src)&&!/\b(?:next|last)\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i.test(src);
+  if(noShow&&bareWd&&r.dueAt){
+    var ns=new Date(r.dueAt),nn=new Date(),sameNs=ns.getFullYear()===nn.getFullYear()&&ns.getMonth()===nn.getMonth()&&ns.getDate()===nn.getDate();
+    if(sameNs||ns>nn){ns.setDate(ns.getDate()-7);r.dueAt=ns.toISOString();if(r.dueEnd){var ne=new Date(r.dueEnd);ne.setDate(ne.getDate()-7);r.dueEnd=ne.toISOString()}r.past=true}
+  }
+  /* Outside those compatibility edges, the mature date parser remains authoritative. In particular, do not reinterpret
      prices as times or turn its working-day/date rules into a different range here. */
+  return r;
+};
+/* Bare-weekday corrections are relative to the appointment being corrected, not to the day the user happens to type
+   the correction. If a Tuesday booking is next week, "sorry, I meant Wednesday" means the Wednesday beside that booking,
+   not tomorrow. Preserve the original time window unless the correction itself supplies a new time. */
+var _corrRead140=corrRead;
+corrRead=function(cur,text){
+  var r=_corrRead140.apply(this,arguments);if(!r||r.k!=='date'||!cur||!cur.dueAt)return r;
+  var raw=String(text||''),m=/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i.exec(raw);
+  if(!m||/\b(?:next|last|this)\s+(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i.test(raw))return r;
+  if(/\b\d{1,2}(?:st|nd|rd|th)?(?:\s+of)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[A-Za-z]*\b/i.test(raw))return r;
+  var hasTime=/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\bbetween\s+\d{1,2}/i.test(raw),days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],want=days.map(function(x){return x.toLowerCase()}).indexOf(m[1].toLowerCase());
+  var old=new Date(cur.dueAt),delta=(want-old.getDay()+7)%7,target=new Date(old);target.setDate(target.getDate()+delta);
+  if(!hasTime){
+    r.to=target.toISOString();r.dueAt=r.to;r.allDay=!!cur.allDay;r.by=!!cur.by;
+    if(cur.dueEnd){var oe=new Date(cur.dueEnd),span=oe.getTime()-old.getTime(),te=new Date(target.getTime()+span);r.dueEnd=te.toISOString();r.toEnd=r.dueEnd}else{r.dueEnd=null;r.toEnd=null}
+  }else{
+    var parsed=new Date(r.dueAt||r.to);parsed.setFullYear(target.getFullYear(),target.getMonth(),target.getDate());r.dueAt=parsed.toISOString();r.to=r.dueAt;
+    if(r.dueEnd){var pe=new Date(r.dueEnd);pe.setFullYear(target.getFullYear(),target.getMonth(),target.getDate());r.dueEnd=pe.toISOString();r.toEnd=r.dueEnd}
+  }
   return r;
 };
 function truthRelevant140(t){

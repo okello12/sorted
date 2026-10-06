@@ -50,14 +50,14 @@ function truthCapture140(e){var b=e.target&&e.target.closest?e.target.closest('[
 document.addEventListener('click',truthCapture140,true);
 
 /* v125 deliberately moves informational cards into a quieter secondary region. That region can be collapsed on some
-   mature case layouts, which hid the truth review and its draft after confirmation. Keep the existing secondary cards,
-   but render the truth card once at top-level so source, interpretation and user actions are always reachable. */
-var _viewTask140=viewTask;
+   mature case layouts, which hid the truth review and its draft after confirmation. Relocate the card that uCard already
+   rendered; do not call truthCard a second time, because rendering may synchronise legacy state and must stay single-pass. */
+var _truthCard140=truthCard138,_viewTask140=viewTask;
+truthCard138=function(t){var h=_truthCard140(t);if(h)S._truthCardHtml140=h;return h};
 viewTask=function(){
-  var h=_viewTask140();if(!S.view||S.view.name!=='task')return h;
-  var t=task(S.view.id),card=t&&truthRelevant140(t)?truthCard138(t):'';if(!card)return h;
-  /* uCard already evaluated the truth card while building the existing secondary region. Move that exact card rather
-     than disabling uCard: older case flows rely on the same sync pass, and this keeps one visible copy only. */
+  S._truthCardHtml140='';
+  var h=_viewTask140(),card=S._truthCardHtml140||'';S._truthCardHtml140='';
+  if(!card)return h;
   var old=h.indexOf(card);if(old>=0)h=h.slice(0,old)+h.slice(old+card.length);
   var p=h.lastIndexOf('</main>');return p>=0?h.slice(0,p)+card+h.slice(p):h+card;
 };

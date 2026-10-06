@@ -512,6 +512,14 @@ the Tuesday run of the suite found are fixed too: "on Tuesday … but nobody tur
 missed, and a correction or a move naming only a weekday ("I meant Wednesday", "They moved it to Thursday") is read in
 the week of the date it changes (`corrBase()`). Evidence: test 94, and tests 09 and 62 on any weekday.
 
+**v139 (downloads with documents, from Baldwin's WhatsApp test on 5 October).** "Download my cases" left the kept
+documents behind. With documents kept it is now one .zip made on the phone: the written record and a numbered folder per
+case with its documents unchanged; each record names its documents and where they are in the download. A case's
+"Download it" does the same for one case. Nothing kept means one text file, as before. A document that can't be fetched
+or would take the download past 60 MB is left out and named with the reason. On a phone the file waits behind "Save or
+share it", because a share sheet needs a fresh tap. No server changes (the private bucket's own-folder read rule already
+allows the download). Evidence: test 95.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

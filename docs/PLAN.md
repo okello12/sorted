@@ -548,6 +548,14 @@ a case, kind and minute still collide on the unique key; `case-assistant` has no
 its key is in Vault); `tests/` doesn't check the committed page, because `public/index.html` is not committed (Vercel
 builds it). Evidence: tests 97 to 100.
 
+**v142 (the rest of the audit, 6 October).** The six things v141 left are done. A guest's kept documents now follow
+their cases to the email account: `claim_carry()` records the move and `originals-cleanup` moves the files straight
+away, and the nightly clean-up leaves them alone until then. Android shares arrive through the service worker and the
+page's # part, never in an address a server sees. The CSP names the jsDelivr paths Sorted uses. Two reminders due at
+the same minute no longer collide. The assistant has a daily ceiling across everyone and a lower limit for guests.
+Reminder emails have a visible "Stop all reminder emails" link that asks once in the app before stopping anything.
+And "said yesterday it would come tomorrow" is today. Evidence: test 101 and `tests/fn/sw_share_check.mjs`.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

@@ -1,8 +1,21 @@
-/* Sorted's service worker (v133). It does one thing: show a reminder that arrives by Web Push, and open the right
-   case when it is tapped. It caches nothing and never touches the network, so the page is always the latest one.
-   A message carries no case details: a title, a line of fixed text, the case link, and the answer buttons. */
+/* Sorted's service worker (v133). It shows a reminder that arrives by Web Push, and opens the right case when it is
+   tapped. It caches nothing, so the page is always the latest one. A message carries no case details: a title, a line
+   of fixed text, the case link, and the answer buttons.
+   v142: it also receives Android's share sheet. The manifest posts shared words to /share-target; they are handed to
+   the page in the address's # part (/#new=…), so they never reach a server or its logs. Nothing else is touched. */
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) { e.waitUntil(self.clients.claim()); });
+
+self.addEventListener("fetch", function (e) {
+  var r = e.request;
+  if (r.method !== "POST") return;
+  var u = new URL(r.url);
+  if (u.origin !== self.location.origin || u.pathname !== "/share-target") return;
+  e.respondWith(r.formData().then(function (f) {
+    var t = [f.get("st"), f.get("sx"), f.get("su")].filter(function (x) { return typeof x === "string" && x.trim(); }).join("\n").slice(0, 4000);
+    return Response.redirect(self.location.origin + "/" + (t ? "#new=" + encodeURIComponent(t) : "#start"), 303);
+  }, function () { return Response.redirect(self.location.origin + "/#start", 303); }));
+});
 
 self.addEventListener("push", function (e) {
   var m = {};

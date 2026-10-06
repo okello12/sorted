@@ -50,7 +50,7 @@ with sync_playwright() as p:
     FRI, THU, MONd, TUE = nxt(4), nxt(3), nxt(0), nxt(1)
     # 1 yesterday is when they said it
     r = rc(['Evri said yesterday it would come tomorrow', 'Sky said yesterday that the engineer would come Thursday', 'They told me today they would come tomorrow'])
-    ok(r[0] and r[0]['day'] == ymd(today + D(days=1)) and not r[0]['past'], '“said yesterday it would come tomorrow” is tomorrow: %s' % r[0])
+    ok(r[0] and r[0]['day'] == ymd(today) and not r[0]['past'], '“said yesterday it would come tomorrow” is today (v142: tomorrow counted from yesterday): %s' % r[0])
     ok(r[1] and r[1]['day'] == ymd(THU) and not r[1]['past'], '“said yesterday … Thursday” is Thursday: %s' % r[1])
     ok(r[2] and r[2]['day'] == ymd(today + D(days=1)), '“told me today … tomorrow” is tomorrow: %s' % r[2])
     # 2 times

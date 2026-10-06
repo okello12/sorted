@@ -68,6 +68,11 @@ with sync_playwright() as p:
     ok('Your parcel will arrive by' in m and 'evri.com/track/H01' in m and 'Shared into Sorted' in m and 'st=' not in pg.url, 'words shared from another app arrive in Sorted, and the address is cleaned up')
     # ---- the manifest, icons and the notice ----
     mf = json.load(open(HERE + '/public/manifest.webmanifest'))
+    ok(mf.get('share_target', {}).get('method') == 'POST' and mf['share_target'].get('action') == '/share-target' and mf['share_target'].get('enctype') == 'multipart/form-data', 'v142: the share target posts, so shared words never travel in an address')
+    r = subprocess.run(['node', HERE + '/tests/fn/sw_share_check.mjs'], capture_output=True, text=True)
+    ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 6, 'the service worker hands a share to the page in the # part only (%d passes)' % r.stdout.count('PASS'))
+    vj = json.load(open(HERE + '/vercel.json'))
+    ok(any(x.get('source') == '/share-target' and x.get('statusCode') == 302 for x in vj.get('redirects', [])), 'a share before the service worker exists lands on Home')
     ok(mf.get('share_target', {}).get('params') == {'title': 'st', 'text': 'sx', 'url': 'su'} and all(os.path.exists(HERE + '/public' + i['src']) for i in mf.get('icons', [])) and len(mf['icons']) >= 2, 'the manifest has the share target and its icons exist')
     src = open(HERE + '/public/index.html').read()
     ok('<link rel="apple-touch-icon" href="/icon-180.png">' in src and os.path.exists(HERE + '/public/icon-180.png'), 'an iPhone Home Screen icon')

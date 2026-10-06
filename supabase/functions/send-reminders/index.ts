@@ -2,6 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendPush } from "./webpush.ts";
 
+// v13 (Sorted v142): the footer has a visible "Stop all reminder emails" link. Opening it changes nothing on its own: it
+// goes through email-stop to a question in the app, and only the tap there stops them.
 // v12 (Sorted v141): an Idempotency-Key per reminder for Resend; a push already sent for a reminder is not repeated; only
 // a refused subscription (400, 401, 403, 413) counts towards removing it; push TTL 6 hours before, a day after; the
 // footer links to Settings to stop all reminder emails.
@@ -139,8 +141,8 @@ Deno.serve(async (req: Request) => {
     const settings = `${SITE}/#more-settings`;
     const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
     const more = ask ? [{ label: "Can’t deal with it now? Choose when Sorted reminds you", link: ans("later") }].concat(isMove ? [] : [{ label: "They gave a new date? Add it", link: ans("date") }]) : [];
-    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. Stop all reminder emails: ${stop}\nOr turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. <a href="${esc(stop)}" style="color:#2A3990">Stop all reminder emails</a>, or <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
     // The phone first: fixed words, the case link, and after the time the answer buttons. Never what the case is.
     let pushOk = 0, pushTried = 0;
     // v141: a push already delivered for this reminder (a run cut short before the email) is not sent again.

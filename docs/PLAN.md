@@ -548,8 +548,28 @@ a case, kind and minute still collide on the unique key; `case-assistant` has no
 its key is in Vault); `tests/` doesn't check the committed page, because `public/index.html` is not committed (Vercel
 builds it). Evidence: tests 97 to 100.
 
-**Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
-current build.
+**v142 (the rest of the audit, 6 October).** The six things v141 left are done. A guest's kept documents now follow
+their cases to the email account: `claim_carry()` records the move and `originals-cleanup` moves the files straight
+away, and the nightly clean-up leaves them alone until then. Android shares arrive through the service worker and the
+page's # part, never in an address a server sees. The CSP names the jsDelivr paths Sorted uses. Two reminders due at
+the same minute no longer collide. The assistant has a daily ceiling across everyone and a lower limit for guests.
+Reminder emails have a visible "Stop all reminder emails" link that asks once in the app before stopping anything.
+And "said yesterday it would come tomorrow" is today. Evidence: test 101 and `tests/fn/sw_share_check.mjs`.
+
+**v143 (audit pass 2, 8 October).** The 34 findings of the second audit are fixed. The person's own attention (a
+check day, Later, a parking reminder) is kept apart from what the organisation said and has its own reminder row, so a
+check day can never become a company's missed promise. A miss and a company score need a dated promise that is due and
+an explicit answer; Home answers can be undone. Demands on the person are deadlines, never the sender's promise, and a
+passed deadline leads Home. Several obligations can live in one case, part payments are recorded with their amounts and
+a refusal can be recorded on any case. The page reads the server again when it comes back to the screen and before any
+answer, sends outcomes only after the save is confirmed, and carries a write id so a lost acknowledgement is not a
+merge. Documents, parking notices, corrections and where words came from are handled as the audit asked. Evidence:
+tests 102 to 108. v143 also works before migration 24 is applied: reminder rows fall back to the old key, so v142 and v143 ship together. To deploy with it: `send-reminders` v14 (attention rows, push labels) and `case-assistant` v3 (tags
+neutralised). No migration.
+
+**The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
+chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
+Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.
 
 ## Where things stand after v120
 

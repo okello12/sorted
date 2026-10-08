@@ -232,3 +232,35 @@ HO_NOT = [
   "Your refund will be paid by Friday.", "It's not our responsibility to collect it.",
   "We've passed this to Currys' returns team.", "Please speak to your bank.",
 ]
+
+# v143 (audit pass 2, PASS2-005/007/008/025): demands on you are deadlines, never their promise; receipts and return
+# policies are information; "after Friday" is no day; screen chrome is not their words. Counted from a date six days
+# ago, so the sentences never go stale.
+_T6 = ahead(-6)
+NOT_HAND += [
+  "PCN WK12345678 from Camden Council: pay £65 within 14 days of " + _T6['dm'] + " or £130 after",
+  "Camden Council: pay £65 within 14 days", "Camden Council says pay £65 within 14 days",
+  "Parking ticket from Camden Council, pay £65 within 14 days", "Letter from HMRC: pay £340 within 30 days",
+  "Thames Water: please pay £120 within 14 days to avoid further action", "Landlord: rent of £900 due within 7 days",
+  "Letter from the council says I must pay £130 within 14 days of " + _T6['dm'],
+  "Octopus Energy Your bill was £120.00 Discount applied -£20.00 Amount due £100.00 by " + ahead(14)['dm'],
+  "TESCO STORES LTD Receipt " + datetime.date.today().strftime('%d/%m/%Y') + " 14:22 MILK 1.20 BREAD 0.95 TOTAL £2.15 Thank you for shopping Returns accepted within 30 days",
+  "Argos said they would refund my £40 after Friday", "Currys said the voucher is valid for 30 days",
+]
+MESSY_YES += [
+  ("9:41 4G 87% < Back Evri Today 10:02 Your parcel will be delivered tomorrow between 9am and 1pm. Tracking EV123456789. Text Message Home Search Settings", {"days": 1, "hour": 9, "party": "Evri"}),
+  ("Boots said they would refund my £40 before Friday", {"weekday": "Thursday"}),
+  ("Currys said they would refund my £40 within five working days from " + _T6['dm'], {}),
+  ("They promised to call me back before " + ahead(10)['dm'], {"days": 9}),
+]
+# Deadlines on you (test 104): the sentence, then the days from today of the deadline Sorted keeps (the earlier reading
+# when the told day may or may not count), or None for no deadline.
+DEMANDS = [
+  ("PCN WK12345678 from Camden Council: pay £65 within 14 days of " + _T6['dm'] + " or £130 after", 7),
+  ("Letter from the council says I must pay £130 within 14 days of " + _T6['dm'], 7),
+  ("Camden Council: pay £65 within 14 days", 14), ("Letter from HMRC: pay £340 within 30 days", 30),
+  ("Thames Water: please pay £120 within 14 days to avoid further action", 14), ("Landlord: rent of £900 due within 7 days", 7),
+  ("Octopus Energy Your bill was £120.00 Discount applied -£20.00 Amount due £100.00 by " + ahead(14)['dm'], 14),
+  ("TESCO STORES LTD Receipt " + datetime.date.today().strftime('%d/%m/%Y') + " 14:22 MILK 1.20 BREAD 0.95 TOTAL £2.15 Thank you for shopping Returns accepted within 30 days", None),
+  ("Currys said the voucher is valid for 30 days", None),
+]

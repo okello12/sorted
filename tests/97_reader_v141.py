@@ -50,7 +50,7 @@ with sync_playwright() as p:
     FRI, THU, MONd, TUE = nxt(4), nxt(3), nxt(0), nxt(1)
     # 1 yesterday is when they said it
     r = rc(['Evri said yesterday it would come tomorrow', 'Sky said yesterday that the engineer would come Thursday', 'They told me today they would come tomorrow'])
-    ok(r[0] and r[0]['day'] == ymd(today + D(days=1)) and not r[0]['past'], '“said yesterday it would come tomorrow” is tomorrow: %s' % r[0])
+    ok(r[0] and r[0]['day'] == ymd(today) and not r[0]['past'], '“said yesterday it would come tomorrow” is today (v142: tomorrow counted from yesterday): %s' % r[0])
     ok(r[1] and r[1]['day'] == ymd(THU) and not r[1]['past'], '“said yesterday … Thursday” is Thursday: %s' % r[1])
     ok(r[2] and r[2]['day'] == ymd(today + D(days=1)), '“told me today … tomorrow” is tomorrow: %s' % r[2])
     # 2 times
@@ -173,8 +173,11 @@ with sync_playwright() as p:
     ok(len(p0) == 1, 'the refund case has its promise')
     for s, want in [('The refund arrived this morning', 'Sounds like it happened'), ('Refund came through on Monday', 'Sounds like it happened'),
                     ('Engineer came this morning and fixed it', 'Sounds like it happened'), ('They called me this afternoon', None), ('Nothing yet, I will call them tomorrow', None),
-                    ('Your refund is in progress', None), ('The engineer came but couldn\'t fix it', 'only part of it happened'),
-                    ('They refunded £40 but the rest is still missing', 'only part of it happened'), ('They paid £40 of the £89', 'only part of it happened')]:
+                    ('Your refund is in progress', None),
+                    # v143 (PASS2-002): the promise isn't due until Friday, so a part payment or an unfinished visit proposes
+                    # nothing yet: "only partly" would close it as missed before its date
+                    ('The engineer came but couldn\'t fix it', None),
+                    ('They refunded £40 but the rest is still missing', None), ('They paid £40 of the £89', None)]:
         c, m = paste(c1, s)
         sp = c.get('sugP') and not c.get('sugDone')
         ok(not sp, 'no new promise proposed from %r: %s' % (s, c.get('sugP')))

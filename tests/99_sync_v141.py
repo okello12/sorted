@@ -114,7 +114,8 @@ with sync_playwright() as p:
     pg2.evaluate("document.querySelectorAll('details').forEach(d=>d.open=true)")
     pg2.click('[data-a=panel][data-p=rename]'); wait(pg2, 250); pg2.fill('#f-rename', 'Argos refund B'); pg2.click('form[data-f=rename] button[type=submit]'); wait(pg2, 1200)
     c = srv(cid2)
-    ok('07700' not in json.dumps(c) and c['title'] == 'Argos refund B' and merged(c), 'a save from a device that still had it merges without bringing it back, and keeps no words of it')
+    # v143: a second tab reads the change as soon as the first tab saves it, so it may have nothing left to merge
+    ok('07700' not in json.dumps(c) and c['title'] == 'Argos refund B' and (merged(c) or not any(e['label'].startswith('Merged') for e in c['events'])), 'a save from a tab that still had it doesn’t bring it back, and keeps no words of it')
     pg2.close()
     open_case(cid2); pg.locator('[data-a=panel][data-p=paste]').first.evaluate('e=>e.click()'); wait(pg, 300); pg.fill('#f-paste', 'Second message, kept: order 778899 delivered'); pg.click('form[data-f=paste] button[type=submit]'); wait(pg, 800)
     open_case(cid2); pg.locator('[data-a=ev-del]').first.click(); wait(pg, 500)
@@ -214,10 +215,10 @@ with sync_playwright() as p:
     key = sto[-1]['name'] if sto else ''
     ok(re.match(r"^[\w/!\-.*'() &$@=;:+,?]+$", key) and key.startswith('u-me/%s/' % cid6) and key.endswith('.pdf'), 'the file is stored under a key Supabase accepts (%s)' % key)
     c = srv(cid6); nm = 'Résumé – Zoë’s 包裹.pdf'
-    ok((c.get('docNames') or {}).get(key.split('/')[-1]) == nm and any(e['label'] == 'Kept a document with this case: %s.' % nm for e in c['events']), 'its own name is kept with the case and in the history')
+    ok((c.get('docNames') or {}).get(key.split('/')[-1]) == nm and any(re.match(r'^Kept a document with this case: PDF, \d{1,2} [A-Z][a-z]{2}\.$', e['label']) for e in c['events']) and not any(nm in e['label'] for e in c['events']), 'its own name is kept with the case, the history says only the kind and day (v143)')
     open_case(cid6); ok(nm in pg.inner_text('.docs135'), 'the case lists it by its own name')
     pg.locator('.docs135 [data-a=doc-del]').first.click(); wait(pg, 300); pg.locator('[data-a=doc-del-yes]').first.click(); wait(pg, 800)
-    c = srv(cid6); ok(not (c.get('docNames') or {}) and any(e['label'] == 'Removed a kept document: %s.' % nm for e in c['events']), 'removing it says its name and drops it from the case')
+    c = srv(cid6); ok(not (c.get('docNames') or {}) and any(re.match(r'^Removed a kept document: PDF, \d{1,2} [A-Z][a-z]{2}\.$', e['label']) for e in c['events']), 'removing it says what it was and drops it from the case (v143: never the file name)')
     pg.evaluate("localStorage.setItem('__storageFail','1');localStorage.removeItem('__errs')")
     open_case(cid6); pg.set_input_files('input[data-keepdoc="%s"]' % cid6, OUT + '/Résumé – Zoë’s 包裹.pdf'); wait(pg, 800)
     er = json.loads(pg.evaluate("localStorage.getItem('__errs')") or '[]')

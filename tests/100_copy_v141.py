@@ -66,7 +66,7 @@ with sync_playwright() as p:
     m = pg.inner_text('body')
     ok('isn’t uploaded or kept, so keep your original' not in m and 'Keep a document with this case' in m, 'Help: a document can be kept with a case')
     ok('lock screen' in m or 'notification' in m, 'Help: reminders mention the phone as well as email')
-    ok('goes idle for 90 days' not in m and 'link that stops them all' not in m, 'Help: no old retention or stop-link wording')
+    ok('goes idle for 90 days' not in m and ('link that stops them all' not in m or 'stops them all, after asking you once' in m), 'Help: no old retention wording; the stop link is described as it works (v142)')
     pg.goto('https://sorted.test/#how'); wait(pg, 500)
     ok('Done keeps it until you delete it' not in pg.inner_text('body'), 'How it works no longer says Done keeps it for ever')
     # ---------- a guest ----------

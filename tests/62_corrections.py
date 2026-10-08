@@ -15,7 +15,8 @@ with sync_playwright() as p:
     b = p.chromium.launch(); ctx = b.new_context(timezone_id='Europe/London', viewport={'width': 390, 'height': 844})
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE + '/tests/mock.js', content_type='application/javascript'))
     # Part 1: the reader
-    rd = ctx.new_page(); rd.route(lambda u: u.startswith('https://sorted.test/'), lambda q: q.fulfill(path=HERE + '/tests/out/reader.html', content_type='text/html'))
+    rctx = b.new_context(timezone_id='Europe/London'); rctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE + '/tests/mock.js', content_type='application/javascript')); rd = rctx.new_page(); rd.clock.install(time=datetime.datetime(2026, 10, 5, 9, 0))  # the reader's sentences name 6 to 8 October 2026, so it runs on its own clock
+    rd.route(lambda u: u.startswith('https://sorted.test/'), lambda q: q.fulfill(path=HERE + '/tests/out/reader.html', content_type='text/html'))
     rd.goto('https://sorted.test/'); wait(rd, 500)
     cur = {"party": "Sky", "ref": "AB123", "amount": 80, "item": "Boiler", "dueAt": "2026-10-06T08:00:00.000Z", "dueEnd": "2026-10-06T12:00:00.000Z", "allDay": False, "by": False}
     C = lambda t: rd.evaluate("([c,s])=>{var r=__read.corrRead(c,s);return r?{k:r.k,from:String(r.from),to:String(r.to),moved:!!r.moved}:null}", [cur, t])
@@ -117,7 +118,9 @@ with sync_playwright() as p:
     pg.locator('[data-a=panel][data-p=pack]').first.evaluate('e=>e.click()'); wait(pg, 500)
     pack = pg.inner_text('.pack-doc')
     ok('Corrections' in pack and 'Sky → Virgin Media' in pack and 'AB123 → AB132' in pack, 'the adviser pack lists the corrections')
-    cur_pack = [l for l in pack.split('\n') if not re.search(r'→|Changed |It was |In your words|in your words|^Message, |Taken from|In my words|, replaced, |, turned down by you, ', l)]
+    # v143 (PASS2-010): their own words are quoted as they said them, with the corrected values beside them
+    ok(any('(corrected: Virgin Media' in l and 'corrected reference: AB132' in l for l in pack.split('\n')), 'the pack quotes their words unchanged with the corrected values beside them')
+    cur_pack = [l for l in pack.split('\n') if not re.search(r'→|Changed |It was |In your words|in your words|^Message, |Taken from|In my words|, replaced, |, turned down by you, |\(corrected', l)]
     ok(not any('Sky' in l or 'AB123' in l for l in cur_pack), 'and nowhere else in it is a replaced value current: %s' % [l for l in cur_pack if 'Sky' in l or 'AB123' in l][:3])
     print('CHECKS', n[0])
     b.close()

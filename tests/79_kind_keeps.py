@@ -23,7 +23,7 @@ def change_kind(pg, cid, kind):
     open_case(pg, cid); pg.evaluate("document.querySelectorAll('details.case56-more').forEach(d=>d.open=true)")
     pg.click('[data-a=panel][data-p=kind]'); wait(pg, 300); pg.click('[data-k=kind][data-v=%s]' % kind); wait(pg, 150)
     pg.click('form[data-f=kind] button[type=submit]'); wait(pg, 600)
-VOLATILE = {'mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'frNew', 'goalP', 'lastReturnAt', 'turnAt'}
+VOLATILE = {'mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'wid', 'frNew', 'goalP', 'lastReturnAt', 'turnAt'}
 def core(t): return {k: v for k, v in t.items() if k not in VOLATILE and not k.startswith('_')}
 def kind_lines(t): return [e['label'] for e in t['events'] if e['label'].startswith('Changed the kind')]
 with sync_playwright() as p:

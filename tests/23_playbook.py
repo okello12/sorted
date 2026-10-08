@@ -68,7 +68,8 @@ with sync_playwright() as p:
     db = dates_block(pg)
     ok(day(d(11)) in db and 'You set this date' in db, 'you can set the date from the notice')
     # 5 proof of a challenge
-    ok(pg.locator('.pk-card').count() == 1 and ('Sorted will remind you on ' + day(d(8))) in card(pg) and pg.locator('.case56-next').count() == 1, 'the reminder sits inside the parking card, which stays')
+    # v143: a guest with no email and no phone reminders gets no reminder row, so the card never claims one (PASS2-013)
+    ok(pg.locator('.pk-card').count() == 1 and ('Your reminder is on Home from ' + day(d(8))) in card(pg) and 'Sorted will remind you' not in card(pg) and 'until reminders are on' in card(pg) and pg.locator('.case56-next').count() == 1, 'the reminder sits inside the parking card, which stays, and claims no message it can’t send')
     pg.click('[data-a=panel][data-p=pksent]'); wait(pg)
     pg.click('[data-a=d][data-k=pkhow][data-v="Online form"]'); wait(pg, 200)
     pg.fill('#f-pkref', 'ABC3942'); pg.fill('#f-pktext', 'I am challenging PCN SK12345678. I had a valid permit on display.')

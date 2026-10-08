@@ -108,12 +108,12 @@ with sync_playwright() as p:
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)
     c = case(rid)
     ok(c['promises'][-1]['status'] == 'open' and c['promises'][-2]['status'] == 'missed' and len([r for r in L(rid) if r['type'] == 'promise' and r['sub'] != 'proposal']) == 2, 'R6 the new date is a new promise; the missed one stays in the record and the ledger')
-    snap = {k: v for k, v in c.items() if k not in ('mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'frNew', 'goalP', 'ledger', 'ledgerV', 'turnAt')}
+    snap = {k: v for k, v in c.items() if k not in ('mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'wid', 'frNew', 'goalP', 'ledger', 'ledgerV', 'turnAt')}
     for kind in ('fix', 'call'):
         pg.goto('https://sorted.test/?task=%s' % rid); wait(pg, 500); pg.evaluate("document.querySelectorAll('details.case56-more').forEach(d=>d.open=true)")
         pg.click('[data-a=panel][data-p=kind]'); wait(pg, 300); pg.click('[data-k=kind][data-v=%s]' % kind); wait(pg, 150); pg.click('form[data-f=kind] button[type=submit]'); wait(pg, 600)
         if pg.locator('[data-a=panel][data-p=""]').count() and pg.locator('#moveform').count(): pg.locator('[data-a=panel][data-p=""]').first.click(); wait(pg, 300)
-    c2 = case(rid); snap2 = {k: v for k, v in c2.items() if k not in ('mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'frNew', 'goalP', 'ledger', 'ledgerV', 'turnAt')}
+    c2 = case(rid); snap2 = {k: v for k, v in c2.items() if k not in ('mode', 'fix', 'renew', 'kept', 'events', 'updatedAt', 'rev', 'wid', 'frNew', 'goalP', 'ledger', 'ledgerV', 'turnAt')}
     ok(snap2 == snap and c2['mode'] == 'call' and c2['safety'] is True, 'R7 changing the kind away and back loses nothing (%s)' % [k for k in set(snap) | set(snap2) if snap.get(k) != snap2.get(k)])
     # ================= 3. two moves, two nations, one case moved between them only after a question =================
     pg.goto('https://sorted.test/'); wait(pg, 500)

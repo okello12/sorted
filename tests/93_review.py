@@ -77,7 +77,7 @@ with sync_playwright() as p:
     # ================= 1. the Now card =================
     opencase(c1)
     now = pg.inner_text('.now137') if pg.locator('.now137').count() else ''
-    ok('What happened: Currys promised it by %s' % fri.strftime('%A') in now and 'Waiting for Currys: nothing for you to do until' in now, 'a waiting case: what happened, and who acts next')
+    ok('What happened: Currys promised it by %s' % fri.strftime('%A') in now and ('Waiting for Currys: nothing for you to do until' in now if (fri - today).days > 1 else 'Waiting for Currys: by %s' % fri.strftime('%A') in now), 'a waiting case: what happened, and who acts next')
     order = pg.evaluate("(()=>{var a=[...document.querySelectorAll('main *')],q=s=>a.indexOf(document.querySelector(s));return [q('.now137'),q('.promise'),q('#case56-timeline')]})()")
     ok(order[0] >= 0 and order[0] < order[1] and (order[2] < 0 or order[1] < order[2]), 'the Now card, then the action, then the history')
     ok(pg.locator('.now137 [data-a=panel][data-p=paste]').inner_text().strip() == 'Add what they just said', '“Add what they just said” is a visible button on the case')

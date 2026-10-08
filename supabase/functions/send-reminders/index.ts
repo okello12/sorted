@@ -2,6 +2,13 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendPush } from "./webpush.ts";
 
+// v14 (Sorted v143): reminders for the person's own attention. A row whose promise_id starts "att-" belongs to an item
+// in t.att (a check day the person chose, a Later, a parking deadline). It is sent only while that item is still live
+// (not done or cancelled) and the case isn't finished, with fixed copy that never says what the case is, and never with
+// answer links or a helper nudge. Notification answers say "No, it didn't" like the email ("Not yet" is only for your
+// own step), and the page asks for one tap on the case before recording either.
+// v13 (Sorted v142): the footer has a visible "Stop all reminder emails" link. Opening it changes nothing on its own: it
+// goes through email-stop to a question in the app, and only the tap there stops them.
 // v12 (Sorted v141): an Idempotency-Key per reminder for Resend; a push already sent for a reminder is not repeated; only
 // a refused subscription (400, 401, 403, 413) counts towards removing it; push TTL 6 hours before, a day after; the
 // footer links to Settings to stop all reminder emails.
@@ -54,6 +61,12 @@ async function send(key: string, from: string, to: string, subject: string, text
   return { ok: true, id };
 }
 
+// v14: the person's own attention (a check day, Later, a parking deadline). Fixed words, never the case.
+function attCopy(kind: string) {
+  if (kind === "remind") return { push: "A date in one of your cases is coming up.", subject: "Your Sorted reminder: a date is coming up", heading: "A date in one of your cases is coming up", intro: "One of your cases in Sorted has a date coming up. Open it to see what it is and what you can do before then." };
+  if (kind === "check") return { push: "It's the day you chose to check one of your cases.", subject: "Your Sorted reminder: your check day", heading: "It's the day you chose to check", intro: "You asked Sorted to bring one of your cases back today. Open it to see where it stands and tell Sorted what has happened." };
+  return { push: "You asked Sorted to bring something back now.", subject: "Your Sorted reminder", heading: "You asked Sorted to bring this back", intro: "You asked Sorted to bring one of your cases back now. Open it to see where it stands." };
+}
 // Wording for each kind of reminder. "Move" = something the person said they would do; otherwise it is someone else's promise.
 function copy(kind: string, move: boolean) {
   if (move) {
@@ -120,8 +133,11 @@ Deno.serve(async (req: Request) => {
     if (t.board === "done") { await cancel("task done"); continue; }
     const open = (t.promises || []).slice().reverse().find((p: any) => p.status === "open");
     const openMv = (t.moves || []).slice().reverse().find((m: any) => m.status === "open");
-    const isMove = !!(r.promise_id && openMv && openMv.id === r.promise_id);
-    const valid = r.promise_id ? ((open && open.id === r.promise_id) || isMove) : !(t.renew && t.renew.applied) && !open;
+    const isAtt = typeof r.promise_id === "string" && r.promise_id.startsWith("att-");
+    const att = isAtt ? (t.att || []).find((a: any) => a && a.id === r.promise_id) : null;
+    const isMove = !isAtt && !!(r.promise_id && openMv && openMv.id === r.promise_id);
+    const valid = isAtt ? !!(att && !att.done && !att.cancelled && (att.kind !== "snooze" || (t.snooze && t.snooze.att === att.id)))
+      : r.promise_id ? ((open && open.id === r.promise_id) || isMove) : !(t.renew && t.renew.applied) && !open;
     if (!valid) { await cancel("superseded"); continue; }
     const { data: u } = await sb.auth.admin.getUserById(r.user_id);
     const email = u?.user?.email;
@@ -130,17 +146,17 @@ Deno.serve(async (req: Request) => {
     const wantPush = !!(vapid && subs && subs.length);
     if (!wantEmail && !wantPush) { await cancel(!email ? "no email" : opt ? "unsubscribed" : t.emailRemind === false ? "switched off" : "no channel"); continue; }
     const link = `${SITE}/?task=${encodeURIComponent(r.task_id)}&src=email`;
-    const c = copy(r.kind, isMove);
+    const c = isAtt ? attCopy(att.kind) : copy(r.kind, isMove);
     // Answer links only after the time has passed, only for the promise or step this reminder is about, never for parking.
     const target = isMove ? openMv : open;
-    const ask = r.kind === "after" && r.promise_id && target && target.id === r.promise_id && target.src !== "parking";
+    const ask = !isAtt && r.kind === "after" && r.promise_id && target && target.id === r.promise_id && target.src !== "parking";
     const ans = (a: string) => `${link}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
     const settings = `${SITE}/#more-settings`;
     const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
     const more = ask ? [{ label: "Can’t deal with it now? Choose when Sorted reminds you", link: ans("later") }].concat(isMove ? [] : [{ label: "They gave a new date? Add it", link: ans("date") }]) : [];
-    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. To stop all reminder emails, <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. Stop all reminder emails: ${stop}\nOr turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. <a href="${esc(stop)}" style="color:#2A3990">Stop all reminder emails</a>, or <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
     // The phone first: fixed words, the case link, and after the time the answer buttons. Never what the case is.
     let pushOk = 0, pushTried = 0;
     // v141: a push already delivered for this reminder (a run cut short before the email) is not sent again.
@@ -149,7 +165,7 @@ Deno.serve(async (req: Request) => {
       const rel = `/?task=${encodeURIComponent(r.task_id)}&src=push`;
       const relAns = (a: string) => `${rel}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
       const msg: any = { t: "Sorted", b: c.push, u: rel, g: "case-" + String(r.task_id).slice(0, 40) };
-      if (ask) { msg.x = [["yes", isMove ? "Done" : "Yes"], ["no", "Not yet"]]; msg.a = { yes: relAns("yes"), no: relAns("no") }; }
+      if (ask) { msg.x = [["yes", isMove ? "Done" : "Yes, it happened"], ["no", isMove ? "Not yet" : "No, it didn't"]]; msg.a = { yes: relAns("yes"), no: relAns("no") }; }
       for (const s of (subs ?? []) as any[]) {
         pushTried++;
         let st = 0;
@@ -174,7 +190,7 @@ Deno.serve(async (req: Request) => {
     sent++;
 
     // 3. Nudge a confirmed helper, using the share link they already have.
-    if (emailOn && (r.kind === "before" || r.kind === "start")) {
+    if (emailOn && !isAtt && (r.kind === "before" || r.kind === "start")) {
       const { data: h } = await sb.from("helpers").select("email,inviter_name,token,status").eq("task_id", r.task_id).maybeSingle();
       const { data: sh } = await sb.from("shares").select("token").eq("task_id", r.task_id).maybeSingle();
       if (h && h.status === "confirmed" && sh?.token) {

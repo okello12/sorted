@@ -567,6 +567,14 @@ merge. Documents, parking notices, corrections and where words came from are han
 tests 102 to 108. v143 also works before migration 24 is applied: reminder rows fall back to the old key, so v142 and v143 ship together. To deploy with it: `send-reminders` v14 (attention rows, push labels) and `case-assistant` v3 (tags
 neutralised). No migration.
 
+**v144 (a plan to check, 8 October).** A real case on 8 October: "I need to switch my TSB student account to a Spend and
+Save account", with the plan "Search up how I can do it". Sorted didn't know TSB, titled it "I need to switch my tsb
+student account to a…" and opened a message form to "The company", replacing the person's sensible plan with a weaker
+one. Now a plan to look something up, search, read, find out, check, verify or compare is kept as the person's own step
+("Check TSB’s official website or app for how to do this"), the case and Home lead with it, and contacting them stays one
+tap away. Once checked, Sorted asks what they found. The rule is general, not a TSB entry; the banks and other common
+names were added too. Evidence: test 109.
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

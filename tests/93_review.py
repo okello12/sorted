@@ -69,7 +69,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.documentElement.scrollWidth<=document.documentElement.clientWidth+1"), 'nothing scrolls sideways')
     # ================= sign in as a guest =================
     pg.goto('https://sorted.test/#start'); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 700)
-    c1 = start('Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A'))
+    c1 = start('Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A %-d %B'))  # a bare weekday said on that weekday is today
     # ================= 4. the guest is told what a lost phone means =================
     pg.goto('https://sorted.test/'); wait(pg, 600)
     an = pg.inner_text('.anon129') if pg.locator('.anon129').count() else ''
@@ -112,7 +112,7 @@ with sync_playwright() as p:
     opencase(c1)
     ok(pg.locator('.stale137').count() == 0, 'the note goes once you move on')
     # a moved date
-    c2 = start('Amazon said they would refund £20 by %s, ref AMZ12345' % fri.strftime('%A'))
+    c2 = start('Amazon said they would refund £20 by %s, ref AMZ12345' % fri.strftime('%A %-d %B'))  # a bare weekday said on that weekday is today
     p2 = [q for q in case(c2)['promises'] if q['status'] == 'open'][0]['id']
     opencase(c2); pg.click('.now137 [data-a=panel][data-p=changed]'); wait(pg, 300)
     pg.click('.q130-changed [data-a=panel][data-p=qdate]'); wait(pg, 300)

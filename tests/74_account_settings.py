@@ -30,10 +30,10 @@ with sync_playwright() as p:
         if tab: pg.click('.acct112-nav [data-v=%s]' % tab); wait(pg, 400)
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')")
     pg.evaluate("localStorage.setItem('__mocksession', %s)" % json.dumps(SESSION)); pg.goto('https://sorted.test/'); wait(pg, 700)
-    # a case with a promise, so there are email times to show
+    # a case with a promise, so there are email times to show (the full date: a bare “Friday” said on a Friday is today)
     if pg.locator('[data-cap82=other]').count(): pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg)
     elif pg.locator('[data-a=compose]').count(): pg.locator('[data-a=compose]').first.evaluate('e=>e.click()'); wait(pg)
-    pg.fill('#f-case', 'Sky said an engineer would come on %s between 8am and 12pm, ref AB123' % fri.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 600)
+    pg.fill('#f-case', 'Sky said an engineer would come on %s between 8am and 12pm, ref AB123' % fri.strftime('%A %-d %B')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 600)
     if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
     if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)

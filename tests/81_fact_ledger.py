@@ -113,7 +113,7 @@ with sync_playwright() as p:
                 'goal': 'Broadband working', 'turn': 'theirs', 'moves': [], 'events': [{'at': '2026-09-20T10:00:00.000Z', 'label': 'Started.'}]}
     poke("db.tasks.push({id:'old1',user_id:%s,data:%s,updated_at:new Date().toISOString()})" % (json.dumps(uid), json.dumps(old_case)))
     pg.goto('https://sorted.test/?task=old1'); wait(pg, 900)
-    c = case('old1'); keep = {k: v for k, v in c.items() if k not in ('ledger', 'ledgerV', 'rev', 'updatedAt')}
+    c = case('old1'); keep = {k: v for k, v in c.items() if k not in ('ledger', 'ledgerV', 'rev', 'wid', 'updatedAt')}
     base = {k: v for k, v in old_case.items() if k not in ('rev', 'updatedAt')}
     ok(c.get('ledger') and c.get('ledgerV') == 1 and keep == base, 'an older case gains a ledger and nothing else changes (%s)' % [k for k in set(keep) | set(base) if keep.get(k) != base.get(k)])
     lp = live('old1', 'party'); lr = live('old1', 'ref', 'complaint'); lg = live('old1', 'goal'); lt = live('old1', 'turn'); lpr = live('old1', 'promise')

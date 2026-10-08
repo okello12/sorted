@@ -113,7 +113,7 @@ with sync_playwright() as p:
     ok(pg.locator('form[data-f=case]:visible').count() == 0 and pg.locator('.gi-photo:visible').count() == 0 and pg.locator('[data-a=doc-manual]').count() == 1, 'v125: after a failed read there is one set of choices: no second photo button, box or Start')
     pg.click('[data-a=doc-manual]'); wait(pg, 700)
     m = main()
-    ok(pg.locator('.doc121-fail').count() == 0 and pg.locator('.doc125-manual form[data-f=doc]').count() == 1 and 'Enter the notice details' in m and pg.locator('input[name=doc-kind]').count() == 2 and pg.locator('#doc-ref').input_value() == '' and 'document_manual_fallback' in events(), 'v125: manual entry is a notice form with the failure gone, every field empty, nothing invented')
+    ok(pg.locator('.doc121-fail').count() == 0 and pg.locator('.doc125-manual form[data-f=doc]').count() == 1 and 'Enter the notice details' in m and pg.locator('input[name=doc-kind]').count() == 3 and pg.locator('#doc-ref').input_value() == '' and 'document_manual_fallback' in events(), 'v125: manual entry is a notice form with the failure gone, every field empty, nothing invented')
     pg.click('form[data-f=doc] button[type=submit]'); wait(pg, 400)
     ok('Add at least the PCN number or who issued it' in main() and len(cases()) == n_before_manual, 'an empty form asks for the PCN number or the issuer and creates nothing')
     pg.fill('#doc-issuer', 'Lambeth Council'); pg.fill('#doc-ref', 'LJ22223333'); pg.fill('#doc-vrm', 'AB12 CDE'); pg.fill('#doc-when', '03/10/2026'); pg.fill('#doc-amount', '130')

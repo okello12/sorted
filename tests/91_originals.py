@@ -50,7 +50,7 @@ with sync_playwright() as p:
     st = store()
     ok(len(st) == 1 and st[0]['name'].startswith('%s/%s/' % (uid, c1)) and re.match(r'^%s/%s/\d+-[a-z0-9]{1,8}\.pdf$' % (uid, c1), st[0]['name']) and st[0]['type'] == 'application/pdf', 'the file is stored as it is, in this person’s folder for this case (since v141 under a plain key; its name is kept with the case)')
     c = [x for x in cases() if x['id'] == c1][0]
-    ok(any(e['label'] == 'Kept a document with this case: letter91.pdf.' for e in c['events']), 'the history says a document was kept')
+    ok(any(re.match(r'^Kept a document with this case: PDF, \d{1,2} [A-Z][a-z]{2}\.$', e['label']) for e in c['events']) and not any('letter91' in e['label'] for e in c['events']), 'the history says a document was kept, by kind and day, never its file name (v143)')
     opencase(c1); txt = pg.inner_text('.docs135')
     ok('letter91.pdf' in txt and 'KB' in txt, 'it is listed with its size')
     with ctx.expect_page() as pi: pg.click('.docs135 [data-a=doc-view]')
@@ -60,7 +60,7 @@ with sync_playwright() as p:
     pg.click('.docs135 [data-a=doc-del]'); wait(pg, 300)
     ok(len(store()) == 1 and pg.locator('[data-a=doc-del-yes]').count() == 1, 'Remove asks once more before anything goes')
     pg.click('[data-a=doc-del-yes]'); wait(pg, 600)
-    ok(not store() and any('Removed a kept document: letter91.pdf.' == e['label'] for e in [x for x in cases() if x['id'] == c1][0]['events']), 'Remove for good removes it, with a history line')
+    ok(not store() and any(re.match(r'^Removed a kept document: PDF, \d{1,2} [A-Z][a-z]{2}\.$', e['label']) for e in [x for x in cases() if x['id'] == c1][0]['events']), 'Remove for good removes it, with a history line (v143: the kind and day, never the file name)')
     # ---- refusals ----
     opencase(c1)
     pg.set_input_files('input[data-keepdoc="%s"]' % c1, OUT + '/note91.txt'); wait(pg, 500)

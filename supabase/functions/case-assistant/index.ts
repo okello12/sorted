@@ -7,6 +7,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // an ops_errors row with a kind and a time. The API key is read from Vault by name, never kept in code.
 // v2 (Sorted v142): a guest account (made in one tap) gets 5 a day rather than 40; assistant_take also stops at 500 a
 // day across everyone, so a burst of new guest accounts can't run up the bill.
+// v3 (Sorted v143): tags that would open or close the <case>, <text> or <question> wrappers are neutralised in what
+// the page sends, so words read from a document can't step outside the case.
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const ORIGINS = ["https://sorted-pilot.vercel.app"];
 const DAILY = 40, DAILY_GUEST = 5;
@@ -52,7 +54,9 @@ Deno.serve(async (req) => {
   if (lim) { await oops("not_ready"); return Response.json({ error: "not_ready" }, { status: 503, headers: h }); }
   if (!ok) return Response.json({ error: "limit" }, { status: 429, headers: h });
   const model = (await secret("assistant_model")) || "claude-sonnet-5-5";
-  const user = `<case>\n${context}\n</case>` + (text ? `\n<text>\n${text}\n</text>` : "") + (q ? `\n<question>\n${q}\n</question>` : "");
+  // v143: nothing inside can close or open the wrappers (a document can carry "</case>")
+  const wrapSafe = (x: string) => x.replace(/<\s*\/?\s*(case|text|question)\b[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"));
+  const user = `<case>\n${wrapSafe(context)}\n</case>` + (text ? `\n<text>\n${wrapSafe(text)}\n</text>` : "") + (q ? `\n<question>\n${wrapSafe(q)}\n</question>` : "");
   let res: Response;
   try {
     res = await fetch("https://api.anthropic.com/v1/messages", {

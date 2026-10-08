@@ -59,7 +59,7 @@ const res = await (await handler(new Request("https://x/", { headers: { "x-cron-
 const push1 = calls.filter((c) => c.url.includes("/fcm/send/abc"));
 ok(push1.length === 1 && push1[0].o.headers["Content-Encoding"] === "aes128gcm" && /^vapid t=.+, k=/.test(push1[0].o.headers.Authorization), "the guest’s phone gets one encrypted push with a VAPID signature");
 const m = await decrypt(new Uint8Array(push1[0].o.body));
-ok(m.u === "/?task=t1&src=push" && m.b === "Did it happen? Tap to answer." && m.a.yes === "/?task=t1&src=push&ans=yes&p=p1" && m.a.no.endsWith("&ans=no&p=p1") && m.x.length === 2, "it decrypts to fixed words, the case link and Yes and Not yet");
+ok(m.u === "/?task=t1&src=push" && m.b === "Did it happen? Tap to answer." && m.a.yes === "/?task=t1&src=push&ans=yes&p=p1" && m.a.no.endsWith("&ans=no&p=p1") && m.x.length === 2, "it decrypts to fixed words, the case link and the two answers");
 ok(!JSON.stringify(m).match(/89|445566|Currys|Refund/), "the push never carries the case’s words, reference or company");
 const r1 = __DB.reminders.find((r) => r.id === "r1"), r2 = __DB.reminders.find((r) => r.id === "r2"), r3 = __DB.reminders.find((r) => r.id === "r3");
 ok(r1.sent_at && r1.push_sent_at && r1.push_detail === "1 of 1" && !calls.some((c) => c.url.includes("resend") && JSON.parse(c.o.body).to[0] === undefined), "the guest’s reminder is marked sent by push, with no email");
@@ -74,4 +74,35 @@ ok(res.pushed === 1 && res.sent === 2, "the run reports what it sent (" + JSON.s
 fresh(); delete __SECRETS.vapid_private_jwk;
 await (await handler(new Request("https://x/", { headers: { "x-cron-secret": "cron" } }))).json();
 ok(calls.filter((c) => c.url.includes("fcm")).length === 0 && __DB.reminders.find((r) => r.id === "r2").sent_at && __DB.reminders.find((r) => r.id === "r1").cancel_reason === "no email", "without the push key, email works as before and a guest’s reminder is cancelled");
+// v14 (Sorted v143): rows for the person's own attention (t.att): sent while the item is live, fixed words, no answer links
+fresh();
+const attTask = (id, extra) => ({ id, user_id: "u-mail", data: Object.assign({ id, title: "Evri parcel EV123456", board: "waiting", promises: [{ id: "p1", status: "open", said: "Evri said the parcel EV123456 would come in the next few days", party: "Evri" }] }, extra) });
+__DB.reminders = [{ id: "a1", task_id: "a1", user_id: "u-mail", kind: "before", send_at: past, promise_id: "att-chk1" },
+  { id: "a2", task_id: "a2", user_id: "u-mail", kind: "before", send_at: past, promise_id: "att-chk2" },
+  { id: "a3", task_id: "a3", user_id: "u-mail", kind: "before", send_at: past, promise_id: "att-snz1" },
+  { id: "a4", task_id: "a4", user_id: "u-mail", kind: "before", send_at: past, promise_id: "att-snz2" },
+  { id: "a5", task_id: "a5", user_id: "u-mail", kind: "start", send_at: past, promise_id: "att-pk-discount-2026-10-08" },
+  { id: "a6", task_id: "a6", user_id: "u-mail", kind: "before", send_at: past, promise_id: "att-chk6" }];
+__DB.tasks = [attTask("a1", { att: [{ id: "att-chk1", kind: "check", at: past, pid: "p1" }] }),
+  attTask("a2", { att: [{ id: "att-chk2", kind: "check", at: past, pid: "p1", cancelled: past }] }),
+  attTask("a3", { snooze: { until: past, att: "att-snz1" }, att: [{ id: "att-snz1", kind: "snooze", at: past }] }),
+  attTask("a4", { att: [{ id: "att-snz2", kind: "snooze", at: past }] }),
+  attTask("a5", { att: [{ id: "att-pk-discount-2026-10-08", kind: "remind", at: "2026-10-08" }] }),
+  attTask("a6", { board: "done", att: [{ id: "att-chk6", kind: "check", at: past, pid: "p1" }] })];
+__DB.push_subs = [{ id: "s9", user_id: "u-mail", endpoint: "https://fcm.googleapis.com/fcm/send/abc", p256dh: b64u(uaPub), auth: b64u(authS), fails: 0 }];
+await (await handler(new Request("https://x/", { headers: { "x-cron-secret": "cron" } }))).json();
+const R = (id) => __DB.reminders.find((r) => r.id === id);
+const am = calls.filter((c) => c.url.includes("resend")).map((c) => JSON.parse(c.o.body));
+ok(R("a1").sent_at && R("a3").sent_at && R("a5").sent_at, "a live check day, a live Later and a parking deadline are sent");
+ok(R("a2").cancel_reason === "superseded" && R("a4").cancel_reason === "superseded" && R("a6").cancel_reason === "task done", "a cancelled check day, a Later that has ended and a finished case are not sent");
+ok(am.length === 3 && am.every((b) => !/EV123456|Evri|parcel/.test(b.text + b.html + b.subject) && !b.text.includes("&ans=")), "attention emails carry fixed words only, never the case, and no answer links");
+ok(am.some((b) => b.subject.includes("your check day")) && am.some((b) => b.subject.includes("a date is coming up")) && am.some((b) => b.text.includes("You asked Sorted to bring one of your cases back now")), "each kind of attention has its own fixed words");
+const ap = calls.filter((c) => c.url.includes("/fcm/send/abc"));
+const apm = await Promise.all(ap.map((c) => decrypt(new Uint8Array(c.o.body))));
+ok(apm.length === 3 && apm.every((x) => !x.x && !x.a && !/Evri|EV123456/.test(JSON.stringify(x))), "attention pushes have no answer buttons and no case words");
+// the promise's own "after" push: answers match the email ("No, it didn't"), never "Not yet" for someone else's promise
+fresh();
+await (await handler(new Request("https://x/", { headers: { "x-cron-secret": "cron" } }))).json();
+const pm = await decrypt(new Uint8Array(calls.filter((c) => c.url.includes("/fcm/send/abc"))[0].o.body));
+ok(JSON.stringify(pm.x) === JSON.stringify([["yes", "Yes, it happened"], ["no", "No, it didn't"]]), "push answers for their promise say what the email says: " + JSON.stringify(pm.x));
 console.log("FAILS", JSON.stringify(fails));

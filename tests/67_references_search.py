@@ -117,6 +117,9 @@ with sync_playwright() as p:
     cid2 = start("Currys said they would refund £89 by Friday, order 445566")
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)
     if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg, 300)
+    # v143 (PASS2-002): only partly is proposed once the promise is due, so make Friday pass first
+    pg.evaluate("(id)=>{var d=JSON.parse(localStorage.getItem('__mockdb'));var x=d.tasks.find(y=>y.data.id===id).data;x.promises.forEach(q=>{if(q.status==='open')q.dueAt=new Date(Date.now()-2*864e5).toISOString()});localStorage.setItem('__mockdb',JSON.stringify(d));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}", cid2)
+    pg.goto('https://sorted.test/?task=%s' % cid2); wait(pg, 700)
     paste(cid2, "they refunded half")
     m = pg.inner_text('main')
     ok(pg.locator('[data-a=out-yes]').count() == 1 and 'only part of it happened' in m, '"they refunded half" proposes Only partly')
@@ -125,7 +128,7 @@ with sync_playwright() as p:
     ok(pg.locator('form[data-f=partly]').count() == 1 and 'What hasn’t happened yet?' in pg.inner_text('main'), 'Yes opens Only partly, which asks what is still outstanding')
     pg.fill('#f-left', '£44 of the £89'); pg.click('form[data-f=partly] button[type=submit]'); wait(pg, 700)
     c = cases()[-1]
-    ok(c['promises'][0]['status'] == 'missed' and c['promises'][0].get('partly') and c['promises'][0].get('left') == '£44 of the £89', 'recorded as partly, with what is outstanding')
+    ok(c['promises'][0]['status'] == 'missed' and c['promises'][0].get('partly') and c['promises'][0].get('left') == '£44 of the £89', 'recorded as partly, with what is outstanding (after their date)')
     # 7 you and this company: references and how often the date moved
     cid3 = start("Aviva said they would call back on %s about claim C555" % fri.strftime('%A'))
     if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)

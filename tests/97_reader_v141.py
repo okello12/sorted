@@ -173,8 +173,11 @@ with sync_playwright() as p:
     ok(len(p0) == 1, 'the refund case has its promise')
     for s, want in [('The refund arrived this morning', 'Sounds like it happened'), ('Refund came through on Monday', 'Sounds like it happened'),
                     ('Engineer came this morning and fixed it', 'Sounds like it happened'), ('They called me this afternoon', None), ('Nothing yet, I will call them tomorrow', None),
-                    ('Your refund is in progress', None), ('The engineer came but couldn\'t fix it', 'only part of it happened'),
-                    ('They refunded £40 but the rest is still missing', 'only part of it happened'), ('They paid £40 of the £89', 'only part of it happened')]:
+                    ('Your refund is in progress', None),
+                    # v143 (PASS2-002): the promise isn't due until Friday, so a part payment or an unfinished visit proposes
+                    # nothing yet: "only partly" would close it as missed before its date
+                    ('The engineer came but couldn\'t fix it', None),
+                    ('They refunded £40 but the rest is still missing', None), ('They paid £40 of the £89', None)]:
         c, m = paste(c1, s)
         sp = c.get('sugP') and not c.get('sugDone')
         ok(not sp, 'no new promise proposed from %r: %s' % (s, c.get('sugP')))

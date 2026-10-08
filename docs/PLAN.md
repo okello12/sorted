@@ -556,6 +556,17 @@ the same minute no longer collide. The assistant has a daily ceiling across ever
 Reminder emails have a visible "Stop all reminder emails" link that asks once in the app before stopping anything.
 And "said yesterday it would come tomorrow" is today. Evidence: test 101 and `tests/fn/sw_share_check.mjs`.
 
+**v143 (audit pass 2, 8 October).** The 34 findings of the second audit are fixed. The person's own attention (a
+check day, Later, a parking reminder) is kept apart from what the organisation said and has its own reminder row, so a
+check day can never become a company's missed promise. A miss and a company score need a dated promise that is due and
+an explicit answer; Home answers can be undone. Demands on the person are deadlines, never the sender's promise, and a
+passed deadline leads Home. Several obligations can live in one case, part payments are recorded with their amounts and
+a refusal can be recorded on any case. The page reads the server again when it comes back to the screen and before any
+answer, sends outcomes only after the save is confirmed, and carries a write id so a lost acknowledgement is not a
+merge. Documents, parking notices, corrections and where words came from are handled as the audit asked. Evidence:
+tests 102 to 108. To deploy with it: `send-reminders` v14 (attention rows, push labels) and `case-assistant` v3 (tags
+neutralised). No migration.
+
 **Still to verify on the tester's phone:** the original photograph that produced the gibberish, read through the
 current build.
 

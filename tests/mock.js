@@ -11,7 +11,7 @@ function q(table){
     if(!DB[table])DB[table]=[];
     var rows=DB[table];
     if(op==="select"){var fr=rows.filter(r=>filters.every(f=>r[f[0]]===f[1]));return {data:(table==="tasks"||table==="shares")?fr.map(r=>({data:r.data,card:r.card})):fr.map(r=>Object.assign({},r)),error:null}}
-    if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
+    if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at&&(r.promise_id||null)===(p.promise_id||null)))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
     if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};if(localStorage.getItem("__failWrites")==="2")return {data:null,error:{message:"permission denied (test)",code:"42501"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
     if(op==="insert"){rows.push(Object.assign({},payload,{updated_at:new Date().toISOString()}));persist();return {data:null,error:null}}
@@ -28,7 +28,10 @@ function q(table){
   self.eq=function(k,v){filters.push([k,v]);return self};
   self.is=function(k,v){filters.push([k,v]);return self};
   /* __slowWrites (ms) holds case saves in flight, so a test can act mid-save; __failWrites "1" fails case saves like a lost connection, "2" like a refusal from the server (v141) */
-  self.then=function(a,b){var d=+(localStorage.getItem("__slowWrites")||0);if(d&&table==="tasks"&&(op==="update"||op==="upsert"))return new Promise(function(r){setTimeout(r,d)}).then(run).then(a,b);return Promise.resolve(run()).then(a,b)};
+  /* v143: __dropAck "1" lets the next case save reach the "server" but loses its answer, like a dropped connection; the server's size cap (tasks_data_size) refuses a case over 100,000 bytes */
+  self.then=function(a,b){if(table==="tasks"&&(op==="update"||op==="upsert")&&payload&&!Array.isArray(payload)&&payload.data&&JSON.stringify(payload.data).length>100000)return Promise.resolve({data:null,error:{message:'new row for relation "tasks" violates check constraint "tasks_data_size"',code:"23514"}}).then(a,b);
+    if(table==="tasks"&&(op==="update"||op==="upsert")&&localStorage.getItem("__dropAck")==="1"){localStorage.removeItem("__dropAck");return Promise.resolve().then(run).then(function(){return Promise.reject(new TypeError("Failed to fetch"))}).then(a,b)}
+    var d=+(localStorage.getItem("__slowWrites")||0);if(d&&table==="tasks"&&(op==="update"||op==="upsert"))return new Promise(function(r){setTimeout(r,d)}).then(run).then(a,b);return Promise.resolve(run()).then(a,b)};
   return self;
 }
 window.supabase={createClient:function(){

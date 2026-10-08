@@ -80,9 +80,12 @@ with sync_playwright() as p:
     opencase(c1); pg.click('[data-a=panel][data-p=chk138]'); wait(pg, 300)
     ok('That isn’t a confirmed day, so the day Sorted asks you is your choice' in pg.inner_text('.chk138'), 'Choose when to check says the day is yours')
     chk = today + datetime.timedelta(days=12)
+    before = dict(p1)
     pg.fill('#f-chkday', chk.isoformat()); pg.click('form[data-f=chk138] button[type=submit]'); wait(pg, 600)
     p1 = [q for q in case(c1)['promises'] if q['status'] == 'open'][0]
-    ok(p1.get('chk') is True and p1.get('phrase') == 'by the end of the week' and p1['dueAt'][:10] in (chk.isoformat(), (chk - datetime.timedelta(days=1)).isoformat()), 'the check day is saved as yours, their words unchanged')
+    att = [a for a in case(c1).get('att', []) if a['kind'] == 'check' and not a.get('done') and not a.get('cancelled')]
+    # v143: the check day is the person's own record (t.att), never written into the promise
+    ok(not p1.get('chk') and p1.get('phrase') == 'by the end of the week' and all(p1.get(k) == before.get(k) for k in ('dueAt', 'dueEnd', 'by', 'win', 'prec')) and len(att) == 1 and att[0]['pid'] == p1['id'] and att[0]['at'][:10] in (chk.isoformat(), (chk - datetime.timedelta(days=1)).isoformat()), 'the check day is saved as yours, their words and their date unchanged')
     m = pg.inner_text('main'); cday = '%s %d %s' % (chk.strftime('%A'), chk.day, chk.strftime('%B'))
     ok(('you’ll check on ' + cday) in m and ('promised it by ' + cday) not in m and ('They promised') not in m.replace('THEY PROMISED', ''), 'the case says you’ll check on that day, never that they promised it')
     ok(any(('You chose to check on ' + cday) in e['label'] for e in case(c1)['events']), 'the history says it was your choice')

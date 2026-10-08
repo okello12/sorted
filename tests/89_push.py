@@ -100,7 +100,7 @@ with sync_playwright() as p:
     r = subprocess.run(['node', '--experimental-strip-types', HERE + '/tests/webpush_check.mjs'], capture_output=True, text=True)
     ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 3, 'the push encryption matches RFC 8291 and the VAPID header verifies')
     r = subprocess.run(['node', '--experimental-strip-types', HERE + '/tests/fn/send_reminders_check.mjs'], capture_output=True, text=True)
-    ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 10, 'send-reminders, run in Node: push to a guest, no case words in it, email with Later and New date, a forgotten phone removed (%d passes)' % r.stdout.count('PASS'))
+    ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 16, 'send-reminders, run in Node: push to a guest, no case words in it, email with Later and New date, a forgotten phone removed; since v143 rows for the person’s own attention (%d passes)' % r.stdout.count('PASS'))
     pg_src = open(HERE + '/public/index.html').read()
     ok(re.search(r'var VAPID_PUB="B[\w-]{86}"', pg_src) is not None and 'vapid_private' not in pg_src, 'the page carries only the public VAPID key')
     ok(not errs, 'no page errors: %s' % errs)

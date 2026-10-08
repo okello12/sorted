@@ -41,7 +41,7 @@ with sync_playwright() as p:
     ok(pg.locator('[data-a=estop-yes]').count() == 0, 'a malformed link is ignored')
     # ---- reminder rows ----
     src = open(HERE + '/public/index.html').read()
-    ok('onConflict:"task_id,kind,send_at,promise_id"' in src and 'onConflict:"task_id,kind,send_at"' not in src, 'reminder rows use the key with promise_id')
+    ok('"task_id,kind,send_at,promise_id"' in src and 'remUp144(' in src, 'reminder rows use the key with promise_id')
     pg.goto('https://sorted.test/'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')")
     pg.evaluate("localStorage.setItem('__mocksession', %s)" % json.dumps(json.dumps({'user': {'id': 'u-me', 'email': 'me@example.com'}}))); pg.goto('https://sorted.test/'); wait(pg, 700)
     fri = today + datetime.timedelta(days=(4 - today.weekday()) % 7 or 7)
@@ -52,6 +52,16 @@ with sync_playwright() as p:
     db = pg.evaluate("JSON.parse(localStorage.getItem('__mockdb'))") or {}
     rem = db.get('reminders', [])
     ok(rem and all('promise_id' in x for x in rem), 'every reminder row says which promise or step it is for: %s' % [x.get('kind') for x in rem])
+    # v143: before migration 24's index exists, the old key is used and nothing fails
+    pg.evaluate("localStorage.setItem('__noPromiseKey','1');var d=JSON.parse(localStorage.getItem('__mockdb'));d.reminders=[];localStorage.setItem('__mockdb',JSON.stringify(d))")
+    pg.goto('https://sorted.test/'); wait(pg, 700)
+    pg.locator('.tab129 [data-a=new-case]').click(); wait(pg, 400); pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg, 300)
+    pg.fill('#f-case', 'Argos said they would refund £40 by %s, order 778899' % fri.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 600)
+    if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)
+    if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 800)
+    rem2 = (pg.evaluate("JSON.parse(localStorage.getItem('__mockdb'))") or {}).get('reminders', [])
+    ok(rem2 and 'Couldn’t set' not in (pg.inner_text('#toast') if pg.locator('#toast').count() else ''), 'without the new index on the server, reminders still go in on the old key (%d rows)' % len(rem2))
+    pg.evaluate("localStorage.removeItem('__noPromiseKey')")
     # ---- the reader ----
     pg.goto('https://sorted.test/reader'); wait(pg, 500)
     r = pg.evaluate("(t)=>{var x=window.__read,p=x.readCase(t,x.caseFacts(t));return p?{d:x.ymdL(new Date(p.dueAt)),past:!!p.past}:null}", 'Evri said yesterday it would come tomorrow')

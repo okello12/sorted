@@ -11,6 +11,7 @@ function q(table){
     if(!DB[table])DB[table]=[];
     var rows=DB[table];
     if(op==="select"){var fr=rows.filter(r=>filters.every(f=>r[f[0]]===f[1]));return {data:(table==="tasks"||table==="shares")?fr.map(r=>({data:r.data,card:r.card})):fr.map(r=>Object.assign({},r)),error:null}}
+    if(op==="upsert"&&Array.isArray(payload)&&table==="reminders"&&localStorage.getItem("__noPromiseKey")==="1"&&/promise_id/.test(self._oc||""))return {data:null,error:{message:"there is no unique or exclusion constraint matching the ON CONFLICT specification",code:"42P10"}};
     if(op==="upsert"&&Array.isArray(payload)){payload.forEach(function(p){if(!rows.some(r=>r.task_id===p.task_id&&r.kind===p.kind&&r.send_at===p.send_at&&(r.promise_id||null)===(p.promise_id||null)))rows.push(Object.assign({sent_at:null},p))});persist();return {data:null,error:null}}
     if(op==="upsert"){if(localStorage.getItem("__failWrites")==="1")return {data:null,error:{message:"offline (test)"}};if(localStorage.getItem("__failWrites")==="2")return {data:null,error:{message:"permission denied (test)",code:"42501"}};var i=rows.findIndex(r=>r.id===payload.id);var row=Object.assign({},payload,{updated_at:new Date().toISOString()});if(i>=0)rows[i]=row;else rows.push(row);persist();return {data:null,error:null}}
     if(op==="insert"&&Array.isArray(payload)){if(localStorage.getItem("__evfail")==="1")return {data:null,error:{message:"offline"}};payload.forEach(p=>rows.push(Object.assign({at:new Date().toISOString(),actor:session&&session.user.id},p)));persist();return {data:null,error:null}}
@@ -21,7 +22,7 @@ function q(table){
   }
   self.select=function(){if(op==="update"||op==="insert")return self;op="select";return self};
   self.order=function(){return self};self.limit=function(){return self};self.gte=function(){return self};self.lt=function(){return self};
-  self.upsert=function(p){op="upsert";payload=p;return self};
+  self.upsert=function(p,o){op="upsert";payload=p;self._oc=(o&&o.onConflict)||"";return self};
   self.insert=function(p){op="insert";payload=p;return self};
   self.update=function(p){op="update";payload=p;return self};
   self.delete=function(){op="delete";return self};

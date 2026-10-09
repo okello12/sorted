@@ -196,8 +196,10 @@ with sync_playwright() as p:
     p11 = a.openp(c11)[0]
     ok(L(p11['dueAt']).date() == nd2 and L(p11['dueAt']).hour == 13 and p11.get('dueEnd') and L(p11['dueEnd']).hour == 17 and not p11.get('allDay'), 'correcting the day keeps the visit’s time: %s to %s' % (p11.get('dueAt'), p11.get('dueEnd')))
     # a window firmed up
-    c12 = a.start('Argos said the sofa will come on %s or %s' % (nextwd(2, 2).strftime('%A'), nextwd(3, 2).strftime('%A')))
-    thu = nextwd(3, 2)
+    # v145: two days in a row, two and three days ahead, so the bare day names are always this coming pair (with
+    # Wednesday and Thursday, on a Tuesday or Wednesday the Wednesday named fell in another week from the Thursday)
+    wed, thu = today + datetime.timedelta(days=2), today + datetime.timedelta(days=3)
+    c12 = a.start('Argos said the sofa will come on %s or %s' % (wed.strftime('%A'), thu.strftime('%A')))
     a.open(c12); pg.click('.q130-line [data-a=panel][data-p=changed]'); wait(pg, 300); pg.click('.q130-changed button:has-text("The appointment changed"), .q130-changed button:has-text("They gave me a new date")'); wait(pg, 300)
     pg.fill('form[data-f=qdate] input[type=date]', thu.isoformat()); pg.click('form[data-f=qdate] button[type=submit]'); wait(pg, 800)
     p12 = a.openp(c12)[0]; lab = a.labels(c12)

@@ -2,6 +2,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendPush } from "./webpush.ts";
 
+// v15 (Sorted v145): with two open promises in one case (two organisations), a reminder for the one added first was
+// cancelled as "superseded" because only the last open promise was compared; the page schedules the one due first. The
+// row's own promise now counts while it is open, and its answer links are for that promise.
+// Also v15: curly apostrophes in every line a person reads (email, push, helper nudge).
 // v14 (Sorted v143): reminders for the person's own attention. A row whose promise_id starts "att-" belongs to an item
 // in t.att (a check day the person chose, a Later, a parking deadline). It is sent only while that item is still live
 // (not done or cancelled) and the case isn't finished, with fixed copy that never says what the case is, and never with
@@ -64,7 +68,7 @@ async function send(key: string, from: string, to: string, subject: string, text
 // v14: the person's own attention (a check day, Later, a parking deadline). Fixed words, never the case.
 function attCopy(kind: string) {
   if (kind === "remind") return { push: "A date in one of your cases is coming up.", subject: "Your Sorted reminder: a date is coming up", heading: "A date in one of your cases is coming up", intro: "One of your cases in Sorted has a date coming up. Open it to see what it is and what you can do before then." };
-  if (kind === "check") return { push: "It's the day you chose to check one of your cases.", subject: "Your Sorted reminder: your check day", heading: "It's the day you chose to check", intro: "You asked Sorted to bring one of your cases back today. Open it to see where it stands and tell Sorted what has happened." };
+  if (kind === "check") return { push: "It’s the day you chose to check one of your cases.", subject: "Your Sorted reminder: your check day", heading: "It’s the day you chose to check", intro: "You asked Sorted to bring one of your cases back today. Open it to see where it stands and tell Sorted what has happened." };
   return { push: "You asked Sorted to bring something back now.", subject: "Your Sorted reminder", heading: "You asked Sorted to bring this back", intro: "You asked Sorted to bring one of your cases back now. Open it to see where it stands." };
 }
 // Wording for each kind of reminder. "Move" = something the person said they would do; otherwise it is someone else's promise.
@@ -74,8 +78,8 @@ function copy(kind: string, move: boolean) {
     if (kind === "after") return { push: "Did you get it done? Tap to answer.", subject: "Your Sorted case: did you get it done?", heading: "Did you get it done?", intro: "The time you set for one of your cases has passed. Tap Yes and Sorted will mark it done, or Not yet to pick a new time." };
     return { push: "Something you planned to do is due.", subject: "Your Sorted reminder", heading: "Something you planned to do is due", intro: "One of your cases in Sorted has something for you to do. Open it to see what, and mark it done when you have." };
   }
-  if (kind === "after") return { push: "Did it happen? Tap to answer.", subject: "Your Sorted case: did it happen?", heading: "Did it happen?", intro: "The time for one of your cases has passed. Tap an answer and Sorted will record it in that case. If it didn't happen, your chase will be ready." };
-  return { push: "Something you’re waiting on is due soon.", subject: "Your Sorted reminder", heading: "Something you're waiting on is coming up", intro: "One of your cases in Sorted is due soon. Open it to see the details and what to have ready." };
+  if (kind === "after") return { push: "Did it happen? Tap to answer.", subject: "Your Sorted case: did it happen?", heading: "Did it happen?", intro: "The time for one of your cases has passed. Tap an answer and Sorted will record it in that case. If it didn’t happen, your chase will be ready." };
+  return { push: "Something you’re waiting on is due soon.", subject: "Your Sorted reminder", heading: "Something you’re waiting on is coming up", intro: "One of your cases in Sorted is due soon. Open it to see the details and what to have ready." };
 }
 
 Deno.serve(async (req: Request) => {
@@ -108,9 +112,9 @@ Deno.serve(async (req: Request) => {
   const { data: pend } = await sb.rpc("claim_helper_invites", { p_limit: 20 });
   for (const h of (pend ?? []) as any[]) {
     const yes = `${SITE}/?helper=yes&h=${h.token}`;
-    const intro = `${h.inviter_name} is using Sorted to keep track of something they're waiting on, and has already sent you a link to it. They'd like Sorted to email you a short nudge when it's due, so you can check in with them.`;
-    const text = `Hello,\n\n${intro}\n\nIf that's fine, say yes here: ${yes}\n\nIf you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don't know ${h.inviter_name}, ignore this email.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don't click, Sorted won't email you again. The nudges never say what the case is, and you can stop them at any time. If you don't know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`);
+    const intro = `${h.inviter_name} is using Sorted to keep track of something they’re waiting on, and has already sent you a link to it. They’d like Sorted to email you a short nudge when it’s due, so you can check in with them.`;
+    const text = `Hello,\n\n${intro}\n\nIf that’s fine, say yes here: ${yes}\n\nIf you don’t click, Sorted won’t email you again. The nudges never say what the case is, and you can stop them at any time.\n\nIf you don’t know ${h.inviter_name}, ignore this email.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(`${h.inviter_name} asked Sorted to keep you in the loop`, intro, "Yes, nudge me", yes, `If you don’t click, Sorted won’t email you again. The nudges never say what the case is, and you can stop them at any time. If you don’t know ${esc(h.inviter_name)}, ignore this email.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`);
     const r = await send(key, from, h.email, `${h.inviter_name} asked Sorted to keep you in the loop`, text, hb);
     if (r.ok) invites++;
     else await sb.from("helpers").update({ invite_sent_at: null }).eq("task_id", h.task_id).eq("token", h.token);  // try again next run
@@ -131,7 +135,10 @@ Deno.serve(async (req: Request) => {
     const t: any = row?.data;
     if (!t) { await cancel("task gone"); continue; }
     if (t.board === "done") { await cancel("task done"); continue; }
-    const open = (t.promises || []).slice().reverse().find((p: any) => p.status === "open");
+    // v15: a case can hold several open promises (two organisations); the row's own promise counts while it is open,
+    // not only the last one added (the page reminds the one due first).
+    const opens = (t.promises || []).filter((p: any) => p && p.status === "open");
+    const open = (r.promise_id && opens.find((p: any) => p.id === r.promise_id)) || opens[opens.length - 1];
     const openMv = (t.moves || []).slice().reverse().find((m: any) => m.status === "open");
     const isAtt = typeof r.promise_id === "string" && r.promise_id.startsWith("att-");
     const att = isAtt ? (t.att || []).find((a: any) => a && a.id === r.promise_id) : null;
@@ -153,10 +160,10 @@ Deno.serve(async (req: Request) => {
     const ans = (a: string) => `${link}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
     const stop = `${FN}/email-stop?u=${r.user_id}&t=${await stopToken(r.user_id, cron)}`;
     const settings = `${SITE}/#more-settings`;
-    const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn't";
+    const yesL = isMove ? "Yes, done" : "Yes, it happened", noL = isMove ? "Not yet" : "No, it didn’t";
     const more = ask ? [{ label: "Can’t deal with it now? Choose when Sorted reminds you", link: ans("later") }].concat(isMove ? [] : [{ label: "They gave a new date? Add it", link: ans("date") }]) : [];
-    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. Stop all reminder emails: ${stop}\nOr turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You're getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. <a href="${esc(stop)}" style="color:#2A3990">Stop all reminder emails</a>, or <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
+    const text = `${c.heading}\n\n${c.intro}\n\n` + (ask ? `${yesL}: ${ans("yes")}\n${noL}: ${ans("no")}\n` + more.map((m) => `${m.label}: ${m.link}`).join("\n") + `\n\nSorted opens the case so you can check, and you can undo it.\n\n` : `Open your case: ${link}\n\n`) + `You’re getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. Stop all reminder emails: ${stop}\nOr turn them off in Settings: ${settings}\nTo stop them for this case only, open the case and turn its email reminders off.\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+    const hb = html(c.heading, c.intro, ask ? yesL : "Open your case", ask ? ans("yes") : link, `You’re getting this because you use Sorted and have email reminders on for this case. The details stay in the app, not in this email. <a href="${esc(stop)}" style="color:#2A3990">Stop all reminder emails</a>, or <a href="${esc(settings)}" style="color:#2A3990">turn them off in Settings</a>. To stop them for this case only, open the case and turn its email reminders off.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`, ask ? { button: noL, link: ans("no"), note: "Sorted opens the case so you can check, and you can undo it." } : undefined, more);
     // The phone first: fixed words, the case link, and after the time the answer buttons. Never what the case is.
     let pushOk = 0, pushTried = 0;
     // v141: a push already delivered for this reminder (a run cut short before the email) is not sent again.
@@ -165,7 +172,7 @@ Deno.serve(async (req: Request) => {
       const rel = `/?task=${encodeURIComponent(r.task_id)}&src=push`;
       const relAns = (a: string) => `${rel}&ans=${a}&p=${encodeURIComponent(r.promise_id)}`;
       const msg: any = { t: "Sorted", b: c.push, u: rel, g: "case-" + String(r.task_id).slice(0, 40) };
-      if (ask) { msg.x = [["yes", isMove ? "Done" : "Yes, it happened"], ["no", isMove ? "Not yet" : "No, it didn't"]]; msg.a = { yes: relAns("yes"), no: relAns("no") }; }
+      if (ask) { msg.x = [["yes", isMove ? "Done" : "Yes, it happened"], ["no", isMove ? "Not yet" : "No, it didn’t"]]; msg.a = { yes: relAns("yes"), no: relAns("no") }; }
       for (const s of (subs ?? []) as any[]) {
         pushTried++;
         let st = 0;
@@ -196,7 +203,7 @@ Deno.serve(async (req: Request) => {
       if (h && h.status === "confirmed" && sh?.token) {
         const hstop = `${SITE}/?helper=stop&h=${h.token}`;
         const hlink = `${SITE}/?share=${sh.token}`;
-        const hintro = isMove ? `Something ${h.inviter_name} planned to do is due soon. You said you'd like a nudge so you can check in with them.` : `Something ${h.inviter_name} is waiting on is due soon. You said you'd like a nudge so you can check in with them.`;
+        const hintro = isMove ? `Something ${h.inviter_name} planned to do is due soon. You said you’d like a nudge so you can check in with them.` : `Something ${h.inviter_name} is waiting on is due soon. You said you’d like a nudge so you can check in with them.`;
         const htext = `${hintro}\n\nSee it here: ${hlink}\n\nTo stop these nudges: ${hstop}\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
         const hhtml = html(`A nudge about ${h.inviter_name}`, hintro, "See it", hlink, `To stop these nudges: <a href="${esc(hstop)}" style="color:#2A3990">stop them here</a>.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.`);
         const hr = await send(key, from, h.email, `A nudge about ${h.inviter_name}`, htext, hhtml, { "List-Unsubscribe": `<${hstop}>` });

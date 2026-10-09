@@ -575,6 +575,17 @@ one. Now a plan to look something up, search, read, find out, check, verify or c
 tap away. Once checked, Sorted asks what they found. The rule is general, not a TSB entry; the banks and other common
 names were added too. Evidence: test 109.
 
+**v145 (audit pass 3, 9 October).** Four reviewers, about 40 fixes. The reader: a weekday with a day of the month,
+"COB Monday", the day you rang them, WhatsApp timestamps, "can't come Monday but will come Wednesday", payments due from
+you, information read as promises. Saving: a lapsed session no longer reads as "everything was deleted" and never throws
+an edit away; Undo after deleting reaches other tabs and devices; scores and step records survive a closed page.
+Documents: bank, card and identity numbers from a photo are hidden before they reach a case; rejection letters are read
+as replies. The server: a case with two organisations keeps the reminder for the promise due first; check days keep a
+case from the idle clean-up (migration 25). Health: a date Sorted can't read no longer stops a case opening; long pastes
+no longer freeze the page; dead code removed; tests no longer depend on the weekday (`SORTED_SHIFT_DAYS`). Open: "should"
+in a pasted message is still a promise while in a typed sentence it is tentative; the owner decides which is right.
+Evidence: tests 110 to 113.
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

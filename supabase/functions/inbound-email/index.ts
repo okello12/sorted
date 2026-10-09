@@ -9,11 +9,22 @@ import { replyKind } from "./readers.mjs";
 // Failures and rejections are logged to ops_errors as a kind and a time only (no addresses, no content).
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+// v8 (Sorted v145): the "a reply came in" email carries the same stop link and one-click unsubscribe headers (RFC 8058)
+// as a reminder, through email-stop; an HTML-only email loses its <head>, scripts and comments, and numbered entities are
+// decoded, before it is kept; an address listed twice (To and Cc) is stored once; a flood of rejected requests logs at
+// most 60 ops_errors rows of one kind an hour. readers.mjs is regenerated: "we have decided to reject your challenge" now
+// reads as a rejection, as it does on the phone.
 // v7 (Sorted v134): forwarding is back, to a secret address per person (log-<16 hex>, from my_inbound_address(), new
 // one any time with inbound_address_new()). The address is the key, not the From line, so nothing trusts the sender: each
 // email lands as a suggestion the owner accepts or removes, at most 30 a day per person.
 
-async function oops(kind: string) { try { await sb.from("ops_errors").insert({ source: "inbound", kind }); } catch { /* never block mail on logging */ } }
+async function oops(kind: string) {
+  try {
+    const { count } = await sb.from("ops_errors").select("id", { count: "exact", head: true }).eq("source", "inbound").eq("kind", kind).gte("at", new Date(Date.now() - 3600000).toISOString());
+    if ((count ?? 0) >= 60) return;
+    await sb.from("ops_errors").insert({ source: "inbound", kind });
+  } catch { /* never block mail on logging */ }
+}
 async function secret(name: string): Promise<string | null> {
   const { data } = await sb.rpc("sorted_secret", { p_name: name });
   return (data as string) || null;
@@ -33,7 +44,7 @@ async function verify(req: Request, body: string): Promise<"ok" | "no_secret" | 
   return sig.split(" ").some((p) => { const [v, s] = p.split(","); return v === "v1" && !!s && eq(s, mac); }) ? "ok" : "bad_signature";
 }
 const addr = (s: string) => { const m = String(s || "").match(/<([^>]+)>/); return (m ? m[1] : String(s || "")).trim().toLowerCase(); };
-const strip = (html: string) => html.replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|tr|li|h\d)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\n{3,}/g, "\n\n");
+const strip = (html: string) => html.replace(/<!--[\s\S]*?-->/g, "").replace(/<head[\s\S]*?<\/head>/gi, "").replace(/<(script|style|title)[\s\S]*?<\/\1>/gi, "").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|tr|li|h\d)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&#(\d{1,7});/g, (m, d) => { const n = +d; return n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ""; }).replace(/&#x([0-9a-f]{1,6});/gi, (m, h) => { const n = parseInt(h, 16); return n > 0 && n < 0x110000 ? String.fromCodePoint(n) : ""; }).replace(/\n{3,}/g, "\n\n");
 
 async function bodyText(d: any): Promise<string> {
   const key = (await secret("resend_inbound_key")) || (await secret("resend_api_key"));
@@ -45,16 +56,23 @@ async function bodyText(d: any): Promise<string> {
   return String(j.text || (j.html ? strip(j.html) : ""));
 }
 
+// v8 (Sorted v145): curly apostrophes in the notice email's headings and footer. Nothing else changed.
 // v6 (Sorted v116): the email footer says "a small UK service", not "research pilot". Nothing else changed.
 // v5 (Sorted v72): after a reply is stored, the case's owner gets a short email saying a reply came in and what kind it
 // looks like (read with the page's own patterns, readers.mjs). Never which case, who sent it or what it says. Not for an
 // acknowledgement, at most one every 6 hours per case, and never after they have stopped Sorted's emails.
 const SITE = "https://sorted-pilot.vercel.app";
+const FN = "https://boxrwcuhxmimayaxzywu.supabase.co/functions/v1";
+async function stopToken(u: string, cron: string): Promise<string> {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(cron), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const s = new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode("stop:" + u)));
+  return Array.from(s).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const NOTE: Record<string, { heading: string; intro: string }> = {
-  rejected: { heading: "It looks like they've said no", intro: "A reply came into one of your Sorted cases, and it reads like a rejection. Open the case to check it. If it is, Sorted will show your next step and any new deadline." },
-  cancelled: { heading: "It looks like good news", intro: "A reply came into one of your Sorted cases, and it reads like they've accepted or cancelled it. Open the case to check, then you can finish it." },
-  date: { heading: "They may have given a date", intro: "A reply came into one of your Sorted cases, and it mentions a date. Open the case to check it and, if it's right, confirm it as their promise." },
+  rejected: { heading: "It looks like they’ve said no", intro: "A reply came into one of your Sorted cases, and it reads like a rejection. Open the case to check it. If it is, Sorted will show your next step and any new deadline." },
+  cancelled: { heading: "It looks like good news", intro: "A reply came into one of your Sorted cases, and it reads like they’ve accepted or cancelled it. Open the case to check, then you can finish it." },
+  date: { heading: "They may have given a date", intro: "A reply came into one of your Sorted cases, and it mentions a date. Open the case to check it and, if it’s right, confirm it as their promise." },
   other: { heading: "A reply came in", intro: "A reply came into one of your Sorted cases. Open the case to read it and decide whether it belongs there." },
 };
 async function notify(taskId: string, userId: string, kind: string) {
@@ -67,11 +85,14 @@ async function notify(taskId: string, userId: string, kind: string) {
   const to = u?.user?.email;
   if (!to) return;
   const n = NOTE[kind], link = `${SITE}/?task=${encodeURIComponent(taskId)}&src=reply`;
-  const foot = "Check it's genuine before you rely on it: anyone can send an email. This email doesn't say which case or what the reply says; that stays in the app.";
-  const text = `${n.heading}\n\n${n.intro}\n\nOpen your case: ${link}\n\n${foot}\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
-  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(n.heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(n.intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px">Open your case</a><p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p></td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${esc(foot)}<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.</td></tr></table></td></tr></table></body></html>`;
+  const cron = await secret("sorted_cron_secret");
+  const stop = cron && /^[0-9a-f-]{36}$/.test(userId) ? `${FN}/email-stop?u=${userId}&t=${await stopToken(userId, cron)}` : "";
+  const settings = `${SITE}/#more-settings`;
+  const foot = "Check it’s genuine before you rely on it: anyone can send an email. This email doesn’t say which case or what the reply says; that stays in the app.";
+  const text = `${n.heading}\n\n${n.intro}\n\nOpen your case: ${link}\n\n${foot}\n\n` + `These emails stop when you stop reminder emails. ` + (stop ? `Stop all reminder emails: ${stop}\n` : "") + `${stop ? "Or turn" : "Turn"} them off in Settings: ${settings}\n\nSorted is a small UK service run by Baldwin Thompson-Addo.`;
+  const html = `<!doctype html><html><body style="margin:0;padding:0;background:#F6F3EC"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F3EC"><tr><td align="center" style="padding:24px 12px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:8px"><tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1B1B1F"><p style="margin:0 0 18px;font-size:22px;font-weight:bold">sorted<span style="color:#2A3990">.</span></p><p style="margin:0 0 10px;font-size:18px;font-weight:bold">${esc(n.heading)}</p><p style="margin:0 0 22px;font-size:16px;line-height:1.5">${esc(n.intro)}</p><a href="${esc(link)}" style="display:inline-block;background:#2A3990;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:12px 22px;border-radius:6px">Open your case</a><p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#55565C">Or copy this link: ${esc(link)}</p></td></tr><tr><td style="padding:18px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6B6C72">${esc(foot)}<br><br>These emails stop when you stop reminder emails. ${stop ? `<a href="${esc(stop)}" style="color:#2A3990">Stop all reminder emails</a>, or ` : ""}<a href="${esc(settings)}" style="color:#2A3990">${stop ? "turn them off" : "Turn them off"} in Settings</a>.<br><br>Sorted is a small UK service run by Baldwin Thompson-Addo.</td></tr></table></td></tr></table></body></html>`;
   try {
-    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: "A reply came into one of your Sorted cases", text, html }) });
+    const r = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], subject: "A reply came into one of your Sorted cases", text, html, ...(stop ? { headers: { "List-Unsubscribe": `<${stop}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } } : {}) }) });
     if (!r.ok) await oops("notify_failed");
   } catch { await oops("notify_failed"); }
 }
@@ -92,7 +113,7 @@ async function handle(req: Request): Promise<Response> {
   if (!domain) { await oops("no_secret"); return Response.json({ stored: 0 }); }
   const on = (await secret("case_replies_on")) === "yes";
   const from = addr(d.from), fromDomain = from.slice(from.lastIndexOf("@") + 1).slice(0, 120);
-  const rcpts = ([] as string[]).concat(d.to || [], d.cc || []).map(addr);
+  const rcpts = Array.from(new Set(([] as string[]).concat(d.to || [], d.cc || []).map(addr)));
   let stored = 0, text: string | null = null;
   for (const a of rcpts) {
     const at = a.lastIndexOf("@");

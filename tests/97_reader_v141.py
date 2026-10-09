@@ -58,8 +58,12 @@ with sync_playwright() as p:
          ('They said the engineer would come Friday between 07:30 and 09:30', '07:30', '09:30'), ("They said they'd come on Friday between 7 and 11", '07:00', '11:00'),
          ("They said they'd come on Friday 7.30-9.30", '07:30', '09:30'), ('They said they would come Friday 8-12pm', '08:00', '12:00'),
          ('They said they would come Friday between 8-12pm', '08:00', '12:00'), ("They said they'd come on Friday between 1 and 3", '13:00', '15:00')]
+    # v145: the times are said about a day two days ahead, never today: on a Friday after 9:30 "Friday 07:30-09:30" has
+    # already passed, so the day it lands on depends on the time of day the test runs, not on reading the times
+    SW = (today.weekday() + 2) % 7; SWN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][SW]
+    T = [(s.replace('Friday', SWN), a, z) for s, a, z in T]
     for (s, a, z), x in zip(T, rc([t[0] for t in T])):
-        ok(x and x['day'] == ymd(FRI) and x['from'] == a and x['to'] == z, '%r is Friday %s to %s: %s' % (s, a, z, x and (x['from'], x['to'])))
+        ok(x and x['day'] == ymd(nxt(SW)) and x['from'] == a and x['to'] == z, '%r is %s %s to %s: %s' % (s, SWN, a, z, x and (x['day'], x['from'], x['to'])))
     # 3, 4, 5 the told day
     r = rc(["My boiler broke 3 days ago, British Gas said they'll come within 2 days", "British Gas told me today they'll come within 2 days"])
     ok(r[0] and r[0]['day'] == ymd(today + D(days=2)) and not r[0]['told'] and not r[0]['past'], '“broke 3 days ago” is not when they said it: %s' % r[0])

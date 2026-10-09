@@ -2,7 +2,9 @@
    tapped. It caches nothing, so the page is always the latest one. A message carries no case details: a title, a line
    of fixed text, the case link, and the answer buttons.
    v142: it also receives Android's share sheet. The manifest posts shared words to /share-target; they are handed to
-   the page in the address's # part (/#new=…), so they never reach a server or its logs. Nothing else is touched. */
+   the page in the address's # part (/#new=…), so they never reach a server or its logs. Nothing else is touched.
+   v145: if an open Sorted window can't be sent to the case (a window this worker doesn't control refuses navigate()),
+   the case opens in a new window instead of the tap doing nothing. */
 self.addEventListener("install", function () { self.skipWaiting(); });
 self.addEventListener("activate", function (e) { e.waitUntil(self.clients.claim()); });
 
@@ -39,7 +41,7 @@ self.addEventListener("notificationclick", function (e) {
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
     for (var i = 0; i < list.length; i++) {
       var c = list[i];
-      if (c.url.indexOf(self.location.origin) === 0 && "navigate" in c) return c.navigate(url).then(function (w) { return w && w.focus ? w.focus() : null; });
+      if (c.url.indexOf(self.location.origin) === 0 && "navigate" in c) return c.navigate(url).then(function (w) { if (!w) return self.clients.openWindow(url); return w.focus ? w.focus() : null; }, function () { return self.clients.openWindow(url); });
     }
     return self.clients.openWindow(url);
   }));

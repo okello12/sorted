@@ -100,9 +100,9 @@ ok(am.some((b) => b.subject.includes("your check day")) && am.some((b) => b.subj
 const ap = calls.filter((c) => c.url.includes("/fcm/send/abc"));
 const apm = await Promise.all(ap.map((c) => decrypt(new Uint8Array(c.o.body))));
 ok(apm.length === 3 && apm.every((x) => !x.x && !x.a && !/Evri|EV123456/.test(JSON.stringify(x))), "attention pushes have no answer buttons and no case words");
-// the promise's own "after" push: answers match the email ("No, it didn't"), never "Not yet" for someone else's promise
+// the promise's own "after" push: answers match the email ("No, it didn’t"), never "Not yet" for someone else's promise
 fresh();
 await (await handler(new Request("https://x/", { headers: { "x-cron-secret": "cron" } }))).json();
 const pm = await decrypt(new Uint8Array(calls.filter((c) => c.url.includes("/fcm/send/abc"))[0].o.body));
-ok(JSON.stringify(pm.x) === JSON.stringify([["yes", "Yes, it happened"], ["no", "No, it didn't"]]), "push answers for their promise say what the email says: " + JSON.stringify(pm.x));
+ok(JSON.stringify(pm.x) === JSON.stringify([["yes", "Yes, it happened"], ["no", "No, it didn’t"]]), "push answers for their promise say what the email says: " + JSON.stringify(pm.x));
 console.log("FAILS", JSON.stringify(fails));

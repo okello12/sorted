@@ -157,12 +157,15 @@ with sync_playwright() as p:
     c1b = start(corpus.DEMANDS[7][0], keep=False); t = case(c1b)
     ok(not t.get('promises') and not t.get('sugP') and not t.get('deadline'), 'J1b a receipt with a returns policy: no promise, no deadline')
     # J2 (007) a count from a stated date: the working, both readings, and a choice
-    c2 = start("Currys said they would refund my £40 within five working days from " + T6dm)
+    # v145: counted from 3 days ago, so five working days always end after today (from 6 days ago they ended yesterday
+    # when the test ran on a Saturday, and the promise was rightly not saved as open)
+    T3 = today - datetime.timedelta(days=3); T3dm = '%d %s' % (T3.day, T3.strftime('%B'))
+    c2 = start("Currys said they would refund my £40 within five working days from " + T3dm)
     t = case(c2); q = [x for x in t['promises'] if x['status'] == 'open'][0]
-    ok(q.get('told') == T6.isoformat() and q.get('cfrom') and q.get('prec') == 'calc', 'J2 the promise counts from %s and is Sorted’s working (%s)' % (T6dm, {k: q.get(k) for k in ('told', 'alt', 'altB', 'prec', 'phrase')}))
+    ok(q.get('told') == T3.isoformat() and q.get('cfrom') and q.get('prec') == 'calc', 'J2 the promise counts from %s and is Sorted’s working (%s)' % (T3dm, {k: q.get(k) for k in ('told', 'alt', 'altB', 'prec', 'phrase')}))
     opn(c2); m = main()
-    ok('Counting from:' in m and T6dm in m, 'J2 the case says what the count starts from')
-    if T6.weekday() < 5: ok(pg.locator('[data-a=calc-pick]').count() == 3, 'J2 and asks which reading to use')
+    ok('Counting from:' in m and T3dm in m, 'J2 the case says what the count starts from')
+    if T3.weekday() < 5: ok(pg.locator('[data-a=calc-pick]').count() == 3, 'J2 and asks which reading to use')
     # J3 (008, 016) a phone screenshot through the document door, read by Tesseract
     os.makedirs(HERE + '/tests/out', exist_ok=True); img = HERE + '/tests/out/b104_phone.png'
     sp = b.new_page(viewport={'width': 390, 'height': 560}); sp.set_content(PHONE_HTML); sp.screenshot(path=img); sp.close()

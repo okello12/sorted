@@ -5,7 +5,7 @@
     "@supabase/supabase-js": "2.117.2",
     "@tesseract.js-data/eng": "1.0.0",
     "axe-core": "4.13.0",
-    "pdfjs-dist": "3.11.174",
+    "pdfjs-dist": "6.4.299",
     "tesseract.js": "5.1.1",
     "tesseract.js-core": "5.1.1"
   }

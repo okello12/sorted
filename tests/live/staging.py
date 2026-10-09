@@ -207,7 +207,7 @@ if B:
     ok(st >= 400 or not r, 'B gets no reply address for A’s case (%s %s)' % (st, str(r)[:60]))
     st, r = rpc('invite_helper', {'p_task_id': tid, 'p_email': 'helper@example.com', 'p_name': 'H'}, B)
     ok(st >= 400 or r in (False, None) or (isinstance(r, dict) and not r.get('ok')), 'B cannot invite a helper to A’s case (%s %s)' % (st, str(r)[:60]))
-    ep = 'https://push.example/' + uuid.uuid4().hex
+    ep = 'https://fcm.googleapis.com/fcm/send/staging-' + uuid.uuid4().hex   # push_save only takes real push hosts
     st, r = rpc('push_save', {'p_endpoint': ep, 'p_p256dh': 'k', 'p_auth': 'a'}, A)
     ok(st in (200, 204), 'A saves a push address (%s)' % st)
     rpc('push_drop', {'p_endpoint': ep}, B)
@@ -265,7 +265,11 @@ try:
         ok('AB123' in pg.inner_text('main') and 'Waiting' in pg.inner_text('main'), 'a reload brings it back from the database')
         ok(not perr, 'no page errors against the real backend: %s' % perr[:2])
         # tidy up: delete the account from inside the page's own session
-        pg.evaluate("sb.rpc('delete_my_account')"); pg.wait_for_timeout(1500)
+        # (the page's client isn't a global, so take the session from storage and call the database directly)
+        sess = pg.evaluate("(()=>{for(const k of Object.keys(localStorage)){if(/^sb-.*-auth-token$/.test(k)){try{return JSON.parse(localStorage.getItem(k)).access_token}catch(e){}}}return null})()")
+        ok(bool(sess), 'the page signed in to staging as a guest')
+        if sess:
+            st, r = rpc('delete_my_account', {}, sess); ok(st in (200, 204), 'the walk’s guest is deleted (%s)' % st)
         b.close()
 except ImportError:
     print('note: Playwright not installed, the browser walk was skipped')

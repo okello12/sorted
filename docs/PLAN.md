@@ -594,6 +594,14 @@ once even when Resend delivers it twice (migration 26, `inbound-email` v9). Test
 because the test harness's shifted clock gave `Date.now()` the real time on pages with their own clock; the harness is
 fixed, not the page. Evidence: test 114, the inbound check, 108 with `SORTED_SHIFT_DAYS=1` and `=3`.
 
+**v147 (the garage test, 9 October).** The person's own plan survives a promise. "Phone the garage in the morning" next
+to "the car will be ready today" is now their step, at 8am the next morning, and the case stays under Needs you until
+they've called or said they're leaving it; before, Sorted replaced the plan with "wait" and Home said "All clear". A name
+placeholder ("Garage name not with me") is no longer taken as the garage's name; "said they would said" is gone;
+"Something's broken" offers the garage questions for a car; "any time" became "no time given"; no calendar alarm the
+evening before something due today. The quote edit the tester reported saved correctly when retried; what looked wrong
+was the doubled quote, now fixed at source. Evidence: test 115 (also at 4am and on a Saturday).
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

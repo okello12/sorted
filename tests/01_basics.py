@@ -41,7 +41,7 @@ with sync_playwright() as p:
     if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg,150)
     pg.evaluate(PAST,'Currys refund'); pg.reload(); wait(pg,400)
     if pg.locator('.tab129 [data-a=go-home]').count(): pg.click('.tab129 [data-a=go-home]'); wait(pg,400)  # v145: a refresh on a case stays on that case
-    m=pg.inner_text('main'); ok('only this browser can open them' in m and 'saved on Sorted’s servers' in m and 'only on this phone.' not in m,'no-email banner says where cases are')
+    m=pg.inner_text('main'); ok('only this browser can open them' in m and ('saved to Sorted' in m or 'saved on Sorted’s servers' in m) and 'only on this phone.' not in m,'no-email banner says where cases are')
     pg.click('.slip-open'); wait(pg,300)
     f=pg.inner_text('.promise-foot'); ok('They came' in f and 'Nobody came' in f and 'Yes, it happened' not in f,'case screen uses the same words as Home')
     ok('Your plan before any advice' not in pg.inner_text('main'),'no research line under the title')

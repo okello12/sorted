@@ -602,6 +602,16 @@ placeholder ("Garage name not with me") is no longer taken as the garage's name;
 evening before something due today. The quote edit the tester reported saved correctly when retried; what looked wrong
 was the doubled quote, now fixed at source. Evidence: test 115 (also at 4am and on a Saturday).
 
+**v148 (two obligations at once, 9 October).** The refund, TSB and garage tests showed the same fault: when Sorted
+recognised what the other side said, it replaced the person's own sensible next step with its own workflow. The rule is
+now in the model: what they owe and what you plan are separate records, and nothing Sorted reads or confirms closes,
+replaces or hides your plan. Any plan next to their promise becomes your step, in your words, with its condition ("if
+there's still no text") and anything you weren't sure of (the opening time). Confirming their promise asks "Keep my
+follow-up" or "I'll just wait for them". The case shows both obligations together; Home is never "All clear" while your
+step is open and offers "I've called" and "I heard from them", which sets a conditional call aside and asks what they
+said. The repair door asks what needs repairing, presumes no appliance and has a car of its own. A corrected quote is
+the one every screen shows. Evidence: test 116 (also at 4am and on a Saturday); 109's expectation follows the new rule.
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

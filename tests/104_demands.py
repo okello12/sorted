@@ -34,6 +34,7 @@ def wd_from(d, k):
         x += datetime.timedelta(days=1)
         if x.weekday() < 5 and x.isoformat() not in BH: c += 1
     return x
+# A told day at a weekend can't itself count, so Sorted gives one reading (dueAt) and no altB: compare whichever it gave.
 def lday(iso):  # the London day of an ISO time
     return datetime.datetime.fromisoformat(iso.replace('Z', '+00:00')).astimezone().date()
 T6 = today - datetime.timedelta(days=6); T6dm = '%d %s' % (T6.day, T6.strftime('%B'))
@@ -65,14 +66,14 @@ with sync_playwright() as p:
     # 007: a count from a stated date
     r = R("Currys said they would refund my £40 within five working days from " + T6dm)['p'] or {}
     hi, lo = wd_from(T6, 5), wd_from(T6, 4) if T6.weekday() < 5 else None
-    ok(r.get('told') == T6.isoformat() and r.get('cfrom') and r.get('altB') == hi.isoformat() and r.get('prec') == 'calc', '"within five working days from %s" counts from that date, with Sorted’s working (%s)' % (T6dm, json.dumps(r)))
+    ok(r.get('told') == T6.isoformat() and r.get('cfrom') and (r.get('altB') or (r.get('dueAt') and lday(r['dueAt']).isoformat())) == hi.isoformat() and r.get('prec') == 'calc', '"within five working days from %s" counts from that date, with Sorted’s working (%s)' % (T6dm, json.dumps(r)))
     if lo: ok(r.get('alt') == lo.isoformat(), 'and the earlier reading when %s may count' % T6dm)
     # 007: reply chains, newest first
     chain = "From: Currys <help@currys.co.uk>\nSent: %s\nWe're sorry, your refund has been delayed. We will contact you again.\n\n> On %s Currys wrote:\n> We will refund £89 within 5 working days. Order 445566." % (dates.ahead(-1)['dm'], T6dm)
     ok(R(chain)['p'] is None, 'a reply chain whose newest part says it is delayed proposes nothing from the old quoted promise')
     ok(R(chain.replace('\n', ' '))['p'] is None, 'the same, as one line read from a photo')
     r = R("Hi, just checking in.\n\n> On %s Currys wrote:\n> We will refund £89 within 5 working days. Order 445566." % T6dm)['p'] or {}
-    ok(r.get('quoted') and r.get('told') == T6.isoformat() and r.get('altB') == wd_from(T6, 5).isoformat(), 'with nothing new on top, the quoted message is read from the day it was sent (%s)' % json.dumps(r))
+    ok(r.get('quoted') and r.get('told') == T6.isoformat() and (r.get('altB') or (r.get('dueAt') and lday(r['dueAt']).isoformat())) == wd_from(T6, 5).isoformat(), 'with nothing new on top, the quoted message is read from the day it was sent (%s)' % json.dumps(r))
     r = R("Update: your engineer is now booked for %s between 8am and 1pm.\n> On %s, John Lewis wrote:\n> Your engineer will visit tomorrow." % (dates.ahead(4)['long'], T6dm))['p'] or {}
     ok(r.get('dueAt') and lday(r['dueAt']) == dates.ahead(4)['date'] and not r.get('quoted'), 'the newest message wins over the quoted one')
     # 008: screen chrome

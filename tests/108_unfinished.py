@@ -125,9 +125,9 @@ with sync_playwright() as p:
         c2.close()
 
     # ================= 022 and 034: the next move, plainly =================
-    # step 2 leads with waiting until their date
+    # step 2 leads with waiting until their date (the full date: a bare weekday said on that weekday is today)
     tap('new-case'); pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg, 300)
-    pg.fill('#f-case', 'Currys said they will refund my £40 by %s, order 778899' % fri.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 800)
+    pg.fill('#f-case', 'Currys said they will refund my £40 by %s, order 778899' % fri.strftime('%A %-d %B')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 800)
     if pg.locator('[data-a=match-new]').count(): pg.click('[data-a=match-new]'); wait(pg)
     chips = [x.strip() for x in pg.locator('form[data-f=baseline] .chip').all_inner_texts()]
     ok(chips and chips[0] == 'Wait until ' + dlong(fri) and 'Ask where the refund is' in chips, 'step 2 offers "Wait until %s" first, beside the chase options: %s' % (dlong(fri), chips))

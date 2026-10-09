@@ -80,6 +80,7 @@ with sync_playwright() as p:
     if pg.locator('[data-a=fr-ok]').count(): pg.click('[data-a=fr-ok]'); wait(pg, 300)
     paste(cid2, 'Thanks for your call. Your complaint reference is CMP-99001.')
     if pg.locator('[data-a=cm-no]').count(): pg.click('[data-a=cm-no]'); wait(pg, 300)
+    if pg.locator('.rem149 [data-v=none]').count(): pg.click('.rem149 [data-v=none]'); wait(pg, 400)   # v149: the reminder question comes first
     if pg.locator('[data-a=refs-no]').count(): pg.click('[data-a=refs-no]'); wait(pg, 500)
     rj = [r for r in L(cid2) if r['type'] == 'ref' and r['v'] == 'CMP-99001']
     ok(rj and rj[0]['st'] == 'rejected' and rj[0]['by'] == 'sorted' and not live(cid2, 'ref', 'complaint'), 'a reference you turned down is rejected in the ledger, never confirmed (%s)' % (rj and rj[0]['st']))

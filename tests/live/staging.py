@@ -10,6 +10,16 @@
 # through a first case, so the client path is tested against a real database too.
 import os, sys, json, time, uuid, urllib.request, urllib.error
 URL = os.environ.get('SORTED_STAGING_URL', '').rstrip('/'); KEY = os.environ.get('SORTED_STAGING_ANON_KEY', '')
+URL = URL.strip(); KEY = KEY.strip()
+import re as _re
+if URL and KEY and not (_re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]{10,}', KEY) or _re.fullmatch(r'eyJ[A-Za-z0-9_.-]{20,}', KEY)):
+    # never print the value: say what is wrong with it
+    bad = sorted(set(ch for ch in KEY if ord(ch) > 126 or ch.isspace()))
+    print('FAIL the repository secret SORTED_STAGING_ANON_KEY is not a Supabase publishable key (%d characters, starts %r%s). Copy it again from Supabase > Project Settings > API Keys > Publishable key.' % (len(KEY), KEY[:15], (', contains ' + ' '.join(repr(c) for c in bad)) if bad else ''))
+    print('ERRORS', []); print('FAILS', ['staging key secret is malformed']); sys.exit(1)
+if URL and not _re.fullmatch(r'https://[a-z0-9]{20}\.supabase\.co', URL):
+    print('FAIL the repository secret SORTED_STAGING_URL should look like https://<project ref>.supabase.co (%d characters)' % len(URL))
+    print('ERRORS', []); print('FAILS', ['staging url secret is malformed']); sys.exit(1)
 LIVE_REF = 'boxrwcuhxmimayaxzywu'
 fails = []; errs = []; n = [0]
 def ok(c, m):

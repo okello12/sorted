@@ -103,12 +103,13 @@ jobs:
     outputs:
       staging: ${{ steps.s.outputs.staging }}
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - id: s
         env:
           U: ${{ secrets.SORTED_STAGING_URL }}
           K: ${{ secrets.SORTED_STAGING_ANON_KEY }}
         run: |
-          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::error title=staging::The repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set (docs/STAGING.md). Since v149 a missing staging gate fails the build."; exit 1; fi
+          if { [ -n "$U" ] && [ -n "$K" ]; } || [ -f tests/live/staging_target.json ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::error title=staging::No staging target: neither the repository secrets nor tests/live/staging_target.json (docs/STAGING.md). Since v149 a missing staging gate fails the build."; exit 1; fi
 
   staging:
     # The live suite (tests/live/staging.py) against the STAGING Supabase project: row level security, grants, share

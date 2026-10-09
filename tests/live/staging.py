@@ -12,6 +12,15 @@ import os, sys, json, time, uuid, urllib.request, urllib.error
 URL = os.environ.get('SORTED_STAGING_URL', '').rstrip('/'); KEY = os.environ.get('SORTED_STAGING_ANON_KEY', '')
 URL = URL.strip(); KEY = KEY.strip()
 import re as _re
+_ok = lambda k: bool(_re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]{10,}', k) or _re.fullmatch(r'eyJ[A-Za-z0-9_.-]{20,}', k))
+try:
+    _T = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'staging_target.json')))
+except Exception:
+    _T = {}
+if (not KEY or not _ok(KEY)) and _ok(_T.get('key', '')):
+    if KEY: print('note: the SORTED_STAGING_ANON_KEY secret is not a publishable key, so the staging key in tests/live/staging_target.json is used')
+    KEY = _T['key']
+if not URL and _T.get('url'): URL = _T['url']
 if URL and KEY and not (_re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]{10,}', KEY) or _re.fullmatch(r'eyJ[A-Za-z0-9_.-]{20,}', KEY)):
     # never print the value: say what is wrong with it
     bad = sorted(set(ch for ch in KEY if ord(ch) > 126 or ch.isspace()))

@@ -72,7 +72,7 @@ async function svixPost(h, payload, secret, sigOk = true) {
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
 globalThis.__DB = { inbound_addresses: [{ user_id: U1, token: "log-0123456789abcdef" }], inbound_items: [], ops_errors: [], case_mail: [{ token: "case-abc", task_id: "t9", user_id: U1 }], email_optouts: [] };
-globalThis.__BODIES = { e1: { text: "We have reviewed your complaint and we are unable to accept it. Ref ZX123456." },
+globalThis.__BODIES = { e1: { text: "We have reviewed your complaint and we are unable to accept it. Ref ZX123456." }, e1b: { text: "We have reviewed your complaint and we are unable to accept it. Ref ZX123456." },
   e2: { html: '<html><head><title>Big Sale</title><style>p{color:red}</style><script>alert("x")</script></head><body><!--[if mso]><p>Outlook junk</p><![endif]--><p>Your refund of &#163;40 will be paid by Friday &#x2014; thanks.</p></body></html>' } };
 calls.length = 0;
 let r = await svixPost(ib, { type: "email.received", data: { email_id: "e1", from: "Currys <help@currys.co.uk>", to: ["case-abc@in.example.uk"], cc: [], subject: "Your complaint" } }, whsec);
@@ -82,7 +82,7 @@ ok(r.j.stored === 1 && note && note.headers && note.headers["List-Unsubscribe"] 
 ok(note && note.text.includes("Stop all reminder emails: " + stopUrl) && note.html.includes("Stop all reminder emails") && note.text.includes("#more-settings"), "and a visible stop link and the Settings link, worded as in the app");
 ok(note && !/ZX123456|Currys|complaint/i.test(note.text + note.html), "the notice still never says which case or what the reply says");
 __DB.email_optouts.push({ user_id: U1 }); __DB.inbound_items.length = 0; calls.length = 0;
-r = await svixPost(ib, { type: "email.received", data: { email_id: "e1", from: "help@currys.co.uk", to: ["case-abc@in.example.uk"], cc: [] } }, whsec);
+r = await svixPost(ib, { type: "email.received", data: { email_id: "e1b", from: "help@currys.co.uk", to: ["case-abc@in.example.uk"], cc: [] } }, whsec);
 ok(r.j.stored === 1 && !calls.some((c) => c.url === "https://api.resend.com/emails"), "after the stop, the reply is kept but no notice is sent");
 __DB.inbound_items.length = 0;
 r = await svixPost(ib, { type: "email.received", data: { email_id: "e2", from: "Shop <news@shop.co.uk>", to: ["log-0123456789abcdef@in.example.uk"], cc: ["LOG-0123456789ABCDEF@in.example.uk"], subject: "Refund" } }, whsec);

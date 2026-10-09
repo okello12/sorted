@@ -79,7 +79,7 @@ with sync_playwright() as p:
     pv = src
     ok('forward emails to your own Sorted address' in pv and 'Forwarding other emails into Sorted is switched off' not in pv and 'notification address' in pv and 'doesn’t say what the case is' in pv, 'the privacy notice describes forwarding and lock-screen reminders')
     r = subprocess.run(['node', '--experimental-strip-types', HERE + '/tests/fn/inbound_check.mjs'], capture_output=True, text=True)
-    ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 8, 'inbound-email, run in Node: the secret address, nothing trusted, unknown addresses dropped, a daily limit (%d passes)' % r.stdout.count('PASS'))
+    ok('FAILS []' in r.stdout and r.stdout.count('PASS') == 13, 'inbound-email, run in Node: the secret address, nothing trusted, unknown addresses dropped, a daily limit, each email once (%d passes)' % r.stdout.count('PASS'))
     ok(not errs, 'no page errors: %s' % errs)
     print('CHECKS', n[0])
     b.close()

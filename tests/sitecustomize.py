@@ -90,8 +90,11 @@ if _shift:
 
         _dt.date, _dt.datetime = _ShiftDate, _ShiftDT
         _ms = int(round(float(_shift) * 86400000))
-        _JS = ("(()=>{if(window.__shift145)return;window.__shift145=%d;const R=Date,O=%d;"
-               "function D(...a){if(!new.target)return new R(R.now()+O).toString();return a.length?new R(...a):new R(R.now()+O)}"
+        # A page whose test installs its own clock (pg.clock.install) already asks for the shifted time, so the shifted
+        # Date is taken out again there (window.__shiftR, put back by an init script registered just before Playwright's
+        # own clock script), and Date and Date.now both come from Playwright's clock.
+        _JS = ("(()=>{if(window.__shift145)return;window.__shift145=%d;const R=Date,O=%d;window.__shiftR=R;"
+               "function D(...a){if(!new.target)return new D().toString();return a.length?new R(...a):new R(R.now()+O)}"
                "D.prototype=R.prototype;D.now=()=>R.now()+O;D.UTC=R.UTC;D.parse=R.parse;"
                "Object.defineProperty(D.prototype,'constructor',{value:D,configurable:true,writable:true});window.Date=D})()") % (_ms, _ms)
         from playwright.sync_api import Browser, BrowserContext
@@ -111,20 +114,15 @@ if _shift:
             return pg
 
         Browser.new_page = _page
-        # a test that sets the page clock itself (pg.clock.install(time=...)) already gives a shifted time, and the
-        # shifted Date above wraps Playwright's clock, so take the shift back out of the time it gives
         from playwright.sync_api._generated import Clock as _Clock
-
-        def _unshift(t):
-            if isinstance(t, _RealDT): return t - _off
-            if isinstance(t, (int, float)) and not isinstance(t, bool): return t - _ms
-            return t
 
         for _name in ("install", "set_fixed_time", "set_system_time", "pause_at"):
             def _mk(orig):
                 def _w(self, *a, **k):
-                    if "time" in k: k["time"] = _unshift(k["time"])
-                    elif a: a = (_unshift(a[0]),) + tuple(a[1:])
+                    try:
+                        self._sync(self._impl_obj._browser_context.add_init_script(script="if(window.__shiftR){window.Date=window.__shiftR}"))
+                    except Exception as _e2:
+                        print("SORTED_SHIFT_DAYS: clock not marked:", _e2)
                     return orig(self, *a, **k)
                 return _w
             setattr(_Clock, _name, _mk(getattr(_Clock, _name)))

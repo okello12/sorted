@@ -10,6 +10,25 @@
 # through a first case, so the client path is tested against a real database too.
 import os, sys, json, time, uuid, urllib.request, urllib.error
 URL = os.environ.get('SORTED_STAGING_URL', '').rstrip('/'); KEY = os.environ.get('SORTED_STAGING_ANON_KEY', '')
+URL = URL.strip(); KEY = KEY.strip()
+import re as _re
+_ok = lambda k: bool(_re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]{10,}', k) or _re.fullmatch(r'eyJ[A-Za-z0-9_.-]{20,}', k))
+try:
+    _T = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'staging_target.json')))
+except Exception:
+    _T = {}
+if (not KEY or not _ok(KEY)) and _ok(_T.get('key', '')):
+    if KEY: print('note: the SORTED_STAGING_ANON_KEY secret is not a publishable key, so the staging key in tests/live/staging_target.json is used')
+    KEY = _T['key']
+if not URL and _T.get('url'): URL = _T['url']
+if URL and KEY and not (_re.fullmatch(r'sb_publishable_[A-Za-z0-9_-]{10,}', KEY) or _re.fullmatch(r'eyJ[A-Za-z0-9_.-]{20,}', KEY)):
+    # never print the value: say what is wrong with it
+    bad = sorted(set(ch for ch in KEY if ord(ch) > 126 or ch.isspace()))
+    print('FAIL the repository secret SORTED_STAGING_ANON_KEY is not a Supabase publishable key (%d characters, starts %r%s). Copy it again from Supabase > Project Settings > API Keys > Publishable key.' % (len(KEY), KEY[:15], (', contains ' + ' '.join(repr(c) for c in bad)) if bad else ''))
+    print('ERRORS', []); print('FAILS', ['staging key secret is malformed']); sys.exit(1)
+if URL and not _re.fullmatch(r'https://[a-z0-9]{20}\.supabase\.co', URL):
+    print('FAIL the repository secret SORTED_STAGING_URL should look like https://<project ref>.supabase.co (%d characters)' % len(URL))
+    print('ERRORS', []); print('FAILS', ['staging url secret is malformed']); sys.exit(1)
 LIVE_REF = 'boxrwcuhxmimayaxzywu'
 fails = []; errs = []; n = [0]
 def ok(c, m):
@@ -155,6 +174,63 @@ ok(st == 200 and r is False and r2 == [], 'A switches them back on and the row g
 st, r = rpc('set_email_optout', {'p_off': True})
 ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301')), 'with no account it is refused (%s)' % st)
 
+# --- v149: every privileged function, called by the wrong person -------------------------------------------------------
+# The grants matrix. Anything not deliberately exposed must refuse an anonymous caller, and the internal ones must also
+# refuse a signed-in person. "Refused" is 401/403, 42501, or the function not being callable at all (PGRST202 with the
+# right argument names means PostgREST has hidden it from this role).
+def refused(st, r):
+    return st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301', '28000'))
+SERVICE_ONLY = {
+    'assistant_take': {'p_user': uid_a, 'p_limit': 5}, 'claim_due_reminders': {'p_limit': 1}, 'claim_helper_invites': {'p_limit': 1},
+    'doc_move_done': {'p_id': 1}, 'doc_moves_pending': {'p_limit': 1}, 'my_inbound_address': {}, 'originals_orphans': {'p_limit': 1},
+    'originals_under': {'p_uid': uid_a}, 'pilot_events_cap': {}, 'push_vapid_init': {'p_jwk': '{}'}, 'reminders_cap': {},
+    'reminder_delivery_event': {'p_provider_id': 'x', 'p_event': 'email.delivered', 'p_at': '2026-01-01T00:00:00Z', 'p_detail': None},
+    'shares_drop_helper': {}, 'sorted_kick_moves': {}, 'sorted_kick_originals': {}, 'sorted_kick_reminders': {}, 'sorted_secret': {'p_name': 'sorted_cron_secret'},
+}
+SIGNED_IN_ONLY = {
+    'case_reply_address': {'p_task_id': tid}, 'claim_carry': {'p_token': 'x' * 32, 'p_pairs': []}, 'company_scores': {}, 'delete_my_account': None,
+    'drop_outcome': {'p_promise': 'p1'}, 'email_reminders_ready': {}, 'inbound_address_new': None, 'invite_helper': {'p_task_id': tid, 'p_email': 'x@example.com', 'p_name': 'X'},
+    'is_pilot_admin': {}, 'my_inbound_address_get': {}, 'pilot_health': {}, 'pilot_metrics': {'include_admins': False}, 'push_drop': {'p_endpoint': 'https://push.example/x'},
+    'push_save': {'p_endpoint': 'https://push.example/x', 'p_p256dh': 'x', 'p_auth': 'x'}, 'push_state': {'p_endpoint': 'https://push.example/x'},
+    'record_outcome': {'p_promise': 'p9', 'p_party': 'Sky', 'p_outcome': 'kept', 'p_via': ''}, 'remove_helper': {'p_task_id': tid}, 'set_email_optout': {'p_off': True},
+    'stash_carry': None, 'touch_seen': {},
+}
+for fn, args in SERVICE_ONLY.items():
+    st, r = rpc(fn, args); ok(refused(st, r), 'anonymous cannot call %s (%s)' % (fn, st))
+    st, r = rpc(fn, args, A); ok(refused(st, r), 'a signed-in person cannot call %s (%s)' % (fn, st))
+for fn, args in SIGNED_IN_ONLY.items():
+    if args is None: args = {}   # never run the real thing anonymously by accident: an anonymous call must be refused anyway
+    st, r = rpc(fn, args); ok(refused(st, r), 'anonymous cannot call %s (%s)' % (fn, st))
+# --- v149: B tries A's things by id ------------------------------------------------------------------------------------
+if B:
+    st, r = rpc('case_reply_address', {'p_task_id': tid}, B)
+    ok(st >= 400 or not r, 'B gets no reply address for A’s case (%s %s)' % (st, str(r)[:60]))
+    st, r = rpc('invite_helper', {'p_task_id': tid, 'p_email': 'helper@example.com', 'p_name': 'H'}, B)
+    ok(st >= 400 or r in (False, None) or (isinstance(r, dict) and not r.get('ok')), 'B cannot invite a helper to A’s case (%s %s)' % (st, str(r)[:60]))
+    ep = 'https://fcm.googleapis.com/fcm/send/staging-' + uuid.uuid4().hex   # push_save only takes real push hosts
+    st, r = rpc('push_save', {'p_endpoint': ep, 'p_p256dh': 'B' + 'k' * 86, 'p_auth': 'a' * 22}, A)   # the table checks key lengths
+    ok(st in (200, 204), 'A saves a push address (%s)' % st)
+    rpc('push_drop', {'p_endpoint': ep}, B)
+    st, r = rpc('push_state', {'p_endpoint': ep}, A)
+    ok(st == 200 and r not in (False, None, 'off'), 'B dropping A’s push address changes nothing for A (%s %s)' % (st, str(r)[:40]))
+    st, r = rpc('push_state', {'p_endpoint': ep}, B)
+    ok(st >= 400 or r in (False, None, 'off', 'none') or (isinstance(r, dict) and not r.get('on')), 'B cannot see A’s push address (%s %s)' % (st, str(r)[:40]))
+    rpc('push_drop', {'p_endpoint': ep}, A)
+    st, r = rest('GET', 'reminders?select=id&task_id=eq.' + tid, None, B)
+    ok(st >= 400 or r == [], 'B cannot read A’s reminders (%s)' % st)
+    st, r = rest('POST', 'reminders', {'task_id': tid, 'kind': 'before', 'send_at': '2030-01-01T09:00:00Z'}, B)
+    ok(st >= 400, 'B cannot add a reminder to A’s case (%s)' % st)
+    st, r = rest('PATCH', 'reminders?task_id=eq.' + tid, {'send_at': '2030-01-02T09:00:00Z'}, B, 'return=representation')
+    ok(st >= 400 or r == [] or r is None, 'B cannot move A’s reminders (%s)' % st)
+    st, r = rpc('claim_carry', {'p_token': uuid.uuid4().hex + uuid.uuid4().hex, 'p_pairs': []}, B)
+    ok(st >= 400 or r in (False, None, 0, []), 'a made-up carry token claims nothing (%s %s)' % (st, str(r)[:40]))
+    st, r = call('POST', '/storage/v1/object/list/originals', {'prefix': uid_a + '/', 'limit': 10}, B)
+    ok(st >= 400 or r == [], 'B cannot list A’s kept documents (%s)' % st)
+    st, r = call('POST', '/storage/v1/object/originals/%s/%s/planted.txt' % (uid_a, tid), None, B, {'Content-Type': 'text/plain'})
+    ok(st >= 400, 'B cannot put a file in A’s folder (%s)' % st)
+    big = case(tid + 'x', 'Big'); big['events'] = [{'at': '2026-01-01T00:00:00Z', 'label': 'x' * 1000}] * 700
+    st, r = rest('POST', 'tasks', {'id': tid + 'x', 'data': big}, B)
+    ok(st >= 400, 'a case far over the size cap is refused (%s)' % st)
 # --- deleting an account removes everything -------------------------------------------------------------------------
 st, r = rpc('delete_my_account', {}, A)
 ok(st in (200, 204), 'A deletes their account (%s)' % st)
@@ -189,7 +265,11 @@ try:
         ok('AB123' in pg.inner_text('main') and 'Waiting' in pg.inner_text('main'), 'a reload brings it back from the database')
         ok(not perr, 'no page errors against the real backend: %s' % perr[:2])
         # tidy up: delete the account from inside the page's own session
-        pg.evaluate("sb.rpc('delete_my_account')"); pg.wait_for_timeout(1500)
+        # (the page's client isn't a global, so take the session from storage and call the database directly)
+        sess = pg.evaluate("(()=>{for(const k of Object.keys(localStorage)){if(/^sb-.*-auth-token$/.test(k)){try{return JSON.parse(localStorage.getItem(k)).access_token}catch(e){}}}return null})()")
+        ok(bool(sess), 'the page signed in to staging as a guest')
+        if sess:
+            st, r = rpc('delete_my_account', {}, sess); ok(st in (200, 204), 'the walk’s guest is deleted (%s)' % st)
         b.close()
 except ImportError:
     print('note: Playwright not installed, the browser walk was skipped')

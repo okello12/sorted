@@ -20,9 +20,6 @@ lock-screen reminders. v149 is the first release aimed at that last gap.
 
 ## Open, by priority
 
-- **P1, owner:** the GitHub staging secrets (`SORTED_STAGING_URL`, `SORTED_STAGING_ANON_KEY`) and a ruleset on `main`
-  requiring regression, WebKit, Firefox and staging. The CI change that makes a missing staging secret fail is on the
-  branch `v149-ci-gate`, waiting for the secrets.
 - **P1:** a reminder reaching guests (v149 adds the choice; measure `reminder_path_chosen` against dated cases).
 - **P1, owner:** backups (the free plan has none), the terms checked by a lawyer, a short DPIA for Sorted itself.
 - **P2:** the architecture extraction (attention first: Home, reminders and the case page asking one function), done
@@ -31,9 +28,15 @@ lock-screen reminders. v149 is the first release aimed at that last gap.
 - **P2:** pressure at 100 and 500 cases with long histories; IndexedDB before localStorage quotas bite.
 - **P3:** a strict CSP without `'unsafe-inline'` (belongs inside the extraction); moving `pg_net` out of `public`.
 
+## Done since v149
+
+The CI gate (9 October 2026): actions and Playwright pinned, Dependabot, the staging suite running for real with a
+grants matrix and cross-person checks, staging made level with live (`supabase/staging/02_parity_v149.sql`), and a
+ruleset on `main` requiring a pull request with regression, WebKit, Firefox and staging green.
+
 ## Next approved change
 
-v149 (this release) and the CI gate. Then the attention extraction. No new features until the pilot shows dated
+The attention extraction. No new features until the pilot shows dated
 cases reaching their day with a working reminder.
 
 ## Permanent gates

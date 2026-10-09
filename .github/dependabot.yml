@@ -1,0 +1,12 @@
+# v149: the actions in ci.yml are pinned to commit SHAs; Dependabot proposes updates as pull requests, which then
+# go through the same gate as any change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: /tests
+    schedule:
+      interval: monthly

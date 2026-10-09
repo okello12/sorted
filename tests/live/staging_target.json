@@ -1,0 +1,3 @@
+{"_note": "The STAGING project only (no data, never live). A publishable key is public by design, like the one in the live page; row level security is what protects data. Repository secrets of the same names override these when they are well formed.",
+ "url": "https://ujwanxqrefziuxwfzeaj.supabase.co",
+ "key": "sb_publishable_l3dOQ_fmXrfBJcM6rIvmxg_JJtU0LG9"}

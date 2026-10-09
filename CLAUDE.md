@@ -46,7 +46,7 @@ and test, then pin `EXPECT` to the new sha.
 Since 2 October 2026 the Vercel project `sorted-pilot` (team my-data-vault) **is linked to GitHub**: every push to `main`
 on okello12/sorted builds and deploys to production (sorted-pilot.vercel.app) automatically. Treat a push to `main` as a
 release. The release gate (`docs/PLAN.md` 0.1), in order: build with `EXPECT` pinned; `sh tests/run.sh` green; push a
-branch and open a pull request, and merge only when its checks (regression, webkit, firefox, and staging once its secrets exist; GitHub enforces the first three on `main`) are green;
+branch and open a pull request, and merge only when its checks (regression, webkit, firefox and staging; a ruleset on `main` requires all four and a pull request) are green;
 merge to `main` (Vercel deploys it); the CI job `live` confirms the live page is that build and walks it. A release
 isn't finished until `live` is green.
 
@@ -218,7 +218,7 @@ Supabase project `boxrwcuhxmimayaxzywu` (London). Row level security is on every
 | Applied 9 Oct 2026 | `supabase/parked/27_indexes_shareopens_v149.sql` and `28_reminder_path_v149.sql` (live and staging, through `apply_migration`): indexes on `case_mail.user_id` and `push_subs.user_id`; `share_seen()` counts an open once per link per 30 minutes (open days, first and last time as before); the step name `reminder_path_chosen` |
 | Applied 9 Oct 2026 | `supabase/parked/26_inbound_seen_v146.sql` (live and staging, through `apply_migration`): `inbound_seen` (the email's id and a time, RLS on, no policies or grants). Deployed the same day: `inbound-email` v9 (each email once: the id is claimed before storing, a repeat returns `duplicate`, a failure to store releases it and answers 500 so the retry stores it; ids older than 7 days pruned by the function) |
 | Applied 9 Oct 2026 | `supabase/parked/25_live_attention_v145.sql` (live and staging, through `apply_migration`): `sorted_case_live()` also counts an open attention item (a check day, Later, a parking reminder) and a snooze, so the idle-case clean-up keeps a case whose only date is the person's own. Deployed the same day: `send-reminders` v15, `inbound-email` v8 (with `readers.mjs`), `resend-events` v2, `originals-cleanup` v3 |
-| Staging | Project `ujwanxqrefziuxwfzeaj` (London, free, no data, no secrets). `supabase/staging/00_schema.sql` is the whole structure; `01_run_by_hand.sql` is the part a person must run in the SQL editor. `tests/live/staging.py` is the live suite (CI job `staging`, needs the two GitHub secrets). `docs/STAGING.md` has the steps. Apply every new migration to both |
+| Staging | Project `ujwanxqrefziuxwfzeaj` (London, free, no data, no secrets). `supabase/staging/00_schema.sql` is the whole structure; `01_run_by_hand.sql` is the part a person must run in the SQL editor. `tests/live/staging.py` is the live suite (CI job `staging`, required since v149; its grants matrix keeps staging's permissions level with live). `supabase/staging/02_parity_v149.sql` brought staging level on 9 October 2026. `docs/STAGING.md` has the steps. Apply every new migration to both |
 | Schema | `supabase/schema_snapshot.sql`, structure only |
 | Parked changes | `supabase/parked/` also contains the source SQL for migrations already applied. Do not rerun 04–14 just because the files remain in that folder; check the Applied rows above and the Supabase migration history first |
 

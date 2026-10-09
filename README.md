@@ -1,6 +1,6 @@
 # Sorted pilot
 
-This repository is the code behind **https://sorted-pilot.vercel.app** (release v69, 2 October 2026).
+This repository is the code behind **https://sorted-pilot.vercel.app**. The current release, what is deployed and what is open are in `docs/STATUS.md` (kept current by test 118).
 Start with `CLAUDE.md` (how it's built, tested and deployed) and `docs/LATER.md` (parked work and why).
 The earlier Grok-built prototype is kept on the branch `grok-prototype`.
 
@@ -11,8 +11,8 @@ to it in order, and checks the result against a fingerprint so a wrong step fail
 `feat*.js` hold larger blocks of code that some layers insert. `h/*.bin` are the parts of an early hero image.
 
 ```
-node all.js          # runs build.js, build7.js … build52.js in order
-# → public/index.html, sha1 0daf85b5cf27bfb9f1e868439abca8d49b26cf64 for v148
+node all.js          # runs build.js, build7.js … the latest buildN.js in order (all.js lists them)
+# → public/index.html, sha1 3f0c0d43c9d3f5c078ab0812da39eacda2222451 for v149
 sh tests/run.sh      # builds, then runs every walkthrough test
 ```
 

@@ -62,7 +62,10 @@ with sync_playwright() as p:
     t=latest(pg); op=next((q for q in t.get('promises',[]) if q.get('status')=='open'),None); open_said=op['said'] if op else ''
     claim=pg.locator('#claim'); promise=pg.locator('.promise').first
     promise_text=(promise.text_content() or '') if promise.count() else ''
-    ok(bool(open_said) and claim.count()==1 and promise.count()==1 and open_said in promise_text,'claim screen still shows the promise being held')
+    # v149: the email panel no longer opens by itself; the reminder choice (calendar, phone, email, none) sits with the case
+    rem=pg.locator('.rem149')
+    ok(bool(open_said) and claim.count()==0 and rem.count()==1 and promise.count()==1 and open_said in promise_text,'the promise is held and the reminder choice is offered, not an email panel')
+    pg.locator('.rem149 [data-v=email]').click(); wait(pg,400); claim=pg.locator('#claim')
     if claim.count() and promise.count():
         ok(promise.bounding_box()['y'] < claim.bounding_box()['y'],'promise is above the email setup prompt')
     ok(claim.count()==1 and 'Add email reminders?' in claim.inner_text() and 'promise is already saved' in claim.inner_text().lower(),'email prompt is clearly optional after the promise is saved')

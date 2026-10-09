@@ -305,11 +305,12 @@ with sync_playwright() as p:
     pg.fill('#f-case', 'Currys said they will refund my £89 by %s, order 445566' % fri.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 800)
     if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 700)
     pg.click('[data-a=sug-yes]'); wait(pg, 700)
+    # v149: one question, how Sorted should remind them (calendar, this phone, email or none); the email panel no longer opens by itself
     vis = lambda: len([e for e in pg.locator('main [data-a=go-claim]').all() if e.is_visible()])
-    prompts = pg.locator('#claim').count() + vis()
-    ok(pg.locator('#claim').count() == 1 and prompts == 1, 'after confirming, a guest is asked for an email once (%d prompts)' % prompts)
-    pg.locator('#claim [data-a=panel]').first.click(); wait(pg, 400)
-    ok(pg.locator('#claim').count() == 0 and vis() == 1, 'after "Not now", one prompt remains')
+    prompts = pg.locator('#claim').count() + vis() + pg.locator('.rem149').count()
+    ok(pg.locator('.rem149').count() == 1 and prompts == 1 and pg.locator('.rem149 [data-v=email]').count() == 1, 'after confirming, a guest is asked once how to be reminded, email among the choices (%d prompts)' % prompts)
+    pg.locator('.rem149 [data-v=none]').click(); wait(pg, 400)
+    ok(pg.locator('#claim').count() == 0 and pg.locator('.rem149').count() == 0 and 'Reminder: No reminder' in pg.inner_text('main'), 'after “No reminder”, it says so in one line and asks nothing more')
     ctx.close()
 
     # ================= 024: the "All clear" card =================

@@ -294,6 +294,7 @@ with sync_playwright() as p:
     sign_in(pp, 'u-push', 'push@example.com')
     pc = make_case('Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A'), pp)
     pp.goto('https://sorted.test/?task=%s' % pc); wait(pp, 800)
+    pp.goto('https://sorted.test/#more-settings'); wait(pp, 800)   # v149: an email account is reminded by email, so the phone is switched on in Settings
     if pp.locator('[data-a=push-on]').count(): pp.locator('[data-a=push-on]').first.click(); wait(pp, 900)
     subs = dbj(pp).get('push_subs', [])
     ok(len(subs) == 1 and subs[0]['user_id'] == 'u-push', 'reminders are on for this phone')

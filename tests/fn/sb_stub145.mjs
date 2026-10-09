@@ -8,6 +8,8 @@ function q(table) {
   const run = () => {
     const hit = rows().filter(match);
     if (st.op === "update") { hit.forEach((r) => Object.assign(r, st.vals)); return { data: hit, error: null }; }
+    if (st.op === "insert" && globalThis.__FAIL_INSERT === table) return { data: null, error: { code: "XX000", message: "test failure" } };
+    if (st.op === "insert" && table === "inbound_seen" && rows().some((r) => r.key === st.vals.key)) return { data: null, error: { code: "23505", message: "duplicate key" } };
     if (st.op === "insert") { const row = Object.assign({ id: "i" + Math.random().toString(36).slice(2), received_at: new Date().toISOString(), at: new Date().toISOString() }, st.vals); rows().push(row); return { data: [row], error: null }; }
     if (st.op === "upsert") { const key = Object.keys(st.vals)[0]; const old = rows().find((r) => r[key] === st.vals[key]); if (old) Object.assign(old, st.vals); else rows().push(Object.assign({}, st.vals)); return { data: [st.vals], error: null }; }
     if (st.head) return { data: null, count: hit.length, error: null };

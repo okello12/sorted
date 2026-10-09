@@ -9,6 +9,10 @@ import { replyKind } from "./readers.mjs";
 // Failures and rejections are logged to ops_errors as a kind and a time only (no addresses, no content).
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
+// v9 (Sorted v146): each email is handled once. Resend (through Svix) retries a webhook after a timeout or an error,
+// which stored the same suggestion twice. The email's id is claimed in inbound_seen (migration 26) before anything is
+// stored; a repeat returns { duplicate: true }. If nothing could be stored because of a failure on our side, the claim is
+// released and the reply is a 500, so the retry can store it. Ids older than 7 days are pruned now and then.
 // v8 (Sorted v145): the "a reply came in" email carries the same stop link and one-click unsubscribe headers (RFC 8058)
 // as a reminder, through email-stop; an HTML-only email loses its <head>, scripts and comments, and numbered entities are
 // decoded, before it is kept; an address listed twice (To and Cc) is stored once; a flood of rejected requests logs at
@@ -101,6 +105,16 @@ async function notify(taskId: string, userId: string, kind: string) {
 // address case-<random>@<inbound domain>, added in Cc when the person emails a company from that case. A reply to it is
 // stored for that case only, with the sender's website (domain) and never their full address, and the app shows it as
 // a proposal the owner must confirm. Old personal forwarding addresses (log-...) stay switched off.
+async function claim(key: string): Promise<"new" | "dup" | "off"> {
+  if (!key) return "off";
+  const { error } = await sb.from("inbound_seen").insert({ key });
+  if (!error) return "new";
+  if (String((error as any).code) === "23505") return "dup";
+  await oops("seen_unavailable");
+  return "off";
+}
+async function release(key: string) { try { await sb.from("inbound_seen").delete().eq("key", key); } catch { /* ignore */ } }
+async function prune() { try { if (Math.random() < 0.05) await sb.from("inbound_seen").delete().lt("at", new Date(Date.now() - 7 * 86400000).toISOString()); } catch { /* ignore */ } }
 async function handle(req: Request): Promise<Response> {
   if (req.method !== "POST") return new Response("ok");
   const body = await req.text();
@@ -109,12 +123,23 @@ async function handle(req: Request): Promise<Response> {
   let ev: any; try { ev = JSON.parse(body); } catch { await oops("bad_json"); return new Response("bad json", { status: 400 }); }
   if (ev?.type !== "email.received") return Response.json({ ignored: ev?.type });
   const d = ev.data || {};
+  const key = String(d.email_id || req.headers.get("svix-id") || "").slice(0, 120);
+  const cl = await claim(key);
+  if (cl === "dup") return Response.json({ stored: 0, duplicate: true });
+  await prune();
+  try {
+    const r = await handleEmail(d);
+    if (cl === "new" && r.stored === 0 && r.failed > 0) { await release(key); return new Response("store failed", { status: 500 }); }
+    return Response.json({ stored: r.stored });
+  } catch (e) { if (cl === "new") await release(key); throw e; }
+}
+async function handleEmail(d: any): Promise<{ stored: number; failed: number }> {
   const domain = (await secret("inbound_domain") || "").toLowerCase();
-  if (!domain) { await oops("no_secret"); return Response.json({ stored: 0 }); }
+  if (!domain) { await oops("no_secret"); return { stored: 0, failed: 0 }; }
   const on = (await secret("case_replies_on")) === "yes";
   const from = addr(d.from), fromDomain = from.slice(from.lastIndexOf("@") + 1).slice(0, 120);
   const rcpts = Array.from(new Set(([] as string[]).concat(d.to || [], d.cc || []).map(addr)));
-  let stored = 0, text: string | null = null;
+  let stored = 0, failed = 0, text: string | null = null;
   for (const a of rcpts) {
     const at = a.lastIndexOf("@");
     if (at < 0 || a.slice(at + 1) !== domain) continue;
@@ -127,7 +152,7 @@ async function handle(req: Request): Promise<Response> {
       if ((day ?? 0) >= 30) { await oops("daily_limit"); continue; }
       if (text === null) text = await bodyText(d);
       const { error: fe } = await sb.from("inbound_items").insert({ user_id: ia.user_id, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: (text || "").slice(0, 8000) });
-      if (fe) { await oops("store_failed"); continue; }
+      if (fe) { failed++; await oops("store_failed"); continue; }
       stored++;
       continue;
     }
@@ -139,11 +164,11 @@ async function handle(req: Request): Promise<Response> {
     const { count: recent } = await sb.from("inbound_items").select("id", { count: "exact", head: true }).eq("task_id", cm.task_id).gte("received_at", new Date(Date.now() - 6 * 3600000).toISOString());
     if (text === null) text = await bodyText(d);
     const { error } = await sb.from("inbound_items").insert({ user_id: cm.user_id, task_id: cm.task_id, from_domain: fromDomain, subject: String(d.subject || "").slice(0, 300), body: (text || "").slice(0, 8000) });
-    if (error) { await oops("store_failed"); continue; }
+    if (error) { failed++; await oops("store_failed"); continue; }
     stored++;
     if ((recent ?? 0) === 0) await notify(cm.task_id, cm.user_id, replyKind(`${d.subject || ""}. ${text || ""}`));
   }
-  return Response.json({ stored });
+  return { stored, failed };
 }
 
 Deno.serve(async (req: Request) => {

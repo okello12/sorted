@@ -586,6 +586,14 @@ no longer freeze the page; dead code removed; tests no longer depend on the week
 in a pasted message is still a promise while in a typed sentence it is tentative; the owner decides which is right.
 Evidence: tests 110 to 113.
 
+**v146 (9 October).** "Should" decided: it is their estimate, typed or pasted alike. "DWP said my payment should arrive
+by Friday" is proposed for the person to confirm, with a line saying it is an estimate; the card says "They expect";
+Sorted asks on the day, and "Not yet" is never a broken promise or a company total. "Will", "booked" and "confirmed" stay
+firm; might, maybe, hopefully and "try their best" stay non-commitments. Each forwarded or replied email is now stored
+once even when Resend delivers it twice (migration 26, `inbound-email` v9). Test 108 failed on a Saturday or Monday
+because the test harness's shifted clock gave `Date.now()` the real time on pages with their own clock; the harness is
+fixed, not the page. Evidence: test 114, the inbound check, 108 with `SORTED_SHIFT_DAYS=1` and `=3`.
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

@@ -22,7 +22,7 @@ async function post(payload, sigOk = true) {
   const r = await handler(new Request("https://x/", { method: "POST", body, headers: { "svix-id": id, "svix-timestamp": ts, "svix-signature": "v1," + (sigOk ? mac : "AAAA") } }));
   return { status: r.status, j: await r.json().catch(() => ({})) };
 }
-const mail = (to, from = "Currys <help@currys.co.uk>") => ({ type: "email.received", data: { email_id: "e1", from, to: [to], cc: [], subject: "Your refund" } });
+const mail = (to, from = "Currys <help@currys.co.uk>") => ({ type: "email.received", data: { email_id: "e" + Math.random(), from, to: [to], cc: [], subject: "Your refund" } });
 globalThis.__DB = { inbound_addresses: [{ user_id: "u1", token: "log-0123456789abcdef" }], inbound_items: [], ops_errors: [], case_mail: [{ token: "case-abc", task_id: "t9", user_id: "u2" }], email_optouts: [] };
 let r = await post(mail("log-0123456789abcdef@in.example.uk"));
 const it = __DB.inbound_items[0];
@@ -41,4 +41,18 @@ for (let i = 0; i < 30; i++) await post(mail("log-0123456789abcdef@in.example.uk
 ok(__DB.inbound_items.filter((x) => x.user_id === "u1").length === 30 && __DB.ops_errors.some((e) => e.kind === "daily_limit"), "at most 30 a day per person");
 r = await post(mail("case-abc@in.example.uk"));
 ok(r.j.stored === 1 && __DB.inbound_items.some((x) => x.task_id === "t9"), "a reply to a case’s own address still goes to that case");
+// v146: each email once. A retry of the same email stores nothing more; a failure to store releases it for the retry.
+const once = { type: "email.received", data: { email_id: "same-1", from: "Evri <a@evri.com>", to: ["case-abc@in.example.uk"], cc: [], subject: "Update" } };
+const n0 = __DB.inbound_items.length;
+r = await post(once); const r2 = await post(once);
+ok(r.j.stored === 1 && r2.j.duplicate === true && r2.j.stored === 0 && __DB.inbound_items.length === n0 + 1, "the same email delivered twice is stored once");
+ok(__DB.inbound_seen.length >= 1 && __DB.inbound_seen.every((x) => Object.keys(x).every((k) => ["key", "at", "id", "received_at"].includes(k))), "only the email’s id and a time are kept to spot repeats");
+const twice = { type: "email.received", data: { email_id: "same-2", from: "Evri <a@evri.com>", to: ["case-abc@in.example.uk"], cc: [], subject: "Update" } };
+globalThis.__FAIL_INSERT = "inbound_items"; r = await post(twice); globalThis.__FAIL_INSERT = null;
+ok(r.status === 500 && !__DB.inbound_seen.some((x) => x.key === "same-2"), "if it can’t be stored, the reply is a 500 and the id is released for the retry");
+r = await post(twice);
+ok(r.j.stored === 1, "the retry then stores it");
+const nk = { type: "email.received", data: { from: "x@y.com", to: ["case-abc@in.example.uk"], cc: [] } };
+r = await post(nk);
+ok(r.status === 200, "an email with no id still goes through, keyed by the webhook’s own id");
 console.log("FAILS", JSON.stringify(fails));

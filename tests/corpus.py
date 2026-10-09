@@ -28,7 +28,7 @@ NOT_GROUPS = {
   "maybe": cyc([
     "{Pc} said they might {V} {D}.", "{Pc} said maybe they'll {V} {D}.", "{Pc} said they could possibly {V} {D}.",
     "{Pc} said hopefully they'll {V} {D}.", "{Pc} said they'll try to {V} {D}.", "{Pc} said they'd probably {V} {D}.",
-    "{Pc} said they would aim to {V} {D}.", "{Pc} said it should be sorted {D}.", "{Pc} said they may be able to {V} {D}.",
+    "{Pc} said they would aim to {V} {D}.", "{Pc} said hopefully it'll be sorted {D}.", "{Pc} said they may be able to {V} {D}.",
     "{Pc} said they're not sure, perhaps {D}.",
   ], 3),
   "condition": cyc([
@@ -342,13 +342,13 @@ NOT_GROUPS["v145: information, demands on you, tentative and fallbacks"] = [
   "I told the landlord I'd be in on Saturday", "Builder said he'll finish when the materials come in",
   "The council said bailiffs will visit on Monday", "School: Parents evening is on Thursday",
   "The school office is open 8.30am to 4pm, call us if you need anything", "HMRC: we aim to reply within 15 working days",
-  "DWP said my payment should arrive by Friday", "Current processing times are 6 to 8 weeks", "DVLA processing times are currently 6 weeks",
+  "Current processing times are 6 to 8 weeks", "DVLA processing times are currently 6 weeks",
   "Monzo: You received £45.00 from AMAZON EU", "Barclays: Your payment of £120.00 to BRITISH GAS is due on " + _DDMM(_A12['date']),
   "Nationwide said they will try to get back to me by Monday", "Santander: we will take £35 from your account on " + _A12['dm'],
   "Lloyds said they won't refund the money", "Octopus: Your new tariff starts on 1 November", "Thames Water will increase your bill from 1 April",
   "British Gas said an engineer could come Thursday", "EON said if I send a meter reading they'll fix the bill by Friday",
   "Sky: lines are open 8am to 8pm, 7 days a week", "Virgin said the next available appointment is on " + _A12['dm'],
-  "EE: your bill of £45.20 will be taken on " + _DDMM(_A12['date']), "Direct Line said they should have an answer next week",
+  "EE: your bill of £45.20 will be taken on " + _DDMM(_A12['date']),
   "The insurer said they're unable to confirm when the assessor will visit", "Currys said they'll refund me on Friday if the item is returned unused",
   "Amazon said they won't refund me", "Argos: Returns accepted within 30 days with a receipt", "ASOS said refunds can take up to 14 days",
   "Did Currys say they'd deliver it tomorrow?", "Currys never said they'd call back today",
@@ -366,3 +366,18 @@ DEMANDS += [
   ("HMRC: You must file your tax return by " + _A20['dm'], 20), ("Please reply by " + _A12['dm'] + " with your account details", 12),
   ("Your rent of £850 is due on " + _A20['dm'], 20), ("Your car tax is due on " + _A20['dm'], 20),
 ]
+
+# v146: "should" with a day, from them, is their estimate: read the same whether typed or pasted, proposed for the
+# person to confirm, and marked est146 (Sorted asks on the day; "Not yet" is never a broken promise or a score).
+# Tentative words (might, maybe, could, hopefully, try) and the person's own "I should" stay non-commitments.
+SHOULD_EST = [
+  "DWP said my payment should arrive by Friday", "Direct Line said they should have an answer next week",
+  "Amazon said it should arrive by Friday", "The landlord said the plumber should come on Monday",
+  "The council said it should be sorted by Friday", "Your parcel should arrive by Friday 16 October.",
+  "Hi, your refund should be with you within 5 working days. Thanks, Currys",
+  "BT: Your broadband should be live on 22 October.",
+]
+SHOULD_FIRM = ["Your engineer is booked for Tuesday and should arrive between 8am and 12pm", "British Gas will send an engineer on Tuesday"]
+SHOULD_NOT = ["Garage said it should be ready Friday, they'll try their best", "I should ring BT on Monday",
+  "BT said I should check the app on Monday", "Should I expect Evri tomorrow?", "Evri said it might arrive Friday",
+  "Currys said hopefully it'll be refunded by Friday", "The builder said he'll do his best to finish by Friday"]

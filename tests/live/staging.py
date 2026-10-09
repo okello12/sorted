@@ -155,6 +155,63 @@ ok(st == 200 and r is False and r2 == [], 'A switches them back on and the row g
 st, r = rpc('set_email_optout', {'p_off': True})
 ok(st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301')), 'with no account it is refused (%s)' % st)
 
+# --- v149: every privileged function, called by the wrong person -------------------------------------------------------
+# The grants matrix. Anything not deliberately exposed must refuse an anonymous caller, and the internal ones must also
+# refuse a signed-in person. "Refused" is 401/403, 42501, or the function not being callable at all (PGRST202 with the
+# right argument names means PostgREST has hidden it from this role).
+def refused(st, r):
+    return st in (401, 403, 404) or (isinstance(r, dict) and r.get('code') in ('42501', 'PGRST202', 'PGRST301', '28000'))
+SERVICE_ONLY = {
+    'assistant_take': {'p_user': uid_a, 'p_limit': 5}, 'claim_due_reminders': {'p_limit': 1}, 'claim_helper_invites': {'p_limit': 1},
+    'doc_move_done': {'p_id': 1}, 'doc_moves_pending': {'p_limit': 1}, 'my_inbound_address': {}, 'originals_orphans': {'p_limit': 1},
+    'originals_under': {'p_uid': uid_a}, 'pilot_events_cap': {}, 'push_vapid_init': {'p_jwk': '{}'}, 'reminders_cap': {},
+    'reminder_delivery_event': {'p_provider_id': 'x', 'p_event': 'email.delivered', 'p_at': '2026-01-01T00:00:00Z', 'p_detail': None},
+    'shares_drop_helper': {}, 'sorted_kick_moves': {}, 'sorted_kick_originals': {}, 'sorted_kick_reminders': {}, 'sorted_secret': {'p_name': 'sorted_cron_secret'},
+}
+SIGNED_IN_ONLY = {
+    'case_reply_address': {'p_task_id': tid}, 'claim_carry': {'p_token': 'x' * 32, 'p_pairs': []}, 'company_scores': {}, 'delete_my_account': None,
+    'drop_outcome': {'p_promise': 'p1'}, 'email_reminders_ready': {}, 'inbound_address_new': None, 'invite_helper': {'p_task_id': tid, 'p_email': 'x@example.com', 'p_name': 'X'},
+    'is_pilot_admin': {}, 'my_inbound_address_get': {}, 'pilot_health': {}, 'pilot_metrics': {'include_admins': False}, 'push_drop': {'p_endpoint': 'https://push.example/x'},
+    'push_save': {'p_endpoint': 'https://push.example/x', 'p_p256dh': 'x', 'p_auth': 'x'}, 'push_state': {'p_endpoint': 'https://push.example/x'},
+    'record_outcome': {'p_promise': 'p9', 'p_party': 'Sky', 'p_outcome': 'kept', 'p_via': ''}, 'remove_helper': {'p_task_id': tid}, 'set_email_optout': {'p_off': True},
+    'stash_carry': None, 'touch_seen': {},
+}
+for fn, args in SERVICE_ONLY.items():
+    st, r = rpc(fn, args); ok(refused(st, r), 'anonymous cannot call %s (%s)' % (fn, st))
+    st, r = rpc(fn, args, A); ok(refused(st, r), 'a signed-in person cannot call %s (%s)' % (fn, st))
+for fn, args in SIGNED_IN_ONLY.items():
+    if args is None: args = {}   # never run the real thing anonymously by accident: an anonymous call must be refused anyway
+    st, r = rpc(fn, args); ok(refused(st, r), 'anonymous cannot call %s (%s)' % (fn, st))
+# --- v149: B tries A's things by id ------------------------------------------------------------------------------------
+if B:
+    st, r = rpc('case_reply_address', {'p_task_id': tid}, B)
+    ok(st >= 400 or not r, 'B gets no reply address for A’s case (%s %s)' % (st, str(r)[:60]))
+    st, r = rpc('invite_helper', {'p_task_id': tid, 'p_email': 'helper@example.com', 'p_name': 'H'}, B)
+    ok(st >= 400 or r in (False, None) or (isinstance(r, dict) and not r.get('ok')), 'B cannot invite a helper to A’s case (%s %s)' % (st, str(r)[:60]))
+    ep = 'https://push.example/' + uuid.uuid4().hex
+    st, r = rpc('push_save', {'p_endpoint': ep, 'p_p256dh': 'k', 'p_auth': 'a'}, A)
+    ok(st in (200, 204), 'A saves a push address (%s)' % st)
+    rpc('push_drop', {'p_endpoint': ep}, B)
+    st, r = rpc('push_state', {'p_endpoint': ep}, A)
+    ok(st == 200 and r not in (False, None, 'off'), 'B dropping A’s push address changes nothing for A (%s %s)' % (st, str(r)[:40]))
+    st, r = rpc('push_state', {'p_endpoint': ep}, B)
+    ok(st >= 400 or r in (False, None, 'off', 'none') or (isinstance(r, dict) and not r.get('on')), 'B cannot see A’s push address (%s %s)' % (st, str(r)[:40]))
+    rpc('push_drop', {'p_endpoint': ep}, A)
+    st, r = rest('GET', 'reminders?select=id&task_id=eq.' + tid, None, B)
+    ok(st >= 400 or r == [], 'B cannot read A’s reminders (%s)' % st)
+    st, r = rest('POST', 'reminders', {'task_id': tid, 'kind': 'before', 'send_at': '2030-01-01T09:00:00Z'}, B)
+    ok(st >= 400, 'B cannot add a reminder to A’s case (%s)' % st)
+    st, r = rest('PATCH', 'reminders?task_id=eq.' + tid, {'send_at': '2030-01-02T09:00:00Z'}, B, 'return=representation')
+    ok(st >= 400 or r == [] or r is None, 'B cannot move A’s reminders (%s)' % st)
+    st, r = rpc('claim_carry', {'p_token': uuid.uuid4().hex + uuid.uuid4().hex, 'p_pairs': []}, B)
+    ok(st >= 400 or r in (False, None, 0, []), 'a made-up carry token claims nothing (%s %s)' % (st, str(r)[:40]))
+    st, r = call('POST', '/storage/v1/object/list/originals', {'prefix': uid_a + '/', 'limit': 10}, B)
+    ok(st >= 400 or r == [], 'B cannot list A’s kept documents (%s)' % st)
+    st, r = call('POST', '/storage/v1/object/originals/%s/%s/planted.txt' % (uid_a, tid), None, B, {'Content-Type': 'text/plain'})
+    ok(st >= 400, 'B cannot put a file in A’s folder (%s)' % st)
+    big = case(tid + 'x', 'Big'); big['events'] = [{'at': '2026-01-01T00:00:00Z', 'label': 'x' * 1000}] * 700
+    st, r = rest('POST', 'tasks', {'id': tid + 'x', 'data': big}, B)
+    ok(st >= 400, 'a case far over the size cap is refused (%s)' % st)
 # --- deleting an account removes everything -------------------------------------------------------------------------
 st, r = rpc('delete_my_account', {}, A)
 ok(st in (200, 204), 'A deletes their account (%s)' % st)

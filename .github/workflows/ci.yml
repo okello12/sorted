@@ -18,16 +18,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Install browser runtime
         run: |
-          python -m pip install --disable-pip-version-check playwright
+          python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps chromium
       - name: Run full regression suite
         run: SORTED_JOBS=4 sh tests/run.sh
@@ -60,16 +60,16 @@ jobs:
       matrix:
         engine: [webkit, firefox]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Install browser runtime
         run: |
-          python -m pip install --disable-pip-version-check playwright
+          python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps ${{ matrix.engine }}
       - name: Build the page for tests
         run: |
@@ -97,7 +97,7 @@ jobs:
 
 
   secrets-check:
-    # Says whether the staging secrets exist, so the staging job below is skipped (and shows as skipped) without them.
+    # Since v149: fails (red) when the staging secrets are missing, so a required staging check can never pass by being skipped.
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     outputs:
@@ -108,7 +108,7 @@ jobs:
           U: ${{ secrets.SORTED_STAGING_URL }}
           K: ${{ secrets.SORTED_STAGING_ANON_KEY }}
         run: |
-          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::warning title=staging::The staging job was skipped: the repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set (docs/STAGING.md)"; fi
+          if [ -n "$U" ] && [ -n "$K" ]; then echo "staging=yes" >> "$GITHUB_OUTPUT"; else echo "staging=no" >> "$GITHUB_OUTPUT"; echo "::error title=staging::The repository secrets SORTED_STAGING_URL and SORTED_STAGING_ANON_KEY are not set (docs/STAGING.md). Since v149 a missing staging gate fails the build."; exit 1; fi
 
   staging:
     # The live suite (tests/live/staging.py) against the STAGING Supabase project: row level security, grants, share
@@ -124,16 +124,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Install browser runtime
         run: |
-          python -m pip install --disable-pip-version-check playwright
+          python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps chromium
       - name: Build the page
         run: node all.js >/dev/null
@@ -156,16 +156,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
       - name: Install browser runtime
         run: |
-          python -m pip install --disable-pip-version-check playwright
+          python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps chromium
       - name: Build the page
         run: node all.js >/dev/null

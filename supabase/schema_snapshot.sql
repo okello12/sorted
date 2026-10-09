@@ -349,7 +349,8 @@ begin new.updated_at := now(); return new; end $function$;
 --                 promise_due_return, outcome_kept, outcome_missed, outcome_rescheduled, chase_used,
 --                 new_promise_after_miss, case_closed, recap_copied, second_case_started);
 --                 case_id and promise_id <= 40 chars; props <= 1000 bytes
---   reminders: kind in (before, after, start); unique (task_id, kind, send_at); task_id -> tasks cascade; user_id cascade
+--   reminders: kind in (before, after, start); unique index reminders_task_kind_send_promise_key (task_id, kind, send_at, promise_id) nulls not distinct
+--     (migration 24, applied on live and staging; the old unique (task_id, kind, send_at) was dropped); task_id -> tasks cascade; user_id cascade
 --   shares: token >= 24 chars; task_id unique; task_id -> tasks cascade; user_id cascade
 --   tasks: id 8-64 chars; user_id -> auth.users cascade
 --   email_optouts: user_id -> auth.users cascade

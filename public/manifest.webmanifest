@@ -1,7 +1,7 @@
 {
   "name": "Sorted",
   "short_name": "Sorted",
-  "description": "One calm place to work out what to do, keep track of promises, and come back when it matters.",
+  "description": "Keep everyday admin moving. Keep the details together, prepare your next step and track what happens.",
   "start_url": "/#start",
   "scope": "/",
   "display": "standalone",

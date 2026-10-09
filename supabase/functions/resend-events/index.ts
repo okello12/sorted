@@ -6,6 +6,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // reminder_delivery_event(). Nothing else from the payload is kept: not the address, not the subject.
 // Signed by Resend with Svix headers; the signing secret is the Vault secret resend_events_secret. Without it, 503.
 // verify_jwt is off: Resend does not send a Supabase JWT.
+// v2 (Sorted v145): the endpoint is public, so unsigned requests could add ops_errors rows without end; a kind of
+// error is now logged at most 60 times an hour.
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const TOL_S = 5 * 60;
 
@@ -14,7 +16,12 @@ async function secret(name: string): Promise<string | null> {
   return (data as string) || null;
 }
 async function oops(kind: string, detail?: string) {
-  try { await sb.from("ops_errors").insert({ source: "webhook", kind: kind.slice(0, 40), detail: detail ? detail.slice(0, 200) : null }); } catch { /* ignore */ }
+  try {
+    const k = kind.slice(0, 40);
+    const { count } = await sb.from("ops_errors").select("id", { count: "exact", head: true }).eq("source", "webhook").eq("kind", k).gte("at", new Date(Date.now() - 3600000).toISOString());
+    if ((count ?? 0) >= 60) return;
+    await sb.from("ops_errors").insert({ source: "webhook", kind: k, detail: detail ? detail.slice(0, 200) : null });
+  } catch { /* ignore */ }
 }
 function eq(a: string, b: string) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u));

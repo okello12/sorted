@@ -7,6 +7,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 // v2 (Sorted v142): first moves the kept documents of a guest who added an email (doc_moves, recorded by claim_carry,
 // which also calls this straight away with {"moves_only":true}) from <guest>/<case>/ to <account>/<case>/, using the
 // new case id when the page gave one. The files themselves are never opened.
+// v3 (Sorted v145): a guest with more files than one listing returns (2000) is not marked done after the first batch;
+// the rest move on the next run instead of being left behind and removed a day later as orphans.
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 function eq(a: string, b: string) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 const UUID = /^[0-9a-f-]{36}$/;
@@ -28,7 +30,7 @@ async function doMoves(): Promise<{ moved: number; moveFailed: number }> {
       const { error: e } = await sb.storage.from("originals").move(r.name, to);
       if (e) bad++; else moved++;
     }
-    if (!bad) await sb.rpc("doc_move_done", { p_id: m.id });
+    if (!bad && (names ?? []).length < 2000) await sb.rpc("doc_move_done", { p_id: m.id });
     else { moveFailed += bad; await sb.from("ops_errors").insert({ source: "save", kind: "originals_move" }).then(() => {}, () => {}); }
   }
   return { moved, moveFailed };

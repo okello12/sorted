@@ -59,3 +59,75 @@ if os.path.basename(sys.argv[0]) != "37_ui_consolidation.py":
     except Exception:
         # Some helper invocations may start Python without Playwright installed.
         pass
+
+# v145: SORTED_SHIFT_DAYS=N runs a walkthrough as if today were N days from now, in Python (datetime.date.today,
+# datetime.datetime.now) and in every browser page (Date), so a test that only passes on one weekday can be found:
+#   SORTED_SHIFT_DAYS=3 PYTHONPATH=$PWD/tests TZ=Europe/London python3 tests/94_dates.py
+# N may be a fraction (0.5 is twelve hours later), to try a walkthrough at another time of day. Test-only. Unset (the
+# normal run) it changes nothing.
+_shift = os.environ.get("SORTED_SHIFT_DAYS")
+if _shift:
+    try:
+        import datetime as _dt
+        _off = _dt.timedelta(days=float(_shift))
+        _RealDate, _RealDT = _dt.date, _dt.datetime
+
+        class _ShiftDate(_RealDate):
+            @classmethod
+            def today(cls):
+                d = _RealDate.today() + _off
+                return cls(d.year, d.month, d.day)
+
+        class _ShiftDT(_RealDT):
+            @classmethod
+            def now(cls, tz=None):
+                d = _RealDT.now(tz) + _off
+                return cls(d.year, d.month, d.day, d.hour, d.minute, d.second, d.microsecond, d.tzinfo)
+
+            @classmethod
+            def today(cls):
+                return cls.now()
+
+        _dt.date, _dt.datetime = _ShiftDate, _ShiftDT
+        _ms = int(round(float(_shift) * 86400000))
+        _JS = ("(()=>{if(window.__shift145)return;window.__shift145=%d;const R=Date,O=%d;"
+               "function D(...a){if(!new.target)return new R(R.now()+O).toString();return a.length?new R(...a):new R(R.now()+O)}"
+               "D.prototype=R.prototype;D.now=()=>R.now()+O;D.UTC=R.UTC;D.parse=R.parse;"
+               "Object.defineProperty(D.prototype,'constructor',{value:D,configurable:true,writable:true});window.Date=D})()") % (_ms, _ms)
+        from playwright.sync_api import Browser, BrowserContext
+        _new_context = Browser.new_context
+
+        def _ctx(self, *a, **k):
+            c = _new_context(self, *a, **k)
+            c.add_init_script(_JS)
+            return c
+
+        Browser.new_context = _ctx
+        _new_page = Browser.new_page
+
+        def _page(self, *a, **k):
+            pg = _new_page(self, *a, **k)
+            pg.add_init_script(_JS)
+            return pg
+
+        Browser.new_page = _page
+        # a test that sets the page clock itself (pg.clock.install(time=...)) already gives a shifted time, and the
+        # shifted Date above wraps Playwright's clock, so take the shift back out of the time it gives
+        from playwright.sync_api._generated import Clock as _Clock
+
+        def _unshift(t):
+            if isinstance(t, _RealDT): return t - _off
+            if isinstance(t, (int, float)) and not isinstance(t, bool): return t - _ms
+            return t
+
+        for _name in ("install", "set_fixed_time", "set_system_time", "pause_at"):
+            def _mk(orig):
+                def _w(self, *a, **k):
+                    if "time" in k: k["time"] = _unshift(k["time"])
+                    elif a: a = (_unshift(a[0]),) + tuple(a[1:])
+                    return orig(self, *a, **k)
+                return _w
+            setattr(_Clock, _name, _mk(getattr(_Clock, _name)))
+        print("SHIFTED %s days: now is %s" % (_shift, _ShiftDT.now().isoformat(timespec="minutes")))
+    except Exception as _e:
+        print("SORTED_SHIFT_DAYS not applied:", _e)

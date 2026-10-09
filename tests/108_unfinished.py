@@ -98,10 +98,13 @@ with sync_playwright() as p:
         rt = row.inner_text()
         ok('nothing due' not in m.lower() and 'what does the letter ask' not in m.lower(), '%s: Home never says "nothing due" or "what does the letter ask you to do?"' % label)
         if off < 0:
-            ok('Due ' + dlong(DL) in rt and pg2.locator('.home44-row.home111-hot:has-text("HMRC")').count() == 1, '%s: the HMRC row carries a pill, "Due %s", and ranks as needing attention: %r' % (label, dlong(DL), rt[:160]))
+            # v145: which case leads depends on the weekday the test runs (on a Saturday the other cases aren't due
+            # yet four days before the deadline, so HMRC itself is Next up); either way it is marked and ranks first
+            spot = pg2.locator('.home44-spot:has-text("HMRC")').count() == 1
+            ok('Due ' + dlong(DL) in rt and (spot or pg2.locator('.home44-row.home111-hot:has-text("HMRC")').count() == 1), '%s: the HMRC row carries a pill, "Due %s", and ranks as needing attention: %r' % (label, dlong(DL), rt[:160]))
             ok('decide what to do before ' + dlong(DL) in rt, '%s: its next action names the deadline' % label)
             names = [x.split('\n')[0] for x in pg2.locator('main .home44-row.needs').all_inner_texts()]
-            ok(names and 'Parking' not in ''.join(names) and any('HMRC' in x for x in names), '%s: ranked among the cases that need you' % label)
+            ok(spot or (names and 'Parking' not in ''.join(names) and any('HMRC' in x for x in names)), '%s: ranked among the cases that need you' % label)
         elif off == 0:
             spot = pg2.inner_text('.home44-spot')
             ok('HMRC' in spot and 'Your deadline is today' in spot and 'your deadline is today' in spot, '%s: the HMRC case leads Needs you: %r' % (label, spot[:160]))

@@ -153,7 +153,9 @@ with sync_playwright() as p:
     ok(r7 and all(k == 'after' for k, _ in r7) and lday(r7[0][1]) == lday(p7['dueEnd']) + datetime.timedelta(days=1) and r7[0][1][11:13] in ('08', '09'), 'a window: one “after” reminder, 9am the morning after it ends: %s' % r7)
 
     # ================= 3. a changed date takes the old date out of their words =================
-    c8 = start('Currys said they would refund my £89 by Friday, order 445566')
+    # v145: the day is two days ahead, never today: "by Friday" said on a Friday after 9am has no 9am reminder left
+    W8 = (today + datetime.timedelta(days=2 if (today.weekday() + 2) % 7 != 6 else 3)).strftime('%A')   # not Sunday: the new date below is one
+    c8 = start('Currys said they would refund my £89 by %s, order 445566' % W8)
     p8 = openp(c8)[0]; d8 = lday(p8['dueAt'])
     r8 = rems(c8)
     ok(('before', ) and any(k == 'before' for k, _ in r8) and any(k == 'after' and lday(s) == d8 + datetime.timedelta(days=1) for k, s in r8), 'a by-day deadline: 9am on the day and an “after” the morning after: %s' % r8)
@@ -161,11 +163,11 @@ with sync_playwright() as p:
     opencase(c8); pg.click('[data-a=rebook]'); wait(pg, 400)
     pickdate('f-date', sun); pg.click('form[data-f=promise] button[type=submit]'); wait(pg, 600)
     np8 = openp(c8)[0]
-    ok('Friday' not in np8['said'] and '£89' in np8['said'] and '445566' in np8['said'], 'their words lose the old date: %r' % np8['said'])
+    ok(W8 not in np8['said'] and '£89' in np8['said'] and '445566' in np8['said'], 'their words lose the old date: %r' % np8['said'])
     nl8 = [l for l in labels(c8) if l.startswith('They said:')][-1]
-    ok('Friday' not in nl8 and nl8.count('445566') == 1, 'the history line for the new date has one date and one reference: %r' % nl8)
+    ok(W8 not in nl8 and nl8.count('445566') == 1, 'the history line for the new date has one date and one reference: %r' % nl8)
     q = pg.inner_text('.promise-quote') if pg.locator('.promise-quote').count() else ''
-    ok('Friday' not in q, 'the promise card quotes no old date: %r' % q)
+    ok(W8 not in q, 'the promise card quotes no old date: %r' % q)
     # 5. "It was always Thursday" keeps a by-day deadline
     c9 = start('Currys said they would refund my £40 by Friday, order 778899')
     opencase(c9); panel('correct')

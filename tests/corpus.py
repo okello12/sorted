@@ -264,3 +264,105 @@ DEMANDS = [
   ("TESCO STORES LTD Receipt " + datetime.date.today().strftime('%d/%m/%Y') + " 14:22 MILK 1.20 BREAD 0.95 TOTAL £2.15 Thank you for shopping Returns accepted within 30 days", None),
   ("Currys said the voucher is valid for 30 days", None),
 ]
+
+# ---- v145 (audit pass 3, reviewer A): fresh UK sentences, typed, dictated and pasted, with the locked truth ----
+# Dates are built from today so nothing goes stale. MESSY_YES keys: days, weekday, dom, hour, past, party.
+_TD = datetime.date.today()
+def _nxt145(wd, skip=0):
+    d = _TD + datetime.timedelta(days=1 + skip)
+    while d.weekday() != wd: d += datetime.timedelta(days=1)
+    return d
+def _ord145(n): return str(n) + ('th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th'))
+_A5, _A12, _A20 = ahead(5), ahead(12), ahead(20)
+_MON2 = _nxt145(0, 7)                    # the Monday after next: "Monday 19th" must never be next Monday
+_WED2 = _nxt145(2, 7)
+_THU2 = _nxt145(3, 7)
+_DDMM = lambda d: '%02d/%02d' % (d.day, d.month)
+_WA_OLD = (_TD - datetime.timedelta(days=3))
+MESSY_YES += [
+  ("Evri said they'll redeliver tomorrow", {"days": 1, "party": "Evri"}),
+  ("DPD: Your parcel will be delivered tomorrow between 10:14 and 11:14", {"days": 1, "hour": 10}),
+  ("Royal Mail said the parcel will be with me by Tuesday", {"weekday": "Tuesday"}),
+  ("Evri 📦 said it will be delivered tomorrow 👍", {"days": 1}),
+  ("yodel said parcel wil be deliverd thurs", {"weekday": "Thursday"}),
+  ("Amazon said the replacement will arrive on " + _A5['dm'] + " 🙏", {"days": 5}),
+  ("DHL said they will deliver on " + _DDMM(_A12['date']), {"days": 12}),
+  ("UPS said the parcel will be delivered on " + _A12['iso'], {"days": 12}),
+  ("Sky confirmed the engineer visit for " + _A12['iso'], {"days": 12}),
+  ("Hi it's Dave the plumber, I'll be round Thursday morning to look at the leak", {"weekday": "Thursday"}),
+  ("The landlord said someone will be out to fix the damp on the " + _ord145(_A12['date'].day), {"dom": _A12['date'].day}),
+  ("so i rang them and the lady said someone from the repairs team would ring me back on wednesday and if not i should call again", {"weekday": "Wednesday"}),
+  ("The council said they will collect the missed bin on Monday", {"weekday": "Monday"}),
+  ("DWP told me they'd make a decision on my PIP claim by the " + _ord145(_A20['date'].day), {"dom": _A20['date'].day}),
+  ("Octopus said the refund will be in my account by COB Monday", {"weekday": "Monday", "hour": 17}),
+  ("BT said they'd fix the line by close of business Monday", {"weekday": "Monday", "hour": 17}),
+  ("The bank said the transfer will go through by end of day tomorrow", {"days": 1, "hour": 17}),
+  ("spoke to octopus today they said they will send a engineer out on the " + _ord145(_A20['date'].day) + " between 8 and 12 and also refund the £40 by next friday", {"dom": _A20['date'].day, "hour": 8}),
+  ("Thames Water promised someone would come out to look at the leak on Monday", {"weekday": "Monday"}),
+  ("British Gas: Your engineer will arrive between 7:30 and 11:30 on Thursday", {"weekday": "Thursday", "hour": 7}),
+  ("EE said they'll credit £25 to my account by the " + _ord145(_A20['date'].day), {"dom": _A20['date'].day}),
+  ("openreach engineer booked for monday 8am-1pm ref OR123456", {"weekday": "Monday", "hour": 8}),
+  ("Sky said the engineer will come Monday " + _ord145(_MON2.day), {"dom": _MON2.day, "weekday": "Monday"}),
+  ("Virgin said the engineer is coming Mon " + _ord145(_MON2.day) + " between 8 and 12", {"dom": _MON2.day, "hour": 8}),
+  ("the builder said he'll start Weds " + _ord145(_WED2.day), {"dom": _WED2.day}),
+  ("BT said the engineer will be here thurs the " + _ord145(_THU2.day) + " at 2pm", {"dom": _THU2.day, "hour": 14}),
+  ("insurer said they'd make a decision on the claim by " + _A20['dm'], {"days": 20}),
+  ("Currys said the replacement will be delivered on " + _DDMM(_A12['date']), {"days": 12}),
+  ("John Lewis said they'll refund £89.99 by Friday", {"weekday": "Friday"}),
+  ("Amazon: Arriving tomorrow by 10pm", {"days": 1, "hour": 22}),
+  ("Garage said the car will be ready by lunchtime tomorrow", {"days": 1, "hour": 12}),
+  ("The garage said they'll have the part in by Weds and fit it Thurs", {"weekday": "Wednesday"}),
+  ("Good news, your engineer is now booked for " + _A12['dm'] + ".\n\nOn 1 Oct 2026, at 10:02, BT wrote:\n> Your engineer will visit on 5 October.", {"days": 12}),
+  ("We will deliver your parcel on " + _A5['date'].strftime('%a %d %b'), {"days": 5}),
+  ("Rang BT today and they said the engineer will come on Monday", {"weekday": "Monday", "party": "BT"}),
+  ("Rang BT today and they said the engineer will come on Monday, ref BT1234, I have been without broadband for a week now and it is a nightmare", {"weekday": "Monday"}),
+  ("Chatted to Evri this afternoon on the app, they said the parcel will be redelivered on Monday and to keep an eye on tracking", {"weekday": "Monday"}),
+  ("Spoke with the landlord tonight he said the plumber will come on Thursday between 8 and 12 to sort the leak under the sink", {"weekday": "Thursday", "hour": 8}),
+  ("I phoned Currys this morning and was told the refund will be paid by Wednesday. Order number 445566. Really annoyed about the whole thing to be honest", {"weekday": "Wednesday"}),
+  ("I was told the refund will be paid by Wednesday", {"weekday": "Wednesday"}),
+  ("I've been told an engineer will come on Monday", {"weekday": "Monday"}),
+  ("We were told the repair will be done by Friday", {"weekday": "Friday"}),
+  ("Landlord says the gas safety check will be done on " + _DDMM(_A12['date']), {"days": 12}),
+  ("Evri said the parcel will be delivered today or tomorrow", {"days": 0}),
+  ("[" + _TD.strftime('%d/%m/%Y') + ", 14:02] Dave Plumber: I'll come Monday morning to fix the tap\n[" + _TD.strftime('%d/%m/%Y') + ", 14:03] Me: thanks", {"weekday": "Monday", "hour": 8}),
+  (_TD.strftime('%d/%m/%Y') + ", 09:15 - Sarah (Letting Agent): The electrician will come on Wednesday between 9 and 12", {"weekday": "Wednesday", "hour": 9}),
+  ("BT said they can't come Monday but will come Wednesday instead", {"weekday": "Wednesday"}),
+  ("British Gas said they couldn't come today but will be here tomorrow between 8 and 12", {"days": 1, "hour": 8}),
+  ("Currys said they can't deliver on Friday, they'll deliver Saturday", {"weekday": "Saturday"}),
+  ("Landlord said he can't come this week but will send someone on the " + _ord145(_A20['date'].day), {"dom": _A20['date'].day}),
+  ("Sky said they will call me back on Monday, if not Tuesday", {"weekday": "Monday"}),
+  ("admiral said they'd call me back on Tuesday", {"weekday": "Tuesday", "party": "Admiral"}),
+  ("yodel said parcel will be delivered thurs", {"weekday": "Thursday", "party": "Yodel"}),
+  ("Direct Line said they'll send the cheque by Friday", {"weekday": "Friday", "party": "Direct Line"}),
+]
+NOT_GROUPS["v145: information, demands on you, tentative and fallbacks"] = [
+  "Sorry we missed you. We tried to deliver your parcel today.", "Evri: we tried to deliver your parcel today but no one was in",
+  "Your parcel is out for delivery", "Evri said they'll try to deliver again tomorrow", "landlord said he might pop round wednesday 🤷",
+  "The landlord refused to fix the boiler until next month", "Landlord said he can't come until next Wednesday",
+  "I told the landlord I'd be in on Saturday", "Builder said he'll finish when the materials come in",
+  "The council said bailiffs will visit on Monday", "School: Parents evening is on Thursday",
+  "The school office is open 8.30am to 4pm, call us if you need anything", "HMRC: we aim to reply within 15 working days",
+  "DWP said my payment should arrive by Friday", "Current processing times are 6 to 8 weeks", "DVLA processing times are currently 6 weeks",
+  "Monzo: You received £45.00 from AMAZON EU", "Barclays: Your payment of £120.00 to BRITISH GAS is due on " + _DDMM(_A12['date']),
+  "Nationwide said they will try to get back to me by Monday", "Santander: we will take £35 from your account on " + _A12['dm'],
+  "Lloyds said they won't refund the money", "Octopus: Your new tariff starts on 1 November", "Thames Water will increase your bill from 1 April",
+  "British Gas said an engineer could come Thursday", "EON said if I send a meter reading they'll fix the bill by Friday",
+  "Sky: lines are open 8am to 8pm, 7 days a week", "Virgin said the next available appointment is on " + _A12['dm'],
+  "EE: your bill of £45.20 will be taken on " + _DDMM(_A12['date']), "Direct Line said they should have an answer next week",
+  "The insurer said they're unable to confirm when the assessor will visit", "Currys said they'll refund me on Friday if the item is returned unused",
+  "Amazon said they won't refund me", "Argos: Returns accepted within 30 days with a receipt", "ASOS said refunds can take up to 14 days",
+  "Did Currys say they'd deliver it tomorrow?", "Currys never said they'd call back today",
+  "GP surgery: The next available appointment is on " + _A12['dm'] + " at 10:20", "Surgery: please call back after 8am tomorrow to book",
+  "Garage said it should be ready Friday, they'll try their best", "Your MOT is due on " + _A20['dm'], "Halfords said they can probably fit it next week",
+  "Thanks for your patience, we are looking into this.\n\nOn 1 Oct 2026, at 10:02, BT <noreply@bt.com> wrote:\n> Your engineer will visit on 5 October.",
+  "They said they would refund me but didn't say when", "We'll be in touch", "We'll be in touch soon", "Can you call me back tomorrow?",
+  "I need to call British Gas on Monday", "Rang BT today, still no date for the engineer", "Called the council this morning about the bins",
+  "The website says delivery takes 3-5 working days",
+  "Your council tax of £152 is due on " + _A12['dm'], "Please reply by " + _A12['dm'] + " with your account details",
+  "BT said they can't come Monday", "The plumber said he won't make it tomorrow", "British Gas said they couldn't come today",
+]
+DEMANDS += [
+  ("Council: Your council tax of £152 is due on " + _A12['dm'], 12), ("Camden Council: you must pay the £80 penalty within 28 days", 28),
+  ("HMRC: You must file your tax return by " + _A20['dm'], 20), ("Please reply by " + _A12['dm'] + " with your account details", 12),
+  ("Your rent of £850 is due on " + _A20['dm'], 20), ("Your car tax is due on " + _A20['dm'], 20),
+]

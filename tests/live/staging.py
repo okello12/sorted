@@ -208,7 +208,7 @@ if B:
     st, r = rpc('invite_helper', {'p_task_id': tid, 'p_email': 'helper@example.com', 'p_name': 'H'}, B)
     ok(st >= 400 or r in (False, None) or (isinstance(r, dict) and not r.get('ok')), 'B cannot invite a helper to A’s case (%s %s)' % (st, str(r)[:60]))
     ep = 'https://fcm.googleapis.com/fcm/send/staging-' + uuid.uuid4().hex   # push_save only takes real push hosts
-    st, r = rpc('push_save', {'p_endpoint': ep, 'p_p256dh': 'k', 'p_auth': 'a'}, A)
+    st, r = rpc('push_save', {'p_endpoint': ep, 'p_p256dh': 'B' + 'k' * 86, 'p_auth': 'a' * 22}, A)   # the table checks key lengths
     ok(st in (200, 204), 'A saves a push address (%s)' % st)
     rpc('push_drop', {'p_endpoint': ep}, B)
     st, r = rpc('push_state', {'p_endpoint': ep}, A)

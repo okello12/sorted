@@ -17,23 +17,15 @@ without touching anyone's cases.
 indexes, row level security, grants, functions, triggers and the retention jobs. On 4 October 2026 everything in it
 except the parts that delete rows was applied through the Supabase API. The rest is in
 `supabase/staging/01_run_by_hand.sql` (six functions, one trigger, the retention jobs), because Supabase's tooling asks
-a person to confirm statements that delete. **Still to do, once, by the person running Sorted:**
+a person to confirm statements that delete. All of it is now done (9 October 2026): `01_run_by_hand.sql`, anonymous
+sign-ins switched on, the GitHub secrets added, and `02_parity_v149.sql`, which the first full run asked for (staging was
+missing `delete_my_account` and `stash_carry`, and anonymous callers could reach `drop_outcome`, `remove_helper` and
+`shares_drop_helper`; live was right throughout).
 
-1. Open the staging project > SQL editor, paste `supabase/staging/01_run_by_hand.sql`, run it.
-2. Authentication > Sign In / Providers: switch on **Anonymous sign-ins** (and Email, as on live).
-3. In GitHub (okello12/sorted > Settings > Secrets and variables > Actions) add two repository secrets:
-   `SORTED_STAGING_URL` = `https://ujwanxqrefziuxwfzeaj.supabase.co` and `SORTED_STAGING_ANON_KEY` = the staging
-   project's publishable key (Project settings > API keys). The publishable key is the one the page ships with, so it
-   is not secret in the way the service key is; it still goes in a GitHub secret, not in a file or a chat.
-
-Until step 3 is done the `staging` job in CI is **skipped** (a `secrets-check` job sees the secrets are missing and
-says so in a warning). It is never reported as passed without running.
-
-Migration 15 (`15_delivery_seen_v116.sql`) is fully applied on staging (4 October 2026). Progress on step 1 (the same day, through the Supabase API): `shares_drop_helper` with its trigger, `remove_helper`
-and `drop_outcome` are on staging. Supabase's tooling refused the rest without a person's confirmation, so still to run
-in the SQL editor from `01_run_by_hand.sql`: `delete_my_account`, `stash_carry`, `claim_carry`, the `revoke` and
-`grant` lines, and the retention jobs. Running the whole file again is safe (`create or replace`; `cron.schedule`
-replaces a job of the same name).
+The `staging` job is required on every pull request. A `secrets-check` job fails when neither the secrets nor
+`tests/live/staging_target.json` (the staging URL and its publishable key, public by design) are there, so it can never
+pass without running. `staging.py` checks the URL and key it is given and falls back to that file when a secret is
+malformed; it never prints either.
 
 ## The live suite
 
@@ -45,11 +37,14 @@ replaces a job of the same name).
 - a share link opens for anyone with the token and for nobody else, is counted, and stops the moment it is switched off;
 - the page can report an error with no account, and unknown sources are ignored;
 - company totals take only companies on the fixed list, and Undo drops an outcome;
+- every function that is service-only or signed-in-only refuses the wrong caller, so staging's grants match live's;
+- a second person can't use the first person's reply address, helper invite, push address, reminders, kept documents
+  or a made-up carry token, and a case far over the size cap is refused;
 - deleting an account leaves nothing behind;
-- the real page, pointed at staging, saves a real case and brings it back after a reload.
+- the real page, pointed at staging, saves a real case and brings it back after a reload, then deletes its guest.
 
-Run it by hand with the two variables set, or from GitHub: Actions > Sorted regression CI > Run workflow. It also runs
-after each push to `main` when the secrets exist. From this workspace the staging project is not reachable (the
+Run it by hand with the two variables set, or from GitHub: Actions > Sorted regression CI > Run workflow. It runs on every pull request
+and after each push to `main`. From this workspace the staging project is not reachable (the
 network allows only package registries and GitHub), so the CI job is the normal way to run it.
 
 ## Keeping staging level with live

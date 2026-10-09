@@ -1,4 +1,4 @@
-# v150: attention(t), the attention extraction step 1. One record per case per draw answers "what needs attention":
+# v150 and v151: attention(t), the attention extraction step 1. One record per case per draw answers "what needs attention":
 # state, priority, why it leads, the quick answer, your own deadline, Later, the next step and the reminder's day.
 # The old functions still work and, while a screen is drawn, read the same record. This test builds a varied Home
 # (overdue, due today, waiting, your step, a check day, a parking notice, a deadline on you, Later, finished) and checks:
@@ -16,7 +16,7 @@ CMP = """(()=>{var F=ATT150.F,out=[];S.tasks.forEach(function(t){var a=attention
 
 A_ = '\nboot();\n})();\n'
 SRC = open(HERE + '/tests/out/index.html', encoding='utf8').read(); assert SRC.count(A_) == 1
-open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
+open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.att151Rules=function(t){return att151Rules(t)};window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
 with sync_playwright() as p:
     a = App(p, email=True); pg = a.pg
     a.ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE + '/tests/out/119_hook.html', content_type='text/html'))
@@ -57,6 +57,19 @@ with sync_playwright() as p:
     ok('Phone Screwfix' in mc, 'your overdue step leads on the case')
     bad = pg.evaluate(CMP); ok(not bad, 'and the record still agrees on the case page: %s' % bad[:4])
     a.tap('cases'); bad = pg.evaluate(CMP); ok(not bad, 'and on Cases: %s' % bad[:4])
+    # v151: the rules themselves live in attention(). Vary every case's dates and check them against the old functions.
+    VAR = r'''(()=>{var F=ATT150.F,H=36e5,D=864e5,offs=[null,-5*D,-26*H,-3*H,-1*H,0.5*H,2*H,10*H,20*H,30*H,3*D,10*D,40*D],out=[],n=0;
+      S.tasks.forEach(function(base){offs.forEach(function(po){[null,-2*D,-2*H,0.5*H,6*H,30*H,5*D,35*D].forEach(function(mo){[false,true].forEach(function(miss){
+        var t=JSON.parse(JSON.stringify(base));t.promises=(t.promises||[]).filter(function(q){return q.status!=='open'});
+        if(miss)t.promises.push({id:'pm',status:'missed',party:'X',said:'x',dueAt:new Date(Date.now()-3*D).toISOString(),allDay:true,by:true});
+        if(po!==null)t.promises.push({id:'po',status:'open',party:'X',said:'They will do it',dueAt:new Date(Date.now()+po).toISOString(),dueEnd:po%D===0?null:new Date(Date.now()+po+2*H).toISOString(),allDay:po%D===0,by:po%D===0,prec:'day'});
+        t.moves=(t.moves||[]).filter(function(x){return x.status!=='open'});
+        if(mo!==null)t.moves.push({id:'mo',what:'Phone them',status:'open',loggedAt:new Date().toISOString(),dueAt:new Date(Date.now()+mo).toISOString(),allDay:false});
+        if(t.board==='done'&&(po!==null||mo!==null))t.board='yours';
+        var a=att151Rules(t),o={state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t)};n++;
+        ['state','prio','why','q'].forEach(function(k){if(a[k]!==o[k])out.push(t.title+' p'+po+' m'+mo+' '+k+': '+a[k]+' vs '+o[k])})})})})});return [n,out]})()'''
+    r = pg.evaluate(VAR)
+    ok(r[0] > 1000 and not r[1], 'the new rules match the old ones on %d variations of the cases’ dates: %s' % (r[0], r[1][:4]))
     # 100 cases: one draw, each case once
     pg.evaluate("""(()=>{var base=S.tasks[0];for(var i=0;i<90;i++){var c=JSON.parse(JSON.stringify(base));c.id='x150-'+i;c.title='Copy '+i;S.tasks.push(c)}})()""")
     r = pg.evaluate("""(()=>{var n=0,o=ATT150.F.prio;ATT150.F.prio=function(t){n++;return o.apply(this,arguments)};go({name:'home'});n=0;var t0=performance.now();render();var ms=performance.now()-t0;ATT150.F.prio=o;return [n,S.tasks.length,ms]})()""")

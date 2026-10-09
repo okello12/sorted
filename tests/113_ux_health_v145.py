@@ -116,7 +116,7 @@ with sync_playwright() as p:
                 if re.search(r'[A-Za-z]\'(?:s|t|re|ll|ve|d|m)\b', s) or '\u2014' in s: fn_bad.append('%s:%d %s' % (f, i + 1, s[:60]))
     ok(not fn_bad, 'edge function copy has curly apostrophes and no em dash: %s' % fn_bad[:4])
     env = dict(os.environ, SORTED_SHIFT_DAYS='3', PYTHONPATH=HERE + '/tests', TZ='Europe/London')
-    out = subprocess.run([sys.executable, '-c', "import datetime;from playwright.sync_api import sync_playwright\nwith sync_playwright() as p:\n b=p.chromium.launch();c=b.new_context();pg=c.new_page();pg.goto('data:text/html,x');print(datetime.date.today().isoformat(),pg.evaluate('new Date().toISOString().slice(0,10)'),pg.evaluate('new Date(2020,0,1).getFullYear()'))"], env=env, capture_output=True, text=True, cwd=HERE).stdout.split()
+    out = subprocess.run([sys.executable, '-c', "import datetime;from playwright.sync_api import sync_playwright\nwith sync_playwright() as p:\n b=p.chromium.launch();c=b.new_context();pg=c.new_page();pg.goto('data:text/html,x');print(datetime.date.today().isoformat(),pg.evaluate('(d=>d.getFullYear()+\"-\"+String(d.getMonth()+1).padStart(2,\"0\")+\"-\"+String(d.getDate()).padStart(2,\"0\"))(new Date())'),pg.evaluate('new Date(2020,0,1).getFullYear()'))"], env=env, capture_output=True, text=True, cwd=HERE).stdout.split()
     want = (today + datetime.timedelta(days=3)).isoformat()
     ok(len(out) >= 5 and out[-3] == want and out[-2] == want and out[-1] == '2020', 'SORTED_SHIFT_DAYS=3 moves today in Python and the browser, and leaves explicit dates alone: %s' % out[-3:])
 

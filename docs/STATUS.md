@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v149 (9 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 3f0c0d43c9d3f5c078ab0812da39eacda2222451
+- **Release:** v150 (9 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** 3bca8105a5a9279730e55064c43985dc48935acb
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -36,10 +36,13 @@ ruleset on `main` requiring a pull request with regression, WebKit, Firefox and 
 
 ## Next approved change
 
-The attention extraction. No new features until the pilot shows dated
+The attention extraction, step 2. Step 1 (v150): `attention(t)` is the one record Home, the case page, quick
+answers and the reminder question read during a draw; the old functions delegate to it. Step 2 moves the rules
+themselves inside it (state, priority, why, the quick answer and the next step from one set of facts about the case),
+with test 119 and the existing suite holding every answer still. No new features until the pilot shows dated
 cases reaching their day with a working reminder.
 
 ## Permanent gates
 
 77 (documents), 94 and 96 (dates and their source), 109 (check first), 115 (the garage), 116 (two obligations),
-117 (the reminder choice), 118 (this page is current).
+117 (the reminder choice), 118 (this page is current), 119 (one attention record).

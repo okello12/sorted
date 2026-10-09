@@ -42,7 +42,7 @@ with sync_playwright() as p:
     def start_case(pg):
         pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 700)
         pg.locator('[data-cap82=other]').first.evaluate('e=>e.click()'); wait(pg, 300)
-        pg.fill('#f-case', 'Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A')); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 600)
+        pg.fill('#f-case', 'Currys said they would refund £89 by %d %s, order 445566' % (fri.day, fri.strftime('%B'))); pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 600)
         if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); wait(pg, 500)
         if pg.locator('[data-a=sug-yes]').count(): pg.click('[data-a=sug-yes]'); wait(pg, 600)
         if pg.locator('text=Not now').count(): pg.click('text=Not now'); wait(pg, 300)

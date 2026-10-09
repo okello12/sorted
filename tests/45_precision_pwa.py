@@ -25,7 +25,7 @@ with sync_playwright() as p:
     if chooser.count() and chooser.locator('.cap82-card[data-cap82=fix]').count():
         chooser.locator('.cap82-card[data-cap82=fix]').click();wait(pg,450)
     ok(pg.locator('.gi-form').count()==1,'broken choice reaches the guided start (v91)')
-    heading0=pg.locator('h1,h2').filter(has_text="What’s broken?");ok(heading0.count()>=1,'the guided start asks What’s broken?')
+    heading0=pg.locator('h1,h2').filter(has_text="What needs repairing?");ok(heading0.count()>=1,'the guided start asks What needs repairing?')
     if pg.locator('[data-a=gi-own]').count():pg.click('[data-a=gi-own]');wait(pg,300)
     ta=pg.locator('#f-case').first
     ok(ta.count()==1,'"your own words" reaches the intake composer')

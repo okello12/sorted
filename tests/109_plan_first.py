@@ -82,6 +82,6 @@ with sync_playwright() as p:
     t = start('Santander froze my account', 'check with them on the phone')
     ok(not t.get('moves'), '“check with them on the phone” is contacting them, not a check')
     t = start('Currys said they would refund my £89 by Friday, order 445566', 'check what they already said in the email')
-    ok(not [x for x in t.get('moves', []) if x.get('src') == 'plan'], 'a case with a promise proposed gets no extra check step')
+    ok([(x.get('kind'), x['what']) for x in t.get('moves', []) if x.get('src') == 'plan'] == [('check', 'Check what they already said in the email')], 'v148: with their promise proposed, a plan to check is kept as your step in your words, next to the promise: %s' % [x.get('what') for x in t.get('moves', [])])
     b.close()
 print('ERRORS', errs); print('FAILS', fails)

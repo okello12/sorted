@@ -64,11 +64,11 @@ with sync_playwright() as p:
     ok(cases(pg) == [], 'refresh before Start creates nothing')
     # 6 switching start choice half-way: the new one wins
     home(pg); chooser(pg).locator('[data-cap82=fix]').first.click(); wait(pg)
-    ok('What’s broken?' in pg.inner_text('main'), 'broken: its own question')
+    ok('What needs repairing?' in pg.inner_text('main'), 'broken: its own question')
     home(pg); chooser(pg).locator('[data-cap82=call]').first.click(); wait(pg)
-    ok('Who do you need to call?' in pg.inner_text('main') and pg.locator('#gi-who').count() == 1 and 'What’s broken?' not in pg.inner_text('main'), 'then call: the call question, nothing left from broken')
+    ok('Who do you need to call?' in pg.inner_text('main') and pg.locator('#gi-who').count() == 1 and 'What needs repairing?' not in pg.inner_text('main'), 'then call: the call question, nothing left from broken')
     home(pg); chooser(pg).locator('[data-cap82=other]').first.click(); wait(pg)
-    ok('What’s broken?' not in pg.inner_text('main') and 'Who do you need to call?' not in pg.inner_text('main') and pg.locator('#f-case').count() == 1, 'then something else: the plain box, no leftover heading')
+    ok('What needs repairing?' not in pg.inner_text('main') and 'Who do you need to call?' not in pg.inner_text('main') and pg.locator('#f-case').count() == 1, 'then something else: the plain box, no leftover heading')
     # 7 repeated taps on Start: one case
     pg.fill('#f-case', 'Currys said my refund of £89 would arrive by Friday, order 445566')
     pg.locator('form[data-f=case] button[type=submit]').last.evaluate('(b)=>{b.click();b.click();b.click()}'); wait(pg, 500); baseline(pg)

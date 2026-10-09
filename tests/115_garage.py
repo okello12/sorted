@@ -16,7 +16,7 @@ with sync_playwright() as p:
     m = a.main()
     ok('a car at the garage' in m, 'the repair door mentions a car at the garage')
     pg.locator('[data-cap82=fix]').first.evaluate('e=>e.click()'); wait(pg, 600)
-    car = pg.locator('.gi147-car [data-cap95=garage]')
+    car = pg.locator('.gi147-car[data-cap95=garage]')
     ok(car.count() == 1, 'the repair questions offer the garage questions for a car or van')
     car.click(); wait(pg, 700)
     ok('Which garage?' in a.main() and pg.locator('#gi-who').count() == 1, 'and that opens the garage questions')

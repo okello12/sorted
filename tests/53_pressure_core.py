@@ -76,7 +76,7 @@ with sync_playwright() as p:
     else:ok(True,'no local cache key in anonymous mock session')
     chooser,_=user_home(pg,'category reset')
     if chooser is not None and chooser.locator('[data-cap82=fix]:visible').count():
-        chooser.locator('[data-cap82=fix]:visible').first.click();wait(pg,380);ok(pg.get_by_text("What’s broken?",exact=True).count()>=1,'broken route gets broken-specific intake');chooser2,_=user_home(pg,'between categories')
+        chooser.locator('[data-cap82=fix]:visible').first.click();wait(pg,380);ok(pg.get_by_text("What needs repairing?",exact=True).count()>=1,'broken route gets broken-specific intake');chooser2,_=user_home(pg,'between categories')
         if chooser2 is not None and chooser2.locator('[data-cap82=call]:visible').count():chooser2.locator('[data-cap82=call]:visible').first.click();wait(pg,380);ok(pg.get_by_text('Who do you need to call?',exact=True).count()>=1 and pg.locator('#gi-who:visible').count()==1,'call route replaces broken-route context with the intended call intake')
     else:ok(False,'category chooser remains available after repeated case activity')
     for i in range(3):

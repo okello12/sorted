@@ -52,16 +52,16 @@ with sync_playwright() as p:
     # ---- once a case has a date: the offer, once ----
     c1 = start('Currys said they would refund £89 by %s, order 445566' % fri.strftime('%A'))
     pg.goto('https://sorted.test/?task=%s' % c1); wait(pg, 700)
-    ng = pg.locator('.nudge133')
-    ok(ng.count() == 1 and 'Want Sorted to tell you when it’s due?' in ng.inner_text() and ng.locator('[data-a=push-on]').count() == 1 and ng.locator('[data-a=go-claim]').count() == 1, 'a case with a date offers the lock screen and, to a guest, an email')
+    ng = pg.locator('.rem149')   # v149: one question, how Sorted should remind you
+    ok(ng.count() == 1 and 'How should Sorted remind you' in ng.inner_text() and ng.locator('[data-v=phone]').count() == 1 and ng.locator('[data-v=email]').count() == 1, 'a case with a date offers the lock screen and, to a guest, an email')
     ok(not [r for r in dbj().get('reminders', []) if r['task_id'] == c1], 'before that, a guest’s case has no reminder rows (no email, no phone)')
     # ---- switch it on ----
-    ng.locator('[data-a=push-on]').click(); wait(pg, 800)
+    ng.locator('[data-v=phone]').click(); wait(pg, 800)
     subs = dbj().get('push_subs', [])
     ok(len(subs) == 1 and subs[0]['endpoint'].startswith('https://fcm.googleapis.com/') and pg.evaluate('window.__swUrl') == '/sw.js', 'Get reminders on this phone registers /sw.js and saves this phone’s push address')
     ok(pg.evaluate('window.__subOpts') == {'uvo': True, 'keyLen': 65}, 'it asks for visible notifications with Sorted’s public key')
     ok([r for r in dbj().get('reminders', []) if r['task_id'] == c1], 'the open case now has its reminder rows, with no email needed')
-    ok(pg.locator('.nudge133 [data-a=push-on]').count() == 0 and pg.locator('.nudge133 [data-a=go-claim]').count() == 1, 'the lock-screen offer has gone; the email offer stays for a guest')
+    ok(pg.locator('.rem149').count() == 0 and 'Reminder: On this phone' in pg.inner_text('main') and (pg.locator('main [data-a=go-claim]').count() >= 1 or 'Add an email' in pg.inner_text('main')), 'the question is answered (this phone); an email is still offered to a guest')
     c2 = start('Sky said an engineer would come on %s, ref SKY12345' % fri.strftime('%A'))
     ok([r for r in dbj().get('reminders', []) if r['task_id'] == c2], 'a new case with a date gets reminder rows straight away')
     tap('data'); pg.click('.acct112-nav [data-v=acct-settings]'); wait(pg, 400)
@@ -74,9 +74,9 @@ with sync_playwright() as p:
     ok(pg.locator('.push133').get_attribute('data-push') == 'denied' and 'blocked' in pg.inner_text('.push133'), 'if the phone blocks notifications, Settings says how to allow them')
     c3 = start('Amazon said they would refund £20 by %s, ref AMZ12345' % fri.strftime('%A'))
     pg.goto('https://sorted.test/?task=%s' % c3); wait(pg, 700)
-    if pg.locator('.nudge133').count(): pg.click('.nudge133 [data-a=nudge-skip]'); wait(pg, 300)
-    pg.goto('https://sorted.test/?task=%s' % c1); wait(pg, 700)
-    ok(pg.locator('.nudge133').count() == 0, 'Maybe later means the offer doesn’t come back')
+    if pg.locator('.rem149').count(): pg.click('.rem149 [data-v=none]'); wait(pg, 300)
+    pg.goto('https://sorted.test/?task=%s' % c3); wait(pg, 700)
+    ok(pg.locator('.rem149').count() == 0 and 'Reminder: No reminder' in pg.inner_text('main'), '“No reminder” means the question doesn’t come back for that case')
     # ---- answers from a reminder: Later, New date, and a tap on the notification ----
     p1 = [q['id'] for c in cases() if c['id'] == c1 for q in c['promises'] if q['status'] == 'open'][0]  # v137: a reminder carries its promise; an old one is out of date (test 93)
     pg.goto('https://sorted.test/?task=%s&src=email&ans=later&p=%s' % (c1, p1)); wait(pg, 900)

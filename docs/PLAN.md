@@ -612,6 +612,16 @@ step is open and offers "I've called" and "I heard from them", which sets a cond
 said. The repair door asks what needs repairing, presumes no appliance and has a car of its own. A corrected quote is
 the one every screen shows. Evidence: test 116 (also at 4am and on a Saturday); 109's expectation follows the new rule.
 
+**v149 (hardening, 9 October).** Production counts that evening: 16 people, 42 cases, 18 guests, 1 email account, 2
+reminder rows, no reminder ever sent. A guest is only reminded by email or this phone, and almost nobody set either up,
+so the loop the north star depends on had never run. A dated case now says plainly that nothing reaches the person
+outside Sorted yet and asks how to remind them: their calendar first, this phone, email, or none; the choice is recorded
+as a code (`reminder_path_chosen`) so the pilot can see what share of dated cases have a reminder at all. Also: indexes
+the adviser asked for, share opens counted once per 30 minutes, `docs/STATUS.md` as the one current page (test 118),
+and on the branch `v149-ci-gate` the CI hardening (actions pinned to SHAs, Playwright pinned, Dependabot, a missing
+staging secret fails the build, and the staging suite calling every privileged function as the wrong person). That
+branch merges once Baldwin has added the two staging secrets; then a ruleset on `main` requires all four checks.
+
 **The gibberish photograph (8 October):** its read ("v 6 RECEIPT 1 (Des Bi | AO) … Honpson=Al _ Ee » gE Dg 5G CE") reached a case title and a
 chase message on v141. From v143 `docAssess()` fails a read like it (`ocrJunk()`), so it shows the failure with Retake photo,
 Choose another file and typing it instead, and nothing becomes a case. Still to verify on the phone with the same photo.

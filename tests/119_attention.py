@@ -1,4 +1,4 @@
-# v150 and v151: attention(t), the attention extraction step 1. One record per case per draw answers "what needs attention":
+# v150 to v152: attention(t), the attention extraction step 1. One record per case per draw answers "what needs attention":
 # state, priority, why it leads, the quick answer, your own deadline, Later, the next step and the reminder's day.
 # The old functions still work and, while a screen is drawn, read the same record. This test builds a varied Home
 # (overdue, due today, waiting, your step, a check day, a parking notice, a deadline on you, Later, finished) and checks:
@@ -16,7 +16,7 @@ CMP = """(()=>{var F=ATT150.F,out=[];S.tasks.forEach(function(t){var a=attention
 
 A_ = '\nboot();\n})();\n'
 SRC = open(HERE + '/tests/out/index.html', encoding='utf8').read(); assert SRC.count(A_) == 1
-open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.att151Rules=function(t){return att151Rules(t)};window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
+open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.att151Rules=function(t){return att151Rules(t)};window.__wrapCalc=function(fn){var o=att150Calc;att150Calc=function(t){fn(t);return o(t)};return function(){att150Calc=o}};window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
 with sync_playwright() as p:
     a = App(p, email=True); pg = a.pg
     a.ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE + '/tests/out/119_hook.html', content_type='text/html'))
@@ -41,7 +41,7 @@ with sync_playwright() as p:
     n = pg.evaluate("S.tasks.length")
     ok(n >= 9, 'a varied Home (%d cases)' % n)
     # once per case per draw
-    calls = pg.evaluate("""(()=>{var n=0,o=ATT150.F.due;ATT150.F.due=function(t){n++;return o.apply(this,arguments)};try{render()}finally{ATT150.F.due=o}return n})()""")
+    calls = pg.evaluate("""(()=>{var n=0,undo=__wrapCalc(function(){n++});try{render()}finally{undo()}return n})()""")
     ok(0 < calls <= n, 'Home works each case out at most once per draw (%d for %d cases)' % (calls, n))
     ok(pg.evaluate("ATT150.memo===null&&ATT150.depth===0"), 'the record is dropped when the draw ends')
     # a change between draws is seen at once
@@ -66,13 +66,20 @@ with sync_playwright() as p:
         t.moves=(t.moves||[]).filter(function(x){return x.status!=='open'});
         if(mo!==null)t.moves.push({id:'mo',what:'Phone them',status:'open',loggedAt:new Date().toISOString(),dueAt:new Date(Date.now()+mo).toISOString(),allDay:false});
         if(t.board==='done'&&(po!==null||mo!==null))t.board='yours';
-        var a=att151Rules(t),o={state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t)};n++;
-        ['state','prio','why','q'].forEach(function(k){if(a[k]!==o[k])out.push(t.title+' p'+po+' m'+mo+' '+k+': '+a[k]+' vs '+o[k])})})})})});return [n,out]})()'''
+        var a=attention(t),o={state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t),next:F.next(t),snoozed:F.snoozed(t),own:JSON.stringify(F.own(t)),due:String(F.due(t))};a=Object.assign({},a,{own:JSON.stringify(a.own),due:String(a.due)});n++;
+        ['state','prio','why','q','next','snoozed','own','due'].forEach(function(k){if(a[k]!==o[k])out.push(t.title+' p'+po+' m'+mo+' '+k+': '+a[k]+' vs '+o[k])})})})})});return [n,out]})()'''
     r = pg.evaluate(VAR)
-    ok(r[0] > 1000 and not r[1], 'the new rules match the old ones on %d variations of the cases’ dates: %s' % (r[0], r[1][:4]))
+    ok(r[0] > 1000 and not r[1], 'every attention field (state, priority, why, quick answer, next step, Later, your deadline, reminder day) matches the old functions on %d variations of the cases’ dates: %s' % (r[0], r[1][:4]))
+    # v152: outside a draw the old names ask the new rules, and the old bodies are not called
+    r = pg.evaluate('''(()=>{var F=ATT150.F,n=0,keep={};Object.keys(F).forEach(function(k){keep[k]=F[k];F[k]=function(){n++;return keep[k].apply(this,arguments)}});
+      var res=S.tasks.map(function(t){return [state(t)]});Object.keys(keep).forEach(function(k){F[k]=keep[k]});return [n,res.length]})()''')
+    ok(r[0] == 0 and r[1] > 0, 'outside a draw, the old names no longer call the old function bodies (%d calls for %d cases)' % (r[0], r[1]))
+    r = pg.evaluate('''(()=>{var F=ATT150.F,n=0,keep={};Object.keys(F).forEach(function(k){keep[k]=F[k];F[k]=function(){n++;return keep[k].apply(this,arguments)}});
+      go({name:'home'});render();Object.keys(keep).forEach(function(k){F[k]=keep[k]});return n})()''')
+    ok(r == 0, 'and drawing Home calls none of them (%d)' % r)
     # 100 cases: one draw, each case once
     pg.evaluate("""(()=>{var base=S.tasks[0];for(var i=0;i<90;i++){var c=JSON.parse(JSON.stringify(base));c.id='x150-'+i;c.title='Copy '+i;S.tasks.push(c)}})()""")
-    r = pg.evaluate("""(()=>{var n=0,o=ATT150.F.prio;ATT150.F.prio=function(t){n++;return o.apply(this,arguments)};go({name:'home'});n=0;var t0=performance.now();render();var ms=performance.now()-t0;ATT150.F.prio=o;return [n,S.tasks.length,ms]})()""")
-    ok(r[0] <= r[1], 'with %d cases each priority is worked out once per draw (%d), drawn in %d ms' % (r[1], r[0], r[2]))
+    r = pg.evaluate("""(()=>{var n=0,undo=__wrapCalc(function(){n++});go({name:'home'});n=0;var t0=performance.now();render();var ms=performance.now()-t0;undo();return [n,S.tasks.length,ms]})()""")
+    ok(r[0] <= r[1], 'with %d cases each case is worked out once per draw (%d), drawn in %d ms' % (r[1], r[0], r[2]))
     a.close()
 finish()

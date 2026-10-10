@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v151 (10 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 20dd3864e79db7d745c4877567394dfd8f04ed64
+- **Release:** v152 (10 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** 37dbc2019adc5b6fcd895bb13fb7609b7b7a0a8d
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -36,11 +36,11 @@ ruleset on `main` requiring a pull request with regression, WebKit, Firefox and 
 
 ## Next approved change
 
-The attention extraction, step 3. Done so far: v150 made `attention(t)` the one record Home, the case page, quick
-answers and the reminder question read during a draw; v151 moved the rules for state, priority, the reason a case leads
-and the quick answer inside it (`att151Facts`, `att151Rules`), checked against the old functions on every case and on
-1,872 variations of their dates. Step 3 does the same for the next step (`nextStepText` and its wrappers) and the
-reminder day, then removes the old functions once nothing reads them.
+The attention extraction is done (v150 to v152): `attention(t)` and its rules (`att151*`, `att152*`) answer state,
+priority, why a case leads, the quick answer, the next step, your own deadline, Later and the reminder day, during a draw
+and outside one. The old function bodies are no longer called by the page; they stay in `ATT150.F` only as the
+reference test 119 compares against on 1,872 variations. Next, by priority: delete those reference bodies once a
+frozen copy lives in the test, then the next subsystem (saving and merging), the same way.
 
 ## Permanent gates
 

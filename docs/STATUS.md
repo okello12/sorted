@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v152 (10 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 37dbc2019adc5b6fcd895bb13fb7609b7b7a0a8d
+- **Release:** v153 (10 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** ee202b9619dc17c5dbfeaa84ceeac389f2272a01
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -36,11 +36,12 @@ ruleset on `main` requiring a pull request with regression, WebKit, Firefox and 
 
 ## Next approved change
 
-The attention extraction is done (v150 to v152): `attention(t)` and its rules (`att151*`, `att152*`) answer state,
-priority, why a case leads, the quick answer, the next step, your own deadline, Later and the reminder day, during a draw
-and outside one. The old function bodies are no longer called by the page; they stay in `ATT150.F` only as the
-reference test 119 compares against on 1,872 variations. Next, by priority: delete those reference bodies once a
-frozen copy lives in the test, then the next subsystem (saving and merging), the same way.
+The attention extraction is finished (v150 to v153). `attention(t)` and its rules (`att151*`, `att152*`) are the only
+place that decides state, priority, why a case leads, the quick answer, the next step, your own deadline, Later and
+the reminder day; the old names are one-line calls to them and the old bodies are gone. Test 119 compares every field
+with the page as it was at v152 (`tests/make_ref152.js`) on 1,872 variations. Next: saving and merging between
+devices, the same way (one record of what is saved, what is waiting and what came from elsewhere, with the existing
+two-device tests 66, 99, 107 and 111 as the reference).
 
 ## Permanent gates
 

@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v156 (10 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 318ad4bb5be4745688ccf67bf7f2455bec72a722
+- **Release:** v157 (10 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** 9f8919295dc6329bf154210b1b5bfd00a3a208cd
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -46,10 +46,11 @@ named and in one place (`savePlan155`, `saveOutcome155`, `conflictKind155`, `ret
 wrappers round `save()` and `retryPlan()` folded into `savePrep155` and `retryNeed155`); test 121 tells the same saving
 story on v154 and compares every write and the final records. Step 3 (v156): the merge's decisions are a pure
 function, `mergeRec156(mine, server, base, kind)`, and `mergeInto` applies it; test 122 compares it with v155 on 3,000
-generated three-way changes. What remains of saving is the read side (refetch, tombstones, the first load), which can
-be done the same way when it next needs changing.
+generated three-way changes. The read side (v157): `readKind157` decides what a copy read from the server means
+(redel, revive, skip, gone, new, own, merge, adopt) and `ap143` acts on it, with the v145 wrappers folded in; test 123
+applies 1,458 combinations of phone state and server copy on v156 and on this page. The saving extraction is done.
 
 ## Permanent gates
 
 77 (documents), 94 and 96 (dates and their source), 109 (check first), 115 (the garage), 116 (two obligations),
-117 (the reminder choice), 118 (this page is current), 119 (one attention record), 120 (one saving record), 121 (the same writes as before), 122 (the same merges as before).
+117 (the reminder choice), 118 (this page is current), 119 (one attention record), 120 (one saving record), 121 (the same writes as before), 122 (the same merges as before), 123 (the same reads as before).

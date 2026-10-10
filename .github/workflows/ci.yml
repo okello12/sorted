@@ -43,8 +43,13 @@ jobs:
           const m=src.match(/const EXPECT='([0-9a-f]{40})'/);
           if(!m) throw new Error(file+' has no pinned EXPECT fingerprint');
           const actual=crypto.createHash('sha1').update(fs.readFileSync('public/index.html')).digest('hex');
-          if(actual!==m[1]) throw new Error('generated '+actual+' != '+file+' EXPECT '+m[1]);
-          console.log(file+' pinned '+actual);
+          // since v161 the modules in src/ go in after the last layer: the layer's EXPECT is the manifest's base, and the
+          // final page is the manifest's expect
+          const man=fs.existsSync('src/manifest.json')&&/tools\/inline_modules\.js/.test(all)?JSON.parse(fs.readFileSync('src/manifest.json','utf8')):null;
+          if(man&&man.base!==m[1]) throw new Error(file+' EXPECT '+m[1]+' != manifest base '+man.base);
+          const want=man?man.expect:m[1];
+          if(actual!==want) throw new Error('generated '+actual+' != '+(man?'src/manifest.json expect ':file+' EXPECT ')+want);
+          console.log(file+' pinned '+m[1]+(man?', modules pinned '+actual:''));
           NODE
 
   engines:

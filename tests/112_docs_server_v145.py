@@ -294,7 +294,7 @@ with sync_playwright() as p:
     opencase(cid); pg.locator('[data-a=panel][data-p=pack]').first.evaluate('e=>e.click()') if pg.locator('[data-a=panel][data-p=pack]').count() else None; wait(pg, 500)
     pk = main()
     ok(all(x not in pk for x in BANK_BITS) and all(x not in json.dumps(case(cid), ensure_ascii=False) for x in BANK_BITS), 'C1: the adviser pack and the saved case hold none of them')
-    ok(not re.search(r'43218765|4929', pg.evaluate("Object.keys(localStorage).map(k=>localStorage.getItem(k)).join(' ')+Object.keys(sessionStorage).map(k=>sessionStorage.getItem(k)).join(' ')")), 'C1: nor does anything kept on the phone')
+    ok(not re.search(r'43218765|4929 ?1234', pg.evaluate("Object.keys(localStorage).map(k=>localStorage.getItem(k)).join(' ')+Object.keys(sessionStorage).map(k=>sessionStorage.getItem(k)).join(' ')")), 'C1: nor does anything kept on the phone')
 
     # ---- 11 C2: kept documents are what their bytes say ----
     opencase(cid)

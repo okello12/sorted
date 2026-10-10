@@ -5,9 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v163 (10 October 2026, on the branch `product-phase1`; not deployed. Production stays on v160, sha1
-  c29a75e77782dd541161bd1bc87e8d64cb895957, until Phase 1 of the product journey passes its gates in
-  `docs/PRODUCT_PHASE1.md`.)
+- **Release:** v163 (10 October 2026; Phase 1 of the product journey, `docs/PRODUCT_PHASE1.md`, merged in PR 75
+  after every gate passed, with `live` green)
 - **Page fingerprint (sha1 of public/index.html):** 82df8c9af9f2f31b92196bbea5a1179dcecd863d
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.

@@ -7,7 +7,7 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 - **Release:** v164 (10 October 2026, on the branch `phase1-5` until its gates pass): Sorted's own repair checks
   retired, ten more makers, and the Phase 1.5 audit fixes (`docs/PHASE1_5_AUDIT.md`). Production is v163 until merged.
-- **Page fingerprint (sha1 of public/index.html):** db74e4de37aec4d21282ca1a30c0ddee81e9f60f
+- **Page fingerprint (sha1 of public/index.html):** d5ada88e645db79e70bf1691f873e5ed46dd03ba
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`), and 30

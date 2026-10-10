@@ -5,10 +5,11 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v166 (10 October 2026): from Baldwin's vacuum cleaner walk, a product case asks only the safety question
-  first, and the label can be photographed on the case. v165 asked for the label after a photo of the machine. v164, live
+- **Release:** v167 (10 October 2026): from Baldwin's heating case, tapping "Something else" on a repair no longer
+  wipes its name, and a repair saved with no name is named from its words. v166, from his vacuum cleaner walk: a product
+  case asks only the safety question first, and the label can be photographed on the case. v165 asked for the label after a photo of the machine. v164, live
   since PR 77, retired Sorted's own repair checks, added ten makers and the Phase 1.5 audit fixes (`docs/PHASE1_5_AUDIT.md`).
-- **Page fingerprint (sha1 of public/index.html):** 528c9ffaa5581127335e43b3967ef7ef26b88df1
+- **Page fingerprint (sha1 of public/index.html):** 63a33b74e67d2e9c42fe2751cf080e33cc7533ce
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`), and 30

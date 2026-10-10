@@ -28,17 +28,21 @@ Each area below has what was tested, what was found, what changed, and what is s
 
 ### Real-phone OCR
 
-- **Tested:** test 131 renders a rating label and degrades it as a phone camera would, then reads each version with the
-  real Tesseract: tilted, sheared, JPEG at quality 30, low resolution, blurred, glare, grey on silver, salt noise, and a
-  full-size 4032 px photo.
-- **Result:** the model read exactly from the clean, sheared, compressed, low-resolution, blurred, glare, grey and
-  full-size photos. The noisy photo failed cleanly, with a retake and typing offered.
-- **Finding (fixed):** the tilted photo produced a *wrong* model, WGG2442CGBI0Y for WGG244ZCGB/01. It is only a
-  candidate, but the review asked people to check unlabelled models only. Now every model read from a photo says
-  "Check it letter by letter against the label. A photo can turn a Z into a 2." A variant after a slash (`/01`) is
-  removed even when it was misread.
+- **Tested:** test 131 renders a rating label and damages it the way a phone camera does, then reads each version with
+  the real Tesseract: tilted, sheared, JPEG at quality 30, low resolution, blurred, glare, grey on silver, noise, and a
+  full-size 4032 px photo. The damage is made in the browser, so the test needs no image library. It runs the same on
+  every machine.
+- **Result:** the model was read exactly from the clean, sheared, compressed, glare, grey and full-size photos.
+- **Finding:** four of the ten photos (tilted, low resolution, blurred and noisy) produced a *wrong* model. Examples:
+  WGG244ZC6P, WGG244ZCGBI0L and WGG2442CGBO1 for WGG244ZCGB. A wrong model is only a candidate, and the person must
+  accept it before Start.
+- **Fix:** the review used to ask for a check only when the model had no label beside it. Now every model read from a
+  photo, single or a choice of several, says "Check it letter by letter against the label. A photo can turn a Z into a
+  2." A variant after a slash (`/01`) is removed when the slash is read.
 - **Earlier finding (fixed in v161):** OCR reads "S/N" as "SIN". Both are recognised.
-- **Still open:** the photos are simulated. A real iPhone and a real Android phone are still needed. That is the new
+- **Rule for Phase 2:** never treat a model as exact for guidance unless the person confirmed it or typed it. A confirmed
+  model can still be mistyped, so exact-model guidance should show the model it matched, for the person to compare.
+- **Still open:** these photos are simulated. A real iPhone and a real Android phone are still needed. That is the new
   section in `docs/PHONE_CHECK.md`.
 
 ### Unknown models

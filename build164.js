@@ -44,10 +44,11 @@ R('var SP={events:1,promises:1,moves:1,corr:1,refs:1,ledger:1,evDel:1,cf:1,docNa
 R('["fix","pk","goal","snooze","att","turn"].forEach(function(k){var v=dmD143(bb[k],mine[k],srv[k],hasB,K,diff,k);if(v!==undefined)out[k]=v});','["fix","pk","goal","snooze","att","turn","prod"].forEach(function(k){var mk=mine[k];if(k==="fix"&&(mine.prod||srv.prod)&&mk&&srv.fix&&typeof mk==="object"&&typeof srv.fix==="object"){mk=JSON.parse(JSON.stringify(mk));["item","model","seller","age"].forEach(function(q){if(srv.fix[q]===undefined)delete mk[q];else mk[q]=srv.fix[q]})}var v=dmD143(bb[k],mk,srv[k],hasB,K,diff,k);if(v!==undefined)out[k]=v});');
 // Every model read from a photo is checked letter by letter: a tilted photo turned WGG244ZCGB/01 into WGG2442CGBI0Y.
 R(`(p.how==="unlabelled"&&PR161.candidate(r,"model")?'<span class="cf-src">Sorted isn’t sure this is the model. Check it against the label.</span>':'')`,`(p.how==="unlabelled"&&PR161.candidate(r,"model")?'<span class="cf-src">Sorted isn’t sure this is the model. Check it against the label.</span>':PR161.candidate(r,"model")?'<span class="cf-src">Check it letter by letter against the label. A photo can turn a Z into a 2.</span>':'')`);
+R('<span class="muted">Sorted found more than one. Which is the model?</span>','<span class="muted">Sorted found more than one. Which is the model? Check it letter by letter against the label.</span>');
 // A product detail changed on two devices is named in the merge line like any other nested answer.
 R('var DM143={fix:"repair answer",','var DM143={fix:"repair answer",prod:"product detail",');
 s=s.split('SORTED_V="v163"').join('SORTED_V="v164"');
 fs.writeFileSync('public/index.html',s);
-const EXPECT='0db852ee8c73d5eb4eb15fd3ffc7f9ba6b8ec311';
+const EXPECT='2bb8694b88723279b084a46e6852a610010b57a6';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v164 ok',h(s),s.length);

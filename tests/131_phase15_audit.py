@@ -8,8 +8,6 @@
 import os, sys, re, json, io
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from attlib143 import *
-from PIL import Image, ImageFilter, ImageDraw, ImageEnhance
-import random
 O = HERE + '/tests/node_modules/'; Hh = {'Access-Control-Allow-Origin': '*'}
 def cdn(r):
     u = r.request.url
@@ -22,24 +20,20 @@ LABEL = ('<body style="margin:0;background:#c9cdd2;font-family:Arial;padding:30p
          'border-radius:8px;padding:18px 24px;width:520px;font-size:22px;line-height:1.45;color:#111"><b style="font-size:30px">BOSCH</b><br>'
          'Washing machine &nbsp; Serie 6<br>E-Nr. WGG244ZCGB/01 &nbsp; FD 2309<br>S/N: 123456789<br>220-240V ~ 50Hz 2300W<br>Made in Germany</div></body>')
 SER = '123456789'
-def degrade(src, how):
-    im = Image.open(src).convert('RGB'); w, h = im.size; rnd = random.Random(7)
-    if how == 'tilt': im = im.rotate(6, expand=True, fillcolor=(180, 180, 180))
-    elif how == 'shear': im = im.transform((w, h), Image.AFFINE, (1, 0.12, -30, 0.05, 1, -10), fillcolor=(180, 180, 180))
-    elif how == 'jpeg':
-        b = io.BytesIO(); im.save(b, 'JPEG', quality=30); im = Image.open(io.BytesIO(b.getvalue()))
-    elif how == 'lowres': im = im.resize((w * 4 // 10, h * 4 // 10)).resize((w, h))
-    elif how == 'blur': im = im.filter(ImageFilter.GaussianBlur(1.6))
-    elif how == 'glare':
-        ov = Image.new('L', (w, h), 0); ImageDraw.Draw(ov).ellipse((w // 3, -h // 4, w, h // 2), fill=170); ov = ov.filter(ImageFilter.GaussianBlur(40))
-        im = Image.composite(Image.new('RGB', (w, h), (255, 255, 255)), im, ov)
-    elif how == 'grey': im = ImageEnhance.Contrast(im).enhance(0.45)
-    elif how == 'noise':
-        px = im.load()
-        for _ in range(w * h // 12):
-            x, y = rnd.randrange(w), rnd.randrange(h); v = rnd.randrange(256); px[x, y] = (v, v, v)
-    elif how == 'big': im = im.resize((4032, int(4032 * h / w)))
-    p = OUT + 'audit131_%s.%s' % (how, 'jpg' if how in ('jpeg', 'big') else 'png'); im.save(p); return p
+# Phone-like damage, made in the browser (no image library needed): CSS for tilt, shear, blur, contrast and glare,
+# a canvas for noise, the screenshot's own JPEG quality, and the device scale for low and full resolution.
+FX = {'tilt': 'transform:rotate(6deg)', 'shear': 'transform:skew(-7deg,3deg)', 'blur': 'filter:blur(1.6px)', 'grey': 'filter:contrast(0.45)'}
+def degrade(b, how):
+    html = LABEL
+    if how in FX: html = html.replace('<div style="', '<div style="%s;' % FX[how], 1)
+    if how == 'glare': html = html.replace('</body>', '<div style="position:fixed;inset:0;background:radial-gradient(circle at 70% 10%,rgba(255,255,255,.85),rgba(255,255,255,0) 55%)"></div></body>')
+    if how == 'noise': html = html.replace('</body>', '<canvas id=n width=640 height=330 style="position:fixed;inset:0"></canvas><script>var c=document.getElementById("n").getContext("2d"),q=7,r=function(){q=(q*1103515245+12345)%2147483648;return q/2147483648};for(var i=0;i<17000;i++){var v=Math.floor(r()*256);c.fillStyle="rgb("+v+","+v+","+v+")";c.fillRect(r()*640,r()*330,1.5,1.5)}</script></body>')
+    dsf = {'lowres': 0.6, 'big': 6.3}.get(how, 2)
+    sp = b.new_page(viewport={'width': 640, 'height': 330}, device_scale_factor=dsf); sp.set_content(html); wait(sp, 200)
+    path = OUT + 'audit131_%s.%s' % (how, 'jpg' if how == 'jpeg' else 'png')
+    if how == 'jpeg': sp.screenshot(path=path, type='jpeg', quality=30)
+    else: sp.screenshot(path=path)
+    sp.close(); return path
 def read_wait(pg):
     st = ''
     for _ in range(300):
@@ -60,18 +54,18 @@ with sync_playwright() as p:
     # ---- 1. phone-like photos ----
     rates = {}
     for how in ('clean', 'tilt', 'shear', 'jpeg', 'lowres', 'blur', 'glare', 'grey', 'noise', 'big'):
-        path = OUT + 'audit131_clean.png' if how == 'clean' else degrade(OUT + 'audit131_clean.png', how)
+        path = OUT + 'audit131_clean.png' if how == 'clean' else degrade(a.b, how)
         door(); n0 = len(a.cases()); e0 = len(errs)
         pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(path); st = read_wait(pg); m = a.main()
         model = pg.locator('.prod161-dl .mono').first.inner_text() if pg.locator('.prod161-dl .mono').count() else ''
-        out = 'model' if 'WGG244ZCGB' in m else 'make only' if 'found the make' in st else 'failed' if 'couldn’t' in st else 'wrong model' if model else 'other'
+        out = 'model' if model == 'WGG244ZCGB' else 'wrong model' if model else 'make only' if 'found the make' in st else 'failed' if 'couldn’t' in st else 'wrong model' if model else 'other'
         if model: ok('Check it letter by letter against the label.' in m or 'Sorted isn’t sure this is the model' in m, '%s photo: a model read from a photo is to be checked against the label' % how)
         rates[how] = out
         ok(len(a.cases()) == n0 and len(errs) == e0, '%s photo: no case and no page error (%s)' % (how, out))
         ok(SER not in m, '%s photo: the serial is never shown in full' % how)
         ok(out in ('model', 'make only', 'failed', 'wrong model'), '%s photo: ends as read, make only or a clear failure (%s)' % (how, st[:60]))
         if out == 'failed': ok(pg.locator('.prod161 input[data-ocr=f-prod][capture]').count() == 1 and pg.locator('[data-a=prod161-type]').count() == 1, '%s photo: a failure offers a retake and typing' % how)
-        wrong = model and model.replace('/', '') != 'WGG244ZCGB' and model.startswith('WG')
+        wrong = model and model != 'WGG244ZCGB'
         if wrong: print('FINDING %s photo: Sorted proposed the wrong model %s (a candidate; the person must check it)' % (how, model))
     print('INFO label reads: ' + ', '.join('%s=%s' % kv for kv in rates.items()))
     ok(rates['clean'] == 'model', 'a clean label photo reads the model')
@@ -79,7 +73,7 @@ with sync_playwright() as p:
     door(); open(OUT + 'audit131.txt', 'w').write('not a picture')
     pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(OUT + 'audit131.txt'); wait(pg, 800)
     ok('isn’t a picture' in pg.inner_text('#ocr-status'), 'a text file is turned away')
-    Image.new('RGB', (12, 12), (255, 255, 255)).save(OUT + 'audit131_tiny.png')
+    sp = a.b.new_page(viewport={'width': 12, 'height': 12}); sp.set_content('<body style="margin:0;background:#fff"></body>'); sp.screenshot(path=OUT + 'audit131_tiny.png'); sp.close()
     door(); pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(OUT + 'audit131_tiny.png'); st = read_wait(pg)
     ok('couldn’t' in st and pg.locator('[data-a=prod161-type]').count() == 1, 'a 12 px image fails with a way out (%s)' % st[:60])
     door(); open(OUT + 'audit131.heic', 'wb').write(b'\x00\x00\x00\x18ftypheic' + b'\x00' * 64)

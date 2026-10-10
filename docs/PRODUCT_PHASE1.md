@@ -72,7 +72,7 @@ recorded like any party) and opens the existing message form; what they then say
 
 | Migration | What | Where |
 | --- | --- | --- |
-| `30_product_steps_v161.sql` | `pilot_events` step names: `product_flow_started`, `product_candidate_found`, `product_read_failed`, `product_label_requested`, `product_confirmed`, `purchase_confirmed`, `safety_stopped`, `official_support_shown`, `resolution_route_shown`, `contact_prepared`. Props are codes only (source, class, result, route) | Staging first, then live, before the release that records them |
+| `30_product_steps_v163.sql` | `pilot_events` step names: `product_flow_started`, `product_candidate_found`, `product_read_failed`, `product_confirmed`, `purchase_confirmed`, `safety_stopped`, `official_support_shown`, `resolution_route_shown`, `contact_prepared`. Props are codes and counts only (source, kind, route, how many rules matched) | Staging first, then live, before v163 (the release that records them; v161 and v162 hold them back with `PROD_TRACK161=false`) |
 
 No new table. The product, the safety decision and purchase details are case content, so they already have row
 level security, retention, deletion, export and the two-device merge. A separate table would need all of those again
@@ -87,8 +87,10 @@ records with source URL, title, model, region, retrieved time and an unavailable
 - The full serial number is case content, kept in `t.prod` only. Everywhere else it is masked (••••6789): the case
   page (Show and Copy on demand), Home, Cases, the ledger, the history, the helper’s shared link, the summary, the
   adviser pack, the assistant’s context (`aiContext`), error reports (`errText`), usage records, notifications and
-  URLs. The full value goes out only when the person chooses: Copy, or “Include the full serial number” in the
-  prepared message. The “Download my cases” file is the person’s own copy of their data and includes it.
+  URLs. The full value goes out only when the person chooses: Show, Copy, or “Add the full serial number to the
+  message” in the prepared contact. The adviser pack and “Download my cases” show it masked too.
+- Sorted’s reference reader can take a serial typed in the person’s words for a case reference (found by test 129).
+  Once the product holds that serial, the reading is dropped from the reference, the title and the ledger.
 - A serial candidate the person rejects or corrects is kept masked in the ledger, never in full.
 - Usage records carry codes only: never a brand, model, serial, retailer, date or the person’s words.
 - The privacy notice and Help gain one sentence each: labels and receipts are read on the phone, and serial numbers are
@@ -153,9 +155,9 @@ The whole regression suite runs after each stage.
 | Stage | Contents | Behaviour change |
 | --- | --- | --- |
 | 0 | This plan; the module folder, manifest, `tools/inline_modules.js`; the pure modules with unit tests | None on the page |
-| 1 | build161: the door, label read and confirmation, manual entry, `t.prod`, `prodApply`, ledger rows, history, masked serial on every surface, safety decision | The new path |
+| 1 | build161: the door, label read and confirmation, manual entry, `t.prod`, `prodSync161` (one way into `t.fix`), ledger rows, history, masked serial on every surface, safety decision | The new path |
 | 2 | build162: purchase details and receipt, registry support card, Best next step, Have these ready, Prepare contact | The rest of the path |
-| 3 | Migration 30, step names recorded, the staging walk, the safety and privacy suites complete, docs | Usage records |
+| 3 | Migration 30, build163 switches the step names on, the staging walk, docs | Usage records |
 
 ## Decisions for Baldwin
 

@@ -8,6 +8,8 @@ let r = I.readLabel('BOSCH\nSerie 6\nWashing machine\nE-Nr. WGG244ZCGB/01\nFD 12
 eq([r.brand, r.category, r.model, r.modelHow, r.serial], ['Bosch', 'washing_machine', 'WGG244ZCGB', 'labelled', '123456789'], 'clear Bosch label');
 r = I.readLabel('Model No: WMB71643PTE\nSerial No. 22-401234-10\nBeko');
 eq([r.brand, r.model, r.serial], ['Beko', 'WMB71643PTE', '22-401234-10'], 'Beko label with Model No and Serial No.');
+r = I.readLabel('BOSCH Washing machine E-Nr. WGG244ZCGB/01 SIN: 123456789 220-240V 50Hz');
+eq([r.model, r.serial], ['WGG244ZCGB', '123456789'], 'OCR’s usual misreading of S/N as SIN still reads the serial');
 r = I.readLabel('~~ ;; .. ,, ~');
 eq(r.quality, 'failed', 'a blurred read fails');
 eq([r.brand, r.model, r.serial], ['', '', ''], 'a failed read proposes nothing');

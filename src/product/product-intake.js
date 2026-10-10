@@ -5,7 +5,7 @@
    isn't sure. Pure; depends on ProductMakers and ProductRecord. */
 var ProductIntake = (function () {
   var MODEL_LBL = /\b(?:model(?:\s*(?:no|number|nr|code))?|mod\.?|type(?:\s*(?:no|nr))?|e-?nr|product\s*(?:code|no|number)|prod\.?\s*no|m\/?n)(?![a-z])\s*[.:#]?\s*([A-Z0-9][A-Z0-9\-\/.]{2,24})/gi;
-  var SERIAL_LBL = /\b(?:s\/?n|ser(?:ial)?(?:\s*(?:no|number|nr))?|serial)(?![a-z])\s*[.:#]?\s*([A-Z0-9][A-Z0-9\-]{3,30})/gi;
+  var SERIAL_LBL = /\b(?:s[\/|il1]?n|ser(?:ial)?(?:\s*(?:no|number|nr))?|serial)(?![a-z])\s*[.:#]?\s*([A-Z0-9][A-Z0-9\-]{3,30})/gi;
   /* A label-less token shaped like a model: letters and digits mixed, 6 to 20 long. */
   var MODEL_BARE = /\b(?=[A-Z0-9\-\/]{6,20}\b)(?=[A-Z0-9\-\/]*[A-Z])(?=[A-Z0-9\-\/]*\d)[A-Z][A-Z0-9]*(?:[\-\/][A-Z0-9]+)*\b/g;
   var NOT_MODEL = /^(?:\d{1,4}(?:V|W|HZ|KW|KG|A|MM|CM|L)|IPX\d|IP\d\d|CE\d*|WEEE|UKCA|\d+[-\/]\d+(?:V|HZ))$/i;

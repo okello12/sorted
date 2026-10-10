@@ -38,7 +38,7 @@ def read_wait(pg):
     st = ''
     for _ in range(300):
         st = pg.inner_text('#ocr-status') if pg.locator('#ocr-status').count() else ''
-        if re.search(r'Label read|found the make|couldn’t|can’t|isn’t a picture|Receipt read', st): wait(pg, 500); return st
+        if re.search(r'Label read|found the make|Photo read on your phone|couldn’t|can’t|isn’t a picture|Receipt read', st): wait(pg, 500); return st
         wait(pg, 500)
     return st
 with sync_playwright() as p:
@@ -58,13 +58,13 @@ with sync_playwright() as p:
         door(); n0 = len(a.cases()); e0 = len(errs)
         pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(path); st = read_wait(pg); m = a.main()
         model = pg.locator('.prod161-dl .mono').first.inner_text() if pg.locator('.prod161-dl .mono').count() else ''
-        out = 'model' if model == 'WGG244ZCGB' else 'wrong model' if model else 'make only' if 'found the make' in st else 'failed' if 'couldn’t' in st else 'wrong model' if model else 'other'
+        out = 'model' if model == 'WGG244ZCGB' else 'wrong model' if model else 'make only' if 'found the make' in st else 'failed' if 'Photo read on your phone' in st or 'couldn’t' in st else 'wrong model' if model else 'other'
         if model: ok('Check it letter by letter against the label.' in m or 'Sorted isn’t sure this is the model' in m, '%s photo: a model read from a photo is to be checked against the label' % how)
         rates[how] = out
         ok(len(a.cases()) == n0 and len(errs) == e0, '%s photo: no case and no page error (%s)' % (how, out))
         ok(SER not in m, '%s photo: the serial is never shown in full' % how)
         ok(out in ('model', 'make only', 'failed', 'wrong model'), '%s photo: ends as read, make only or a clear failure (%s)' % (how, st[:60]))
-        if out == 'failed': ok(pg.locator('.prod161 input[data-ocr=f-prod][capture]').count() == 1 and pg.locator('[data-a=prod161-type]').count() == 1, '%s photo: a failure offers a retake and typing' % how)
+        if out == 'failed': ok('Now photograph the label' in m and pg.locator('.prod161 input[data-ocr=f-prod][capture]').count() == 1 and pg.locator('[data-a=prod161-type]').count() == 1, '%s photo: no details found asks for the label, with a photo and typing' % how)
         wrong = model and model != 'WGG244ZCGB'
         if wrong: print('FINDING %s photo: Sorted proposed the wrong model %s (a candidate; the person must check it)' % (how, model))
     print('INFO label reads: ' + ', '.join('%s=%s' % kv for kv in rates.items()))
@@ -75,7 +75,7 @@ with sync_playwright() as p:
     ok('isn’t a picture' in pg.inner_text('#ocr-status'), 'a text file is turned away')
     sp = a.b.new_page(viewport={'width': 12, 'height': 12}); sp.set_content('<body style="margin:0;background:#fff"></body>'); sp.screenshot(path=OUT + 'audit131_tiny.png'); sp.close()
     door(); pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(OUT + 'audit131_tiny.png'); st = read_wait(pg)
-    ok('couldn’t' in st and pg.locator('[data-a=prod161-type]').count() == 1, 'a 12 px image fails with a way out (%s)' % st[:60])
+    ok('Now photograph the label' in a.main() and pg.locator('[data-a=prod161-type]').count() == 1, 'a 12 px image asks for the label, with a way out (%s)' % st[:60])
     door(); open(OUT + 'audit131.heic', 'wb').write(b'\x00\x00\x00\x18ftypheic' + b'\x00' * 64)
     pg.locator('.prod161 input[data-ocr=f-prod]').last.set_input_files(OUT + 'audit131.heic'); wait(pg, 1500)
     st = pg.inner_text('#ocr-status')

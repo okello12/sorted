@@ -29,7 +29,7 @@ def read_wait(pg):
     st = ''
     for _ in range(240):
         st = pg.inner_text('#ocr-status') if pg.locator('#ocr-status').count() else ''
-        if re.search(r'Label read|found the make|couldn’t|can’t', st): wait(pg, 500); return st
+        if re.search(r'Label read|found the make|Photo read on your phone|couldn’t|can’t', st): wait(pg, 500); return st
         wait(pg, 500)
     return st
 SERIAL = '123456789'
@@ -49,8 +49,11 @@ with sync_playwright() as p:
     ok('The photo isn’t uploaded or kept.' in m and pg.locator('form[data-f=gi]').count() == 1, 'it says the photo stays on the phone; the ordinary form is still there')
     # ---- a blurred label: nothing saved, routes ----
     n0 = len(a.cases()); st = photo(P['blur']); m = a.main()
-    ok('Sorted couldn’t read that photo' in m and pg.locator('.prod161 [role=alert]').count() >= 1 and 'Nothing has been saved.' in m, 'a blurred label fails, announced (%s)' % st[:60])
-    ok(pg.locator('.prod161 input[data-ocr=f-prod][capture]').count() == 1 and 'Choose another photo' in m and pg.locator('[data-a=prod161-type]').count() == 1 and len(a.cases()) == n0, 'retake, choose another, or type; no case')
+    ok('Now photograph the label' in m and 'It reads the words on a label, not the machine itself. Nothing has been saved.' in m and pg.locator('.prod161 [role=status]').count() >= 1, 'a blurred label asks for the label, says why, and saves nothing (%s)' % st[:60])
+    ok('Where the label usually is' in m and 'around the inside of the door' in m and pg.locator('input[name=prod-cat]').count() >= 10 and 'Continue without the label' in m, 'it says where the label usually is, asks what it is, and offers to carry on without it')
+    ok(pg.locator('.prod161 input[data-ocr=f-prod][capture]').count() == 1 and 'Choose a photo' in m and pg.locator('[data-a=prod161-type]').count() == 1 and len(a.cases()) == n0, 'photograph the label, choose a photo, or type; no case')
+    pg.locator('input[name=prod-cat][value=washing_machine]').evaluate('e=>e.click()'); pg.click('form[data-f=prod161] button[type=submit]'); wait(pg, 300)
+    ok('The product' in a.main() and 'Washing machine' in pg.inner_text('.prod161'), 'carrying on without the label keeps what it is, chosen by the person')
     # ---- a clear label: candidates, masked, nothing saved ----
     door(); st = photo(P['label']); m = a.main()
     ok('Label read' in st and 'Check what Sorted read' in m, 'a clear label is read (%s)' % st[:60])

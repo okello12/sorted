@@ -2,7 +2,10 @@
    The controlled registry. A maker or shop is here only with pages a person opened and read on CHECKED; a link is
    shown only when its host is one of the entry's official domains (isOfficial). Phase 1 links to support and
    contact pages only. Sorted has not read any troubleshooting instructions on them, and must never say it has.
-   Recheck every link before changing CHECKED (release gate G8: within 90 days). Never generated. */
+   Recheck every link before changing CHECKED (release gate G8: within 90 days). Never generated.
+   10 Oct 2026: Bosch, Beko, Miele, LG, Dyson; then Samsung, Hotpoint, Indesit, Hoover, AEG, Electrolux, Philips, HP, Epson
+   and Canon, each page fetched twice by separate checks. Whirlpool is left out: its UK repair site names no owner. Indesit's
+   repair booking site (indesitservice.co.uk) is a separate domain naming no owner, so only indesit.co.uk is linked. */
 var ProductMakers = (function () {
   var CHECKED = "10 Oct 2026";
   var MAKERS = [
@@ -23,17 +26,55 @@ var ProductMakers = (function () {
       cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "microwave", "vacuum"],
       support: "https://www.lg.com/uk/support/contact-us/", supportTitle: "LG UK Support: contact us",
       contact: "https://www.lg.com/uk/support/contact-us/" },
+    { id: "samsung", name: "Samsung", al: ["samsung"], regions: ["GB"], domains: ["samsung.com"], path: "/uk/",
+      cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "oven", "microwave", "vacuum"],
+      support: "https://www.samsung.com/uk/support/", supportTitle: "Samsung UK: Product Help & Support",
+      repair: "https://www.samsung.com/uk/support/repair/" },
+    { id: "hotpoint", name: "Hotpoint", al: ["hotpoint"], regions: ["GB"], domains: ["hotpoint.co.uk"],
+      cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "oven", "microwave"],
+      support: "https://www.hotpoint.co.uk/service", supportTitle: "Hotpoint UK: Service and repair",
+      repair: "https://www.hotpoint.co.uk/service/repair" },
+    { id: "indesit", name: "Indesit", al: ["indesit"], regions: ["GB"], domains: ["indesit.co.uk"],
+      cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "oven"],
+      support: "https://www.indesit.co.uk/support", supportTitle: "Indesit UK: Support" },
+    { id: "hoover", name: "Hoover", al: ["hoover"], regions: ["GB"], domains: ["hoover-home.com"], path: "/en_GB/",
+      cats: ["vacuum", "washing_machine", "tumble_dryer", "dishwasher", "fridge_freezer", "oven"],
+      support: "https://www.hoover-home.com/en_GB/pages/contact-us", supportTitle: "Hoover UK: Contact customer support",
+      contact: "https://www.hoover-home.com/en_GB/pages/contact-us" },
+    { id: "aeg", name: "AEG", al: ["aeg"], regions: ["GB"], domains: ["aeg.co.uk"],
+      cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "oven", "microwave", "vacuum"],
+      support: "https://www.aeg.co.uk/support/services", supportTitle: "AEG UK: Services",
+      repair: "https://support.aeg.co.uk/repairs/information" },
+    { id: "electrolux", name: "Electrolux", al: ["electrolux"], regions: ["GB"], domains: ["electrolux.co.uk"],
+      cats: ["washing_machine", "dishwasher", "tumble_dryer", "fridge_freezer", "oven", "microwave", "vacuum"],
+      support: "https://support.electrolux.co.uk/repairs/information", supportTitle: "Electrolux UK: Book a repair",
+      repair: "https://support.electrolux.co.uk/repairs/information" },
+    { id: "philips", name: "Philips", al: ["philips"], regions: ["GB"], domains: ["philips.co.uk"],
+      cats: ["coffee", "vacuum"],
+      support: "https://www.philips.co.uk/c-w/support-home/support-contact-form", supportTitle: "Philips UK: Contact support",
+      contact: "https://www.philips.co.uk/c-w/support-home/support-contact-form" },
+    { id: "hp", name: "HP", al: ["hp", "hewlett packard", "hewlett-packard"], regions: ["GB"], domains: ["hp.com"], path: "/gb-en/",
+      cats: ["printer"],
+      support: "https://www.hp.com/gb-en/contact-hp/contact.html", supportTitle: "HP UK: Contact HP",
+      contact: "https://www.hp.com/gb-en/contact-hp/contact.html" },
+    { id: "epson", name: "Epson", al: ["epson"], regions: ["GB"], domains: ["epson.co.uk"], path: "/en_GB/",
+      cats: ["printer"],
+      support: "https://www.epson.co.uk/en_GB/support", supportTitle: "Epson UK: Support",
+      contact: "https://www.epson.co.uk/en_GB/contactus" },
+    { id: "canon", name: "Canon", al: ["canon"], regions: ["GB"], domains: ["canon.co.uk"],
+      cats: ["printer"],
+      support: "https://www.canon.co.uk/support/", supportTitle: "Canon UK: Consumer product support" },
     { id: "dyson", name: "Dyson", al: ["dyson"], regions: ["GB"], domains: ["dyson.co.uk"],
       cats: ["vacuum"],
       support: "https://www.dyson.co.uk/support/email-request", supportTitle: "Dyson UK: contact us",
       contact: "https://www.dyson.co.uk/support/email-request" }
   ];
   /* Makers Sorted recognises on a label but has no checked page for yet. Named, never linked. */
-  var KNOWN = ["Samsung", "Hotpoint", "Indesit", "Whirlpool", "Hoover", "Candy", "AEG", "Zanussi", "Electrolux",
+  var KNOWN = ["Whirlpool", "Candy", "Zanussi",
     "Siemens", "Neff", "Haier", "Grundig", "Smeg", "Panasonic", "Sharp", "Russell Hobbs", "Breville", "De'Longhi",
-    "Nespresso", "Shark", "Vax", "Henry", "Numatic", "HP", "Canon", "Epson", "Brother", "Kodak", "TP-Link", "Netgear",
+    "Nespresso", "Shark", "Vax", "Henry", "Numatic", "Brother", "Kodak", "TP-Link", "Netgear",
     "BT", "Sky", "Virgin Media", "Belling", "Stoves", "Montpellier", "Logik", "Tefal",
-    "Philips", "Sage", "Krups", "Kenwood", "Morphy Richards", "Ninja", "iRobot", "Gtech"];
+    "Sage", "Krups", "Kenwood", "Morphy Richards", "Ninja", "iRobot", "Gtech"];
   var SHOPS = [
     { id: "argos", name: "Argos", al: ["argos"], domains: ["help.argos.co.uk", "argos.co.uk"],
       help: "https://help.argos.co.uk/help/refunds-&-returns/my-items-faulty-what-should-i-do", helpTitle: "Argos: my item’s faulty, what should I do?" },
@@ -72,6 +113,7 @@ var ProductMakers = (function () {
   function shop(text) { return findIn(SHOPS, text); }
   /* A brand name found on a label: a registry maker, or one Sorted knows by name only. */
   function brandIn(text) {
+    text = String(text || "").replace(/\b\d+(?:\.\d+)?\s*hp\b/gi, " ");  /* horsepower on a motor label is not HP */
     var m = maker(text), w = words(text), k = null, at = 1e9;
     KNOWN.forEach(function (n) { var i = w.indexOf(" " + n.toLowerCase() + " "); if (i >= 0 && i < at) { at = i; k = n; } });
     if (m) { var mi = 1e9; m.al.forEach(function (a) { var i = w.indexOf(" " + a + " "); if (i >= 0 && i < mi) mi = i; }); if (mi <= at) return m.name; }

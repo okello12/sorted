@@ -36,7 +36,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--jobs', type=int, default=int(os.environ.get('SORTED_JOBS', '1')))
     ap.add_argument('--shuffle', type=int, default=None, help='random order with this seed')
-    ap.add_argument('--timeout', type=int, default=300)
+    ap.add_argument('--timeout', type=int, default=450)  # v164: 106 and 107 run close to 300s with four at a time
     ap.add_argument('--logdir', default=os.path.join(HERE, 'tests', 'out', 'logs'))
     ap.add_argument('files', nargs='*')
     a = ap.parse_args()

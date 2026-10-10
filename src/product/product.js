@@ -43,7 +43,7 @@ var ProductRecord = (function () {
   }
   function keep(k, v) { return k === "serial" ? mask(v) : v; }
 
-  function make(id, now) { return { v: 1, id: String(id || ""), f: {}, safety: null, at: now, up: now }; }
+  function make(id, now) { return { v: 1, id: String(id || ""), f: {}, safety: null, at: now }; }
   function field(rec, k) { return rec && rec.f && rec.f[k] || null; }
   function isFact(fl) { return !!(fl && FACT[fl.st]); }
   /* The value only if it is a fact. */
@@ -53,7 +53,7 @@ var ProductRecord = (function () {
   function put(rec, k, v, st, src, now) {
     var fl = rec.f[k] || (rec.f[k] = { v: "", st: "unknown", src: "", at: now, was: [] });
     if (fl.v || fl.st !== "unknown") { var old = { v: keep(k, fl.v), st: fl.st, src: fl.src, at: fl.at }; (fl.was = fl.was || []).push(old); }
-    fl.v = v; fl.st = st; fl.src = src; fl.at = now; rec.up = now;
+    fl.v = v; fl.st = st; fl.src = src; fl.at = now;
     return fl;
   }
 

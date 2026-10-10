@@ -9,7 +9,7 @@
      OFFICIAL_INFORMATION_ONLY  official information and contact only, never checks (cars otherwise, fridges, unknown)
      SAFE_EXTERNAL_CHECKS       a later phase may offer the maker's own outside checks; Phase 1 offers none */
 var ProductSafety = (function () {
-  var RULE_VERSION = "ps-1";
+  var RULE_VERSION = "ps-2";  /* ps-2 (Phase 1.5 audit): a flash with a bang; a smell of petrol, diesel or fuel */
   var ORDER = ["SAFE_EXTERNAL_CHECKS", "OFFICIAL_INFORMATION_ONLY", "PROFESSIONAL_ONLY", "STOP_USE"];
   var D = "spark(?:s|ing|ed|y)?|arc(?:s|ing)?|smok(?:e|es|ing|y)|burn(?:ing|t|ed|s)?(?:\\s+smell)?|scorch(?:ed|ing|es|marks?)?|fire|flames?|fumes?|gas(?:\\s+smell)?|smell(?:s|ing)?(?:\\s+of)?\\s+(?:gas|burning)|melt(?:ed|ing)?|shocks?|tingl(?:e|es|ing)|overheat(?:s|ing|ed)?|hot|water|wet|leak(?:s|ing)?|exposed\\s+wires?|wires?|cables?";
   var NEG = new RegExp("\\b(?:no|not|never|without|nothing(?:'s|\\s+is)?|isn't|aren't|wasn't|can't|cannot|couldn't|don't|doesn't|didn't|won't)\\b(?:\\s+(?:any|signs?|of|smell(?:s|ing)?|see|seen|hear|a|an|the|it|is|been|there|anything|sign|evidence|smoke\\s+or))*\\s+(?:" + D + ")(?:\\s*(?:,|or|nor|and)\\s*(?:any\\s+|no\\s+)?(?:" + D + "))*", "gi");
@@ -17,14 +17,14 @@ var ProductSafety = (function () {
     { id: "sparking", res: "STOP_USE", re: /\bspark(?:s|ing|ed|y)?\b|\barc(?:s|ing)\b|\bflash(?:es|ing|ed)?\b[^.]{0,20}\b(?:plug|socket|inside|behind)\b/i },
     { id: "smoke", res: "STOP_USE", re: /\bsmok(?:e|es|ing|ed|y)\b/i },
     { id: "burning", res: "STOP_USE", re: /\bburn(?:ing|t|ed|s)?\b|\bscorch(?:ed|ing|es|\s+marks?)?\b|\bchar(?:red|ring)\b|\bmelt(?:ed|ing|s)?\b|\bfire\b|\bflames?\b/i },
-    { id: "gas_fumes", res: "STOP_USE", re: /\bsmell(?:s|ing)?\s+(?:of\s+)?gas\b|\bgas\s+(?:smell|leak|leaking)\b|\bleak(?:ing)?\s+gas\b|\bfumes?\b|\bcarbon\s+monoxide\b|\bco\s+(?:alarm|detector)\b/i },
+    { id: "gas_fumes", res: "STOP_USE", re: /\bsmell(?:s|ing)?\s+(?:of\s+)?gas\b|\bgas\s+(?:smell|leak|leaking)\b|\bleak(?:ing)?\s+gas\b|\bfumes?\b|\bcarbon\s+monoxide\b|\bco\s+(?:alarm|detector)\b|\bsmell(?:s|ing)?\s+(?:of\s+|like\s+)?(?:petrol|diesel|fuel)\b|\b(?:petrol|diesel|fuel)\s+smell\b/i },
     { id: "battery", res: "STOP_USE", re: /\b(?:swollen|swelling|swell(?:ed|s)?|bulg(?:e|es|ing|ed)|puff(?:ed|y|ing)(?:\s+up)?|expanded|bloated)\b[^.]{0,30}\bbatter(?:y|ies)\b|\bbatter(?:y|ies)\b[^.]{0,30}\b(?:swollen|swelling|swelled|bulg\w*|puff\w*|expanded|bloated|leak\w*|hiss\w*|hot)\b/i },
     { id: "wiring", res: "STOP_USE", re: /\b(?:exposed|bare|frayed|damaged|cut|chewed|split|melted|broken|cracked|loose)\b[^.]{0,20}\b(?:wires?|wiring|cables?|cords?|leads?|flex|plug|sockets?)\b|\b(?:wires?|wiring|cables?|cords?|leads?|flex)\b[^.]{0,20}\b(?:exposed|showing|frayed|damaged|split|melted|sticking\s+out|hanging\s+out)\b|\bcopper\b/i },
     { id: "shock", res: "STOP_USE", re: /\b(?:electric\s+)?shock(?:s|ed)?\b(?!\s+absorb)|\btingl(?:e|es|ing)\b|\belectrocut\w*/i },
     { id: "overheating", res: "STOP_USE", re: /\boverheat\w*|\btoo\s+hot\s+to\s+touch\b|\b(?:very|really|extremely|dangerously|red|boiling)\s+hot\b|\bhot\s+to\s+the\s+touch\b|\b(?:plug|socket|cable|lead|cord|casing)\b[^.]{0,20}\b(?:hot|warm)\b/i },
     { id: "water_electrics", res: "STOP_USE", re: /\b(?:water|leak\w*|wet|damp)\b[^.]{0,40}\b(?:plug|socket|electrics?|electrical|wiring|fuse\s*box|consumer\s+unit|light\s+fitting|extension\s+lead)\b|\b(?:plug|socket|electrics|wiring|extension\s+lead|consumer\s+unit)\b[^.]{0,40}\b(?:wet|water|damp)\b/i },
     { id: "tripping", res: "STOP_USE", re: /\btrip(?:s|ping|ped)?\b[^.]{0,30}\b(?:electric\w*|fuse|breaker|rcd|power|switch)\b|\bblows?\s+(?:the\s+)?fuse\b|\bblew\s+(?:the\s+)?fuse\b/i },
-    { id: "explosion", res: "STOP_USE", re: /\bexplod\w*|\bexplosion\b|\bbang\b[^.]{0,20}\b(?:smoke|smell|flash|spark)\w*/i },
+    { id: "explosion", res: "STOP_USE", re: /\bexplod\w*|\bexplosion\b|\bbang\b[^.]{0,20}\b(?:smoke|smell|flash|spark)\w*|\bflash(?:es|ed)?\b[^.]{0,30}\bbang(?:s|ed)?\b/i },
     { id: "said_unsafe", res: "STOP_USE", ans: "unsafe" },
     { id: "gas_appliance", res: "PROFESSIONAL_ONLY", re: /\bboiler\b|\bcombi\b|\bgas\s+(?:hob|cooker|oven|fire|heater|appliance|supply|meter|pipe)\b|\bpilot\s+light\b|\bflue\b/i, cats: ["boiler"] },
     { id: "internal_mains", res: "PROFESSIONAL_ONLY", re: /\b(?:open(?:ing)?|take|taking|took|remove|removing)\b[^.]{0,15}\b(?:back|casing|cover|panel|lid)\s+off\b|\b(?:open(?:ing)?\s+(?:it|up|the\s+(?:back|casing|case|cover|panel)))\b|\binside\s+the\s+(?:casing|machine|unit|case|plug)\b|\b(?:replace|replacing|change|changing|fix|fixing|rewire|rewiring)\b[^.]{0,15}\b(?:motor|element|heating\s+element|pcb|circuit\s+board|control\s+board|main\s+board|capacitor|thermostat|wiring|fuse\s+inside)\b|\bhigh[- ]voltage\b|\bcapacitor\b|\bmagnetron\b/i },

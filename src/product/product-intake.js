@@ -44,7 +44,7 @@ var ProductIntake = (function () {
     var labelled = [];
     MODEL_LBL.lastIndex = 0;
     while ((m = MODEL_LBL.exec(t))) {
-      var v = trimTok(m[1]).replace(/\/\d{1,2}$/, "");
+      var v = trimTok(m[1]).replace(/\/[A-Z0-9]{1,3}$/, "");  /* a variant after the slash (E-Nr. WGG244ZCGB/01), even misread */
       if (plausibleModel(v) && serials.indexOf(v) < 0 && labelled.indexOf(v) < 0) labelled.push(v);
     }
     if (labelled.length) { out.models = labelled; out.modelHow = "labelled"; }

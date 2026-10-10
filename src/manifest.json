@@ -1,0 +1,33 @@
+{
+  "marker": "/*@product-modules*/",
+  "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
+  "end": "/* ---- end of product modules ---- */",
+  "base": "",
+  "expect": "",
+  "files": [
+    {
+      "path": "src/product/product.js",
+      "sha1": ""
+    },
+    {
+      "path": "src/product/manufacturers.js",
+      "sha1": ""
+    },
+    {
+      "path": "src/product/product-intake.js",
+      "sha1": ""
+    },
+    {
+      "path": "src/product/product-safety.js",
+      "sha1": ""
+    },
+    {
+      "path": "src/product/resolution-route.js",
+      "sha1": ""
+    },
+    {
+      "path": "src/product/index.js",
+      "sha1": ""
+    }
+  ]
+}

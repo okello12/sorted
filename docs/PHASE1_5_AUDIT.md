@@ -59,6 +59,15 @@ Each area below has what was tested, what was found, what changed, and what is s
   - offers "Photograph the label", "Choose a photo", typing, or "Continue without the label".
   - The message is said once.
 
+### A walk through a vacuum cleaner case (Baldwin's iPhone, 10 October 2026, fixed in v166)
+
+- **Repeated question:** the case asked again what it is and what's happening, with washing-machine chips. Fixed: a
+  product case's first step is only the safety question, with an optional detail.
+- **Dead end:** started without the label, the product said "Not known yet" three times with no way forward. Fixed: the
+  case offers "Photograph the label". The read is candidates to accept, change or turn down.
+- **Layout:** the details were an unstyled list. They are rows now.
+- **Title:** "My vacuum cleaner: It's not working" keeps the capital: those are the person's own words, kept as typed.
+
 ### Unknown models
 
 - **Tested:** a photo of the product with no label gives at most the make. It never gives a model.

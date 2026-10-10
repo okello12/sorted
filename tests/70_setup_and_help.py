@@ -43,7 +43,7 @@ with sync_playwright() as p:
         ok('Won’t drain' not in m, 'no washing machine questions')
     ok('Nothing is due on this case' not in m and 'No reference saved yet' not in m, 'no health line while the case is being set up')
     # 2 nothing named at all: an empty "What is it?", never a washing machine
-    poke("var x=d.tasks.find(y=>y.data.id==='%s').data;x.fix.item=undefined;delete x.fix.item" % aid)
+    poke("var x=d.tasks.find(y=>y.data.id==='%s').data;x.fix.item=undefined;delete x.fix.item;x.said='Not sure what to do'" % aid)  # since v167 a name in the words is used, so the words name nothing here
     pg.goto('https://sorted.test/?task=%s' % aid); wait(pg, 600)
     if pg.locator('[data-a=fr-ok]').count(): pg.click('[data-a=fr-ok]'); wait(pg, 300)
     ok(pg.input_value('#f-item') == '' and 'Won’t drain' not in pg.inner_text('main'), 'with no thing named, "What is it?" is empty and no washing machine is assumed')

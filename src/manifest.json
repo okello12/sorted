@@ -2,8 +2,8 @@
   "marker": "/*@product-modules*/",
   "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
   "end": "/* ---- end of product modules ---- */",
-  "base": "9f2fec997d17d07a62c6e7bb7f4852fed833e80b",
-  "expect": "528c9ffaa5581127335e43b3967ef7ef26b88df1",
+  "base": "aff1b674955dfc1393a785c0f847d5ce769cb354",
+  "expect": "63a33b74e67d2e9c42fe2751cf080e33cc7533ce",
   "files": [
     {
       "path": "src/product/product.js",

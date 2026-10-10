@@ -1,5 +1,10 @@
 # v149: the actions in ci.yml are pinned to commit SHAs; Dependabot proposes updates as pull requests, which then
 # go through the same gate as any change.
+# The screenshot and PDF readers (tesseract.js, tesseract.js-core, pdfjs-dist) are pinned in three places that must
+# change together: the page (OCRV, PDFV and their integrity hashes), tests/package.json and the test routes. A bump of
+# tests/package.json alone would test a version the live site doesn't load, so Dependabot leaves them alone; change
+# them by hand in a new layer (see CLAUDE.md, Pinned versions). pdf.js 4 and later ship as ES modules, so that upgrade
+# also changes how the page loads it.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -10,3 +15,9 @@ updates:
     directory: /tests
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: tesseract.js
+      - dependency-name: tesseract.js-core
+      - dependency-name: pdfjs-dist
+      - dependency-name: "@tesseract.js-data/eng"
+      - dependency-name: "@supabase/supabase-js"

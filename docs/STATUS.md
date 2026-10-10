@@ -11,9 +11,9 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 - **Page fingerprint (sha1 of public/index.html):** 82df8c9af9f2f31b92196bbea5a1179dcecd863d
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
-- **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`). Migration 30
-  (`supabase/parked/30_product_steps_v163.sql`, the product step names) is applied on staging (10 October 2026) and
-  goes on live just before v163 is merged.
+- **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`), and 30
+  (`supabase/parked/30_product_steps_v163.sql`, the product step names; staging and live, 10 October 2026, through
+  `apply_migration`). 29 (pg_net's schema) is still parked.
 - **Edge functions:** send-reminders v15, inbound-email v9, resend-events v2, originals-cleanup v3, email-stop v3,
   case-assistant v2 (switched off: no `anthropic_api_key` in Vault), vapid-init v1.
 

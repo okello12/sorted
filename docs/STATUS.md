@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v154 (10 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 6e08ecddc881134f6a5074665447842aa55248e9
+- **Release:** v155 (10 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** 11d2a597bbec9ae9fe3f00db19c18dbf2b713f90
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -41,10 +41,13 @@ place that decides state, priority, why a case leads, the quick answer, the next
 the reminder day; the old names are one-line calls to them and the old bodies are gone. Test 119 compares every field
 with the page as it was at v152 (`tests/make_ref152.js`) on 1,872 variations. Saving and merging between devices is next, the same way. Step 1 (v154): `syncState(x)` and `syncOf(t)` answer
 "where is this record saved?" for `syncText`, `syncAll`, `pendingRecs` and sign-out, checked by test 120 against the
-v153 page on every flag combination. Step 2 moves the write path's decisions (what to send, when to retry, what a merge
-keeps) behind one record, with tests 66, 71, 99, 107 and 111 as the reference.
+v153 page on every flag combination. Step 2 (v155): the write path's decisions are
+named and in one place (`savePlan155`, `saveOutcome155`, `conflictKind155`, `retryNeed155`, `retryDelay155`, with the
+wrappers round `save()` and `retryPlan()` folded into `savePrep155` and `retryNeed155`); test 121 tells the same saving
+story on v154 and compares every write and the final records. Step 3 is the merge itself (`mergeInto` and the v141
+and v143 rules round it), with tests 66, 99, 107 and 111 as the reference.
 
 ## Permanent gates
 
 77 (documents), 94 and 96 (dates and their source), 109 (check first), 115 (the garage), 116 (two obligations),
-117 (the reminder choice), 118 (this page is current), 119 (one attention record), 120 (one saving record).
+117 (the reminder choice), 118 (this page is current), 119 (one attention record), 120 (one saving record), 121 (the same writes as before).

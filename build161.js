@@ -137,7 +137,7 @@ function prodSync161(t){
   var old=t.prod.safety,sig=function(x){return x?x.result+"|"+x.matched_rules.join(",")+"|"+x.rule_version:""};
   if(sig(old)!==sig(dec)){if(old)(t.prod.safetyWas=t.prod.safetyWas||[]).push(old);t.prod.safety=dec;
     if(dec.result==="STOP_USE"&&!t.safety){t.safety=true;log(t,"Safety stop shown. Told to switch off only if safe and get qualified help.")}
-    log(t,"Sorted’s safety rules ("+dec.rule_version+"): "+PROD_SAFE_SAY161[dec.result]);
+    if(dec.result==="STOP_USE"||dec.result==="PROFESSIONAL_ONLY"||(old&&old.result!==dec.result))log(t,"Sorted’s safety rules ("+dec.rule_version+"): "+PROD_SAFE_SAY161[dec.result]);
     if(dec.result==="STOP_USE")prodTrack161("safety_stopped",t,{cls:dec.product_class,rules:dec.matched_rules.length})}
   prodLedger161(t);t._dirty=true;
 }
@@ -183,6 +183,7 @@ R('docConfirmed:d.docConfirmed||null};','docConfirmed:d.docConfirmed||null,prod1
 R('S.pendingSafety={title:ctitle,said:ctx,facts:cfx};','S.pendingSafety={title:ctitle,said:ctx,facts:cfx,prod161:d.prod161&&d.prod161.ok?d.prod161:null};');
 R('facts:S.pendingSafety&&S.pendingSafety.facts};render()}','facts:S.pendingSafety&&S.pendingSafety.facts,prod161:S.pendingSafety&&S.pendingSafety.prod161};render()}');
 R('gv.item=gsel("gi-item");gv.resp=gsel("gi-resp");','gv.item=gsel("gi-item");gv.resp=gsel("gi-resp");if(gk2==="fix"&&d.prod161&&d.prod161.ok&&(!gv.item||gv.item==="Something else")){var pc161=PR161.value(d.prod161.rec,"category");if(pc161&&pc161!=="other")gv.item=PR161.catName(pc161)}');
+R('var cm=caseMode(ctx),','var cm=d.prod161&&d.prod161.ok?"fix":caseMode(ctx),');
 R('S.tasks.unshift(t);save();trackStart(t,d);','if(d.prod161&&d.prod161.ok&&mode!=="do")prodAttach161(t,d.prod161);S.tasks.unshift(t);save();trackStart(t,d);');
 
 // A label photo goes to the product reader, never into the box.
@@ -198,6 +199,9 @@ R('if(st==="checks")return t.safety||','if(st==="checks")return !!t.prod||t.safe
 R('var skipChecks=t.safety||','var skipChecks=!!t.prod||t.safety||');
 R('function savePrep155(){','function savePrep155(){try{(S.tasks||[]).forEach(function(t){if(t&&t._dirty&&!t._deleted&&t.prod)prodSync161(t)})}catch(e){}');
 
+// What happened, on the case's Now card, is something that happened, not a detail the person confirmed.
+R('return !/^(?:Opened from the |Started\\b|In your words)/.test(x.label||"")','return !/^(?:Opened from the |Started\\b|In your words|Sorted’s safety rules|(?:Make|Model|Serial number|What it is): )/.test(x.label||"")');
+
 // 5. The serial never leaves in full by itself: the assistant, a helper's link, Home's titles and error reports.
 R('context:aiContext(t),text:String(text||"")','context:(t&&t.prod?PR161.scrub(t.prod,aiContext(t)):aiContext(t)),text:(t&&t.prod?PR161.scrub(t.prod,String(text||"")):String(text||""))');
 R('question:String(q||"")','question:(t&&t.prod?PR161.scrub(t.prod,String(q||"")):String(q||""))');
@@ -207,6 +211,6 @@ R('function errText(x){return String(x||"").split("\\n")[0].replace(/["\'“”�
 
 s=s.split('SORTED_V="v160"').join('SORTED_V="v161"');
 fs.writeFileSync('public/index.html',s);
-const EXPECT='7b08c26d632de5742efd88f5d115cd371c15f13e';
+const EXPECT='07ce12a8e009a29f9a95c8d07dd276794d6da8b9';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v161 ok',h(s),s.length);

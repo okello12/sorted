@@ -82,7 +82,7 @@ with sync_playwright() as p:
     ok(sd.get('result') == 'SAFE_EXTERNAL_CHECKS' and sd.get('rule_version') == 'ps-1' and sd.get('product_class') == 'washing_machine', 'the safety decision and its rule version are stored: %s' % sd.get('result'))
     labels = [e['label'] for e in c['events']]
     ok(any(l.startswith('Make: Bosch, read from the label photo and confirmed by you') for l in labels) and any('Model: WGG244ZCGC, corrected by you. Sorted had read WGG244ZCGB.' == l for l in labels) and any(l.startswith('Serial number: ••••6789') for l in labels), 'the history says where each detail came from')
-    ok(not any(SERIAL in l for l in labels) and any('safety rules (ps-1)' in l for l in labels), 'no full serial in the history; the safety decision is in it')
+    ok(not any(SERIAL in l for l in labels) and not any('safety rules' in l for l in labels), 'no full serial in the history; a safe decision is stored, not logged')
     lg = c.get('ledger') or []
     ok([r['st'] for r in lg if r['type'] == 'prod_model'] == ['superseded', 'confirmed'] and all(r['v'] == '••••6789' for r in lg if r['type'] == 'prod_serial'), 'the ledger: the model reading replaced, the serial only masked')
     ok('It won’t drain' in (c.get('said') or ''), 'the person’s words are kept as they said them')

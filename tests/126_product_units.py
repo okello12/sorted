@@ -3,7 +3,11 @@
 # version, the registry's official-domain rule, and the routes.
 import subprocess, sys, os
 HERE = os.path.abspath('.')
-p = subprocess.run(['node', HERE + '/tests/product/units.mjs'], capture_output=True, text=True)
-sys.stdout.write(p.stdout); sys.stdout.write(p.stderr)
-if p.returncode and 'FAILS [' not in p.stdout:
-    print('ERRORS', [p.stderr[-300:]]); print('FAILS', ['units did not run'])
+# since v164 (the Phase 1.5 audit) also the safety corpus: everyday dangerous, professional-only and safe descriptions
+errs, fails = [], []
+for f in ('units.mjs', 'safety_corpus.mjs'):
+    p = subprocess.run(['node', HERE + '/tests/product/' + f], capture_output=True, text=True)
+    out = p.stdout
+    sys.stdout.write('\n'.join(l for l in out.splitlines() if not l.startswith(('ERRORS', 'FAILS'))) + '\n')
+    if 'FAILS []' not in out: fails.append(f + ': ' + (out.split('FAILS', 1)[-1].strip()[:300] or p.stderr[-300:]))
+print('ERRORS', errs); print('FAILS', fails)

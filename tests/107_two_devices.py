@@ -204,45 +204,48 @@ with sync_playwright() as p:
     ok('Saved to your account' in P.inner_text('main'), 'and the case says it is saved')
 
     # ---- 4. nested answers merge key by key; a real conflict is named (PASS2-019) ----
+    # (v164: Sorted's own repair checks are retired, so the nested answers are a product's details)
     fresh(L); P.goto('https://sorted.test/'); P.evaluate("localStorage.clear()")
-    now = L.evaluate("new Date().toISOString()")
-    rep = {'id': 'rep143xx', 'title': 'Landlord: washing machine', 'mode': 'fix', 'board': 'yours', 'created': now, 'updatedAt': now, 'rev': 3,
-           'said': 'My washing machine will not drain', 'facts': {'party': 'Landlord'},
-           'fix': {'step': 'checks', 'item': 'Washing machine', 'fault': 'drain', 'checks': {}, 'party': 'Landlord'},
+    now = L.evaluate("new Date().toISOString()"); ms = L.evaluate("Date.now()")
+    fld = lambda v: {'v': v, 'st': 'confirmed', 'src': 'user', 'at': ms, 'was': []}
+    rep = {'id': 'rep143xx', 'title': 'Washing machine', 'mode': 'fix', 'board': 'yours', 'created': now, 'updatedAt': now, 'rev': 3,
+           'said': 'My washing machine will not drain', 'facts': {},
+           'fix': {'step': 'decide', 'item': 'Washing machine', 'fault': 'drain', 'checks': {}, 'responsible': 'me'},
+           'prod': {'v': 1, 'id': 'rep143xx:p', 'at': ms, 'f': {'brand': fld('Bosch'), 'model': fld('WGG244ZCGB'), 'category': fld('washing_machine')},
+                    'safety': {'product_class': 'washing_machine', 'matched_rules': [], 'result': 'SAFE_EXTERNAL_CHECKS', 'reason': 'x', 'rule_version': 'ps-1', 'created_at': ms}},
            'promises': [], 'refs': [], 'moves': [], 'events': [{'at': now, 'label': 'Started.'}]}
     def poke(q, r):
         q.evaluate("r=>{var d=JSON.parse(localStorage.getItem('__mockdb')||'null')||{tasks:[],shares:[],reminders:[],helpers:[],inbound_items:[]};d.tasks=d.tasks.filter(x=>x.id!==r.id);d.tasks.push({id:r.id,user_id:'u-me',data:r,updated_at:new Date().toISOString()});localStorage.setItem('__mockdb',JSON.stringify(d))}", r)
+    def edit(q, field, value):
+        click(q, '.prod161-card [data-a=panel][data-p=prod161c]', 400); q.fill('#prod-' + field, value); q.click('form[data-f=prod161c] button[type=submit]'); wait(q, 700)
     poke(L, rep); sync(L, P); sign_in(P); open_case(L, 'rep143xx'); open_case(P, 'rep143xx')
-    ch = L.evaluate("[...document.querySelectorAll('[data-a=check]')].map(e=>[e.getAttribute('data-k'),e.getAttribute('data-v')])")
-    ks = []
-    for k, v in ch:
-        if k not in [x[0] for x in ks]: ks.append((k, v))
-    ok(len(ks) >= 2, 'the repair asks at least two checks (%s)' % ks)
-    k1, k2 = ks[0], ks[1]
-    alt1 = [v for k, v in ch if k == k1[0] and v != k1[1]]
+    ok(L.locator('.prod161-card').count() == 1 and not L.locator('[data-a=check]').count(), 'the repair shows its product and no checks of Sorted’s own')
     P.evaluate("localStorage.setItem('__failWrites','1')")
-    click(P, '[data-a=check][data-k="%s"][data-v="%s"]' % k2, 600)                 # phone answers check 2, not sent
-    if alt1: click(P, '[data-a=check][data-k="%s"][data-v="%s"]' % (k1[0], alt1[0]), 600)   # and a different answer to check 1
-    click(L, '[data-a=check][data-k="%s"][data-v="%s"]' % k1, 800)                 # laptop answers check 1
+    edit(P, 'model', 'WGG244ZCGC')                  # phone changes the model, not sent
+    edit(L, 'brand', 'Beko')                        # laptop changes the make
     sync(L, P); P.evaluate("localStorage.removeItem('__failWrites')"); P.evaluate("window.dispatchEvent(new Event('online'))"); wait(P, 1500)
-    c = srv(P, 'rep143xx'); cks = (c.get('fix') or {}).get('checks') or {}
-    ok(cks.get(k2[0]) == k2[1] and cks.get(k1[0]) == k1[1], 'both devices’ repair answers are kept, the laptop’s where both answered (%s)' % cks)
+    c = srv(P, 'rep143xx'); f = c['prod']['f']
+    ok(f['model']['v'] == 'WGG244ZCGC' and f['brand']['v'] == 'Beko', 'both devices’ product details are kept (%s %s)' % (f['brand']['v'], f['model']['v']))
     ml = [l for l in labels(c) if l.startswith('Merged')]
-    ok(ml and (not alt1 or 'repair answer' in ml[-1]), 'the merge line names the conflict (%s)' % ml)
-    pressed = P.evaluate("[...document.querySelectorAll('[data-a=check][aria-pressed=true]')].map(e=>e.getAttribute('data-k')+'='+e.getAttribute('data-v'))")
-    ok('%s=%s' % k2 in pressed and '%s=%s' % k1 in pressed, 'the phone is redrawn with both answers (%s)' % pressed)
+    ok(ml and 'product detail' not in ml[-1], 'different details merge with no conflict named (%s)' % ml[-1:])
+    # both change the same detail differently: the conflict is named
+    sync(P, L); open_case(L, 'rep143xx'); open_case(P, 'rep143xx')
+    P.evaluate("localStorage.setItem('__failWrites','1')")
+    edit(P, 'model', 'WGG24400GB'); edit(L, 'model', 'WGG24411GB')
+    sync(L, P); P.evaluate("localStorage.removeItem('__failWrites')"); P.evaluate("window.dispatchEvent(new Event('online'))"); wait(P, 1500)
+    c = srv(P, 'rep143xx'); ml = [l for l in labels(c) if l.startswith('Merged')]
+    ok(ml and 'product detail' in ml[-1], 'the merge line names the conflict (%s)' % ml[-1:])
 
-    # ---- 5. a stale repair panel after the kind changed elsewhere: no page error, nothing recorded ----
+    # ---- 5. a stale product panel after the kind changed elsewhere: no page error, the product kept ----
     poke(L, rep); sync(L, P); open_case(L, 'rep143xx'); open_case(P, 'rep143xx')
+    click(P, '.prod161-card [data-a=panel][data-p=prod161c]', 400)
     click(L, '[data-a=panel][data-p=kind]', 300); click(L, '[data-k=kind][data-v=call]', 200); L.click('form[data-f=kind] button[type=submit]'); wait(L, 800)
     ok(srv(L, 'rep143xx')['mode'] == 'call', 'the laptop made it a call')
     sync(L, P); n0 = len(errs)
-    click(P, '[data-a=check][data-k="%s"][data-v="%s"]' % k1, 900)
-    if P.locator('[data-a=checks-done]').count(): click(P, '[data-a=checks-done]', 900)
+    if P.locator('form[data-f=prod161c]').count(): P.fill('#prod-model', 'WGG244ZCGD'); P.click('form[data-f=prod161c] button[type=submit]'); wait(P, 900)
     c = srv(P, 'rep143xx')
-    ok(len(errs) == n0, 'no page error from the stale repair panel (%s)' % errs[n0:])
-    ok(c['mode'] == 'call' and not ((c.get('fix') or {}).get('checks') or {}), 'nothing was recorded into the old repair (%s)' % c.get('fix'))
-    ok(not P.locator('[data-a=check]').count(), 'the phone is redrawn without the repair checks')
+    ok(len(errs) == n0, 'no page error from the stale product panel (%s)' % errs[n0:])
+    ok(c['mode'] == 'call' and c.get('prod', {}).get('f', {}).get('brand', {}).get('v') == 'Bosch', 'the kind change stands and the product survives it')
 
     # ---- 6. the page reads the server when it comes back, and redraws ----
     fresh(L); P.goto('https://sorted.test/'); P.evaluate("localStorage.clear()")

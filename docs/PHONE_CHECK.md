@@ -28,6 +28,28 @@ that is an iPhone in someone's hand. Do this on a real phone before inviting peo
 4. Settings → Accessibility → TalkBack → on. Repeat step 7. Turn it off (volume keys held together, if set up).
 5. Repeat steps 8 to 10.
 
+## Something I own isn't working (Phase 1.5, 15 minutes, iPhone and Android)
+
+Use real appliances at home. Never photograph a card, a bank letter or anything with someone else's details on it.
+
+1. New → Something's broken → Take a photo. Photograph the rating label of a washing machine, fridge or dishwasher
+   (inside the door or on the back) straight on, in normal light. Sorted says "Label read" and shows the make, the model
+   and the serial as ••••1234. Compare the model letter by letter with the label. Note any letter it got wrong.
+2. Do it again at an angle, in dim light, and with the flash on (glare). Note what Sorted read each time, or that it
+   said it couldn't read the photo. A wrong model must be one you can correct before Start.
+3. Photograph the appliance itself, not its label. Sorted may give the make; it must never show a model.
+4. Tap Show and Hide on the serial. Tap Start. On the case, check Home, Cases and the case page never show the serial
+   in full; Show and Copy work on the case.
+5. On the purchase step, photograph a till receipt or an order confirmation on screen (your own, with nothing
+   sensitive on it). Check the shop and the date it read, change one, and press Next. The Best next step must use
+   what you confirmed.
+6. Type "there's a burning smell" as what's happening. Sorted must stop: the safety screen, no support page offered
+   as a fix.
+7. Turn on Airplane Mode and take a label photo. If the reader has been used before on this phone it may still read the
+   photo, since it works on the phone; if not, Sorted must say it couldn't read it and offer typing. Either way nothing
+   is saved until Start.
+8. Open the maker's support link on the case. It must open the maker's own UK page.
+
 ## If something fails
 
 Write down the step number, the phone and its OS version, and what happened. Nothing else is needed. That goes in

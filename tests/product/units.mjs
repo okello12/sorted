@@ -135,6 +135,15 @@ ok(!M.isOfficial('https://www.lg.com/us/support/', M.makerByName('LG')), 'LG’s
 ok(M.isOfficial('https://www.lg.com/uk/support/contact-us/', M.makerByName('LG')), 'LG UK is');
 eq(M.brandIn('made by BOSCH for Bosch'), 'Bosch', 'brand by alias, any case');
 eq(M.makerByName('Acme'), null, 'an unknown maker has no entry');
+['Samsung', 'Hotpoint', 'Indesit', 'Hoover', 'AEG', 'Electrolux', 'Philips', 'HP', 'Epson', 'Canon'].forEach(n => {
+  const e = M.makerByName(n); ok(e && M.link(e, 'support'), n + ' has a checked UK support link');
+});
+eq(M.makerByName('Whirlpool'), null, 'Whirlpool has no entry: its UK repair site names no owner');
+eq(M.brandIn('Whirlpool FFB 8448'), 'Whirlpool', 'Whirlpool is still recognised by name');
+eq(M.brandIn('Motor 1.5 HP 230V'), '', 'horsepower on a motor label is not HP');
+eq(M.brandIn('HP DeskJet 2720e'), 'HP', 'HP on a printer label is HP');
+ok(!M.isOfficial('https://www.samsung.com/us/support/', M.makerByName('Samsung')), 'Samsung’s US pages are not Samsung UK');
+ok(!M.isOfficial('https://indesitservice.co.uk/repair', M.makerByName('Indesit')), 'Indesit’s unnamed repair domain is not linked');
 ok(/^\d{1,2} [A-Z][a-z]{2} \d{4}$/.test(M.CHECKED), 'the registry carries the date it was checked');
 
 // ---------- routes ----------
@@ -151,6 +160,8 @@ eq([rt.key, rt.who], ['MANUFACTURER', 'Bosch'], 'unconfirmed purchase details ne
 ok(/doesn’t know where or when/.test(rt.reason), 'unknown purchase details are said to be unknown');
 rt = RT.route({ rec: confirmed({ brand: 'Bosch', retailer: 'Argos', bought: '2018-01-01' }), safety: safeDec }, NOW);
 eq(rt.key, 'MANUFACTURER', 'over six years: the maker first');
+rt = RT.route({ rec: confirmed({ brand: 'Samsung', category: 'washing_machine' }), safety: safeDec }, NOW);
+eq([rt.key, rt.url], ['MANUFACTURER', 'https://www.samsung.com/uk/support/repair/'], 'Samsung with no purchase details: Samsung UK’s repair page');
 rt = RT.route({ rec: confirmed({ brand: 'Acme', category: 'printer' }), safety: safeDec }, NOW);
 eq(rt.key, 'QUALIFIED_REPAIR', 'no registry entry: a repairer');
 ok(/doesn’t have a checked support page for Acme/.test(rt.reason), 'and says so');

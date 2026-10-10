@@ -2,24 +2,24 @@
   "marker": "/*@product-modules*/",
   "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
   "end": "/* ---- end of product modules ---- */",
-  "base": "e56d4378915df234d590a43dd8332edb6d143bca",
-  "expect": "82df8c9af9f2f31b92196bbea5a1179dcecd863d",
+  "base": "0db852ee8c73d5eb4eb15fd3ffc7f9ba6b8ec311",
+  "expect": "db74e4de37aec4d21282ca1a30c0ddee81e9f60f",
   "files": [
     {
       "path": "src/product/product.js",
-      "sha1": "e5ca8f2d41ab19ea2b572b4547a19fc2618616a8"
+      "sha1": "7d331445b0ef4d9c5a9cd6ca8bbd44b0c254178e"
     },
     {
       "path": "src/product/manufacturers.js",
-      "sha1": "41cc1ae938da11f3ed0d84b108cf1fff2a544e13"
+      "sha1": "edead784aa286002533027685e1a34238c9d48c7"
     },
     {
       "path": "src/product/product-intake.js",
-      "sha1": "3f7adf142fbaae338df61d452c630b904f45c243"
+      "sha1": "33ac3122e8ccd79be3bc92736d9b184f2f83c69c"
     },
     {
       "path": "src/product/product-safety.js",
-      "sha1": "650b44cdcb5a8a3106f6f2487f27fd1f047ad25a"
+      "sha1": "5c05e1bea363dbfecf7cabbcdc5e0132986995e7"
     },
     {
       "path": "src/product/resolution-route.js",

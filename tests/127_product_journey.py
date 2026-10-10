@@ -125,6 +125,9 @@ with sync_playwright() as p:
     ok(len(a.cases()) == n1 and 'SV14' not in json.dumps(pg.evaluate('Object.assign({},localStorage)')) and 'SV14' not in json.dumps(pg.evaluate('Object.assign({},sessionStorage)')), 'a refresh before Start saves nothing and keeps nothing on the phone')
     # ---- usage records: nothing product-shaped yet ----
     evs = a.db().get('pilot_events', [])
-    ok(not any(e['name'].startswith('product_') for e in evs) and not any(SERIAL in json.dumps(e) or 'WGG244' in json.dumps(e) for e in evs), 'no product step names before migration 30, and no product text in usage records')
+    names = [e['name'] for e in evs]
+    ok(all(n in names for n in ('product_flow_started', 'product_candidate_found', 'product_read_failed', 'product_confirmed')), 'the journey’s steps are recorded (since v163): %s' % sorted(set(n for n in names if n.startswith('product'))))
+    bad = [e for e in evs if e['name'].startswith('product') and any(isinstance(v, str) and v not in ('label', 'manual', 'washing_machine', 'vacuum', 'none', 'fix', 'call', 'receipt') for v in (e.get('props') or {}).values())]
+    ok(not bad and not any(SERIAL in json.dumps(e) or 'WGG244' in json.dumps(e) or 'Bosch' in json.dumps(e) or 'Miele' in json.dumps(e) for e in evs), 'usage records carry codes and counts only, no product text: %s' % bad[:1])
     a.close()
 finish()

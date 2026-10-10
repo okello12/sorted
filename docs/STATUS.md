@@ -5,13 +5,15 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v162 (10 October 2026, on the branch `product-phase1`; not deployed. Production stays on v160, sha1
+- **Release:** v163 (10 October 2026, on the branch `product-phase1`; not deployed. Production stays on v160, sha1
   c29a75e77782dd541161bd1bc87e8d64cb895957, until Phase 1 of the product journey passes its gates in
   `docs/PRODUCT_PHASE1.md`.)
-- **Page fingerprint (sha1 of public/index.html):** 9b1605d6bd6c82fc15587d47f8131b75e455815b
+- **Page fingerprint (sha1 of public/index.html):** 82df8c9af9f2f31b92196bbea5a1179dcecd863d
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
-- **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
+- **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`). Migration 30
+  (`supabase/parked/30_product_steps_v163.sql`, the product step names) is applied on staging (10 October 2026) and
+  goes on live just before v163 is merged.
 - **Edge functions:** send-reminders v15, inbound-email v9, resend-events v2, originals-cleanup v3, email-stop v3,
   case-assistant v2 (switched off: no `anthropic_api_key` in Vault), vapid-init v1.
 

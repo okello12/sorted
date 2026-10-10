@@ -109,6 +109,13 @@ st, r = rest('POST', 'pilot_events', {'actor': uid_b, 'name': 'case_started', 'c
 ok(st in (401, 403) or (isinstance(r, dict) and r.get('code') == '42501'), 'A cannot write a step record as B')
 st, r = rest('POST', 'pilot_events', {'name': 'case_started', 'case_id': tid}, A, 'return=minimal')
 ok(st == 201, 'A can write a step record as A (%s)' % st)
+# v163: the product journey's step names (migration 30), with code-only props
+for nm in ('product_flow_started', 'product_candidate_found', 'product_read_failed', 'product_confirmed', 'purchase_confirmed',
+           'safety_stopped', 'official_support_shown', 'resolution_route_shown', 'contact_prepared'):
+    st, r = rest('POST', 'pilot_events', {'name': nm, 'case_id': tid, 'props': {'src': 'label', 'route': 'RETAILER'}}, A, 'return=minimal')
+    ok(st == 201, 'staging accepts the step name %s (%s)' % (nm, st))
+st, r = rest('POST', 'pilot_events', {'name': 'product_made_up', 'case_id': tid}, A, 'return=minimal')
+ok(st >= 400, 'a step name outside the list is still refused (%s)' % st)
 st, r = rpc('pilot_metrics', {'include_admins': False}, A)
 ok(st >= 400 and 'not allowed' in json.dumps(r), 'the numbers are admin only')
 st, r = rpc('pilot_health', {}, A)
@@ -264,6 +271,26 @@ try:
         pg.reload(); pg.wait_for_timeout(3000)
         ok('AB123' in pg.inner_text('main') and 'Waiting' in pg.inner_text('main'), 'a reload brings it back from the database')
         ok(not perr, 'no page errors against the real backend: %s' % perr[:2])
+        # v163: Something I own isn't working, against staging: a typed product, a confirmed case, the serial stored
+        # once and masked in the ledger, and every usage record accepted (the page's queue empties)
+        pg.locator('.tab129 [data-a=new-case]').click(); pg.wait_for_timeout(600)
+        pg.locator('[data-cap82=fix]').first.evaluate('e=>e.click()'); pg.wait_for_timeout(500)
+        pg.click('[data-a=prod161-type]'); pg.wait_for_timeout(300)
+        pg.fill('#prod-brand', 'Bosch'); pg.fill('#prod-model', 'WGG244ZCGB'); pg.fill('#prod-serial', 'SN55554444'); pg.locator('input[name=prod-cat][value=washing_machine]').evaluate('e=>e.click()')
+        pg.click('form[data-f=prod161] button[type=submit]'); pg.wait_for_timeout(400)
+        pg.fill('#gi-what', 'It won’t drain'); pg.locator('form[data-f=gi] button[type=submit]').first.click(); pg.wait_for_timeout(1500)
+        for sel in ('[data-a=match-new]', '[data-a=vague-go]'):
+            if pg.locator(sel).count(): pg.click(sel); pg.wait_for_timeout(800)
+        if pg.locator('form[data-f=baseline]').count(): pg.click('form[data-f=baseline] .chip >> nth=0'); pg.click('form[data-f=baseline] button[type=submit]'); pg.wait_for_timeout(2500)
+        ok(pg.locator('.prod161-card').count() == 1 and '••••4444' in pg.inner_text('main') and 'SN55554444' not in pg.inner_text('main'), 'a product case on staging shows the serial masked')
+        pg.wait_for_timeout(2500)
+        q = pg.evaluate("JSON.parse(localStorage.getItem('sorted.evq')||'[]')")
+        ok(q == [], 'every usage record the product journey made was accepted by staging (%d waiting)' % len(q))
+        sess0 = pg.evaluate("(()=>{for(const k of Object.keys(localStorage)){if(/^sb-.*-auth-token$/.test(k)){try{return JSON.parse(localStorage.getItem(k)).access_token}catch(e){}}}return null})()")
+        if sess0:
+            st, rows = rest('GET', 'tasks?select=data', None, sess0)
+            pr = [x['data'] for x in (rows if isinstance(rows, list) else []) if x['data'].get('prod')]
+            ok(len(pr) == 1 and pr[0]['prod']['f']['serial']['v'] == 'SN55554444' and all(r['v'] == '••••4444' for r in pr[0].get('ledger', []) if r['type'] == 'prod_serial'), 'staging stores the serial once, in the case, and only masked in its ledger')
         # tidy up: delete the account from inside the page's own session
         # (the page's client isn't a global, so take the session from storage and call the database directly)
         sess = pg.evaluate("(()=>{for(const k of Object.keys(localStorage)){if(/^sb-.*-auth-token$/.test(k)){try{return JSON.parse(localStorage.getItem(k)).access_token}catch(e){}}}return null})()")

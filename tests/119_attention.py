@@ -1,26 +1,54 @@
-# v150 to v152: attention(t), the attention extraction step 1. One record per case per draw answers "what needs attention":
+# v150 to v153: attention(t), the attention extraction. One record per case per draw answers "what needs attention":
 # state, priority, why it leads, the quick answer, your own deadline, Later, the next step and the reminder's day.
-# The old functions still work and, while a screen is drawn, read the same record. This test builds a varied Home
-# (overdue, due today, waiting, your step, a check day, a parking notice, a deadline on you, Later, finished) and checks:
-# the record equals the old answers computed fresh; it is kept only during a draw; each case is worked out once per
-# draw; Home, the case page and Cases agree; and a mutation between draws is seen at once.
-import os, sys, json
+# Since v153 the old function bodies are gone from the page, so the reference is the page as it was at v152, built by
+# tests/make_ref152.js and opened in a separate browser context: its ATT150.F still holds the old functions. This test
+# builds a varied Home (overdue, due today, waiting, your step, a check day, a parking notice, a deadline on you,
+# Later, finished) and checks: every field equals the old answers, on every case and on 1,872 variations of their
+# dates; the record is kept only during a draw; each case is worked out once per draw; Home, the case page and Cases
+# agree; a mutation between draws is seen at once; and the old bodies and scaffolding are gone from the page.
+import os, sys, json, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from attlib143 import *
 
-FIELDS = "['state','prio','why','q','snoozed','next']"
-CMP = """(()=>{var F=ATT150.F,out=[];S.tasks.forEach(function(t){var a=attention(t),o={state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t),snoozed:F.snoozed(t),next:F.next(t)};
-  %s.forEach(function(k){if(JSON.stringify(a[k])!==JSON.stringify(o[k]))out.push(t.title+' '+k+': '+JSON.stringify(a[k])+' vs '+JSON.stringify(o[k]))});
-  var od=F.own(t),ad=a.own;if(JSON.stringify(od)!==JSON.stringify(ad))out.push(t.title+' own');
-  var dd=F.due(t);if(String(dd)!==String(a.due))out.push(t.title+' due')});return out})()""" % FIELDS
+FIELDS = ['state', 'prio', 'why', 'q', 'snoozed', 'next', 'own', 'due']
+# the same cases, read by the new rules (attention) or the old functions (F, in the reference page)
+NEWF = "(cs)=>cs.map(function(t){var a=attention(t);return {state:a.state,prio:a.prio,why:a.why,q:a.q,snoozed:a.snoozed,next:a.next,own:JSON.stringify(a.own),due:String(a.due)}})"
+OLDF = "(cs)=>cs.map(function(t){return {state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t),snoozed:F.snoozed(t),next:F.next(t),own:JSON.stringify(F.own(t)),due:String(F.due(t))}})"
+VARS = r'''(()=>{var H=36e5,D=864e5,offs=[null,-5*D,-26*H,-3*H,-1*H,0.5*H,2*H,10*H,20*H,30*H,3*D,10*D,40*D],out=[];
+  S.tasks.forEach(function(base){offs.forEach(function(po){[null,-2*D,-2*H,0.5*H,6*H,30*H,5*D,35*D].forEach(function(mo){[false,true].forEach(function(miss){
+    var t=JSON.parse(JSON.stringify(base));t.promises=(t.promises||[]).filter(function(q){return q.status!=='open'});
+    if(miss)t.promises.push({id:'pm',status:'missed',party:'X',said:'x',dueAt:new Date(Date.now()-3*D).toISOString(),allDay:true,by:true});
+    if(po!==null)t.promises.push({id:'po',status:'open',party:'X',said:'They will do it',dueAt:new Date(Date.now()+po).toISOString(),dueEnd:po%D===0?null:new Date(Date.now()+po+2*H).toISOString(),allDay:po%D===0,by:po%D===0,prec:'day'});
+    t.moves=(t.moves||[]).filter(function(x){return x.status!=='open'});
+    if(mo!==null)t.moves.push({id:'mo',what:'Phone them',status:'open',loggedAt:new Date().toISOString(),dueAt:new Date(Date.now()+mo).toISOString(),allDay:false});
+    if(t.board==='done'&&(po!==null||mo!==null))t.board='yours';
+    t.title=(t.title||'')+' p'+po+' m'+mo+(miss?' miss':'');out.push(t)})})})});return out})()'''
 
 A_ = '\nboot();\n})();\n'
 SRC = open(HERE + '/tests/out/index.html', encoding='utf8').read(); assert SRC.count(A_) == 1
-open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.att151Rules=function(t){return att151Rules(t)};window.__wrapCalc=function(fn){var o=att150Calc;att150Calc=function(t){fn(t);return o(t)};return function(){att150Calc=o}};window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
+open(HERE + '/tests/out/119_hook.html', 'w', encoding='utf8').write(SRC.replace(A_, '\nwindow.S=S;window.attention=attention;window.ATT150=ATT150;window.__wrapCalc=function(fn){var o=att150Calc;att150Calc=function(t){fn(t);return o(t)};return function(){att150Calc=o}};window.render=function(){return render()};window.state=function(t){return state(t)};window.go=function(v){return go(v)};\nboot();\n})();\n'))
+subprocess.run(['node', HERE + '/tests/make_ref152.js'], check=True, capture_output=True)
+REF = open(HERE + '/tests/out/ref152.html', encoding='utf8').read(); assert REF.count(A_) == 1
+open(HERE + '/tests/out/119_ref.html', 'w', encoding='utf8').write(REF.replace(A_, '\nwindow.F=ATT150.F;window.S=S;\nboot();\n})();\n'))
+
+def compare(pg, ref, cases):
+    new = pg.evaluate(NEWF, cases); old = ref.evaluate(OLDF, cases); bad = []
+    for t, a, o in zip(cases, new, old):
+        for k in FIELDS:
+            if a[k] != o[k]: bad.append('%s %s: %r vs %r' % (t.get('title'), k, a[k], o[k]))
+    return bad
+
 with sync_playwright() as p:
     a = App(p, email=True); pg = a.pg
     a.ctx.route(lambda u: u.startswith('https://sorted.test/') and '/art/' not in u, lambda r: r.fulfill(path=HERE + '/tests/out/119_hook.html', content_type='text/html'))
     a.home()
+    # the reference: v152, in a context of its own (its own storage, nobody signed in)
+    rctx = a.b.new_context(timezone_id='Europe/London')
+    rctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE + '/tests/mock.js', content_type='application/javascript'))
+    rctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE + '/tests/out/119_ref.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
+    ref = rctx.new_page(); ref.on('pageerror', lambda e: errs.append('ref: ' + str(e)))
+    ref.goto('https://sorted.test/#about'); wait(ref, 800)
+    ok(ref.evaluate("typeof F==='object'&&typeof F.next==='function'"), 'the v152 reference page has the old functions')
     c1 = a.start('Currys said the refund of £40 would be in my account by %s' % long(day(3)))
     c2 = a.start('BT said an engineer would come on %s between 8 and 12' % long(day(5)))
     c3 = a.start('Evri said the parcel would arrive by %s' % long(day(2))); a.overdue(c3, 2)
@@ -36,7 +64,7 @@ with sync_playwright() as p:
     a.task_js(c10, "t.moves=(t.moves||[]).concat([{id:'m10',what:'Phone Screwfix',status:'open',loggedAt:new Date().toISOString(),dueAt:new Date(Date.now()-36e5).toISOString(),allDay:false}])")
     a.home()
     ok(pg.evaluate("typeof attention==='function'&&ATT150.memo===null"), 'attention() exists, and nothing is kept outside a draw')
-    bad = pg.evaluate(CMP)
+    bad = compare(pg, ref, pg.evaluate('S.tasks'))
     ok(not bad, 'the record equals the old answers for every case: %s' % bad[:4])
     n = pg.evaluate("S.tasks.length")
     ok(n >= 9, 'a varied Home (%d cases)' % n)
@@ -55,31 +83,18 @@ with sync_playwright() as p:
     ok('tell Sorted whether' in mc.lower() or 'did they' in mc.lower() or 'did it' in mc.lower(), 'the case page asks the same question')
     a.open(c10); mc = a.main()
     ok('Phone Screwfix' in mc, 'your overdue step leads on the case')
-    bad = pg.evaluate(CMP); ok(not bad, 'and the record still agrees on the case page: %s' % bad[:4])
-    a.tap('cases'); bad = pg.evaluate(CMP); ok(not bad, 'and on Cases: %s' % bad[:4])
-    # v151: the rules themselves live in attention(). Vary every case's dates and check them against the old functions.
-    VAR = r'''(()=>{var F=ATT150.F,H=36e5,D=864e5,offs=[null,-5*D,-26*H,-3*H,-1*H,0.5*H,2*H,10*H,20*H,30*H,3*D,10*D,40*D],out=[],n=0;
-      S.tasks.forEach(function(base){offs.forEach(function(po){[null,-2*D,-2*H,0.5*H,6*H,30*H,5*D,35*D].forEach(function(mo){[false,true].forEach(function(miss){
-        var t=JSON.parse(JSON.stringify(base));t.promises=(t.promises||[]).filter(function(q){return q.status!=='open'});
-        if(miss)t.promises.push({id:'pm',status:'missed',party:'X',said:'x',dueAt:new Date(Date.now()-3*D).toISOString(),allDay:true,by:true});
-        if(po!==null)t.promises.push({id:'po',status:'open',party:'X',said:'They will do it',dueAt:new Date(Date.now()+po).toISOString(),dueEnd:po%D===0?null:new Date(Date.now()+po+2*H).toISOString(),allDay:po%D===0,by:po%D===0,prec:'day'});
-        t.moves=(t.moves||[]).filter(function(x){return x.status!=='open'});
-        if(mo!==null)t.moves.push({id:'mo',what:'Phone them',status:'open',loggedAt:new Date().toISOString(),dueAt:new Date(Date.now()+mo).toISOString(),allDay:false});
-        if(t.board==='done'&&(po!==null||mo!==null))t.board='yours';
-        var a=attention(t),o={state:F.state(t),prio:F.prio(t),why:F.why(t),q:F.q(t),next:F.next(t),snoozed:F.snoozed(t),own:JSON.stringify(F.own(t)),due:String(F.due(t))};a=Object.assign({},a,{own:JSON.stringify(a.own),due:String(a.due)});n++;
-        ['state','prio','why','q','next','snoozed','own','due'].forEach(function(k){if(a[k]!==o[k])out.push(t.title+' p'+po+' m'+mo+' '+k+': '+a[k]+' vs '+o[k])})})})})});return [n,out]})()'''
-    r = pg.evaluate(VAR)
-    ok(r[0] > 1000 and not r[1], 'every attention field (state, priority, why, quick answer, next step, Later, your deadline, reminder day) matches the old functions on %d variations of the cases’ dates: %s' % (r[0], r[1][:4]))
-    # v152: outside a draw the old names ask the new rules, and the old bodies are not called
-    r = pg.evaluate('''(()=>{var F=ATT150.F,n=0,keep={};Object.keys(F).forEach(function(k){keep[k]=F[k];F[k]=function(){n++;return keep[k].apply(this,arguments)}});
-      var res=S.tasks.map(function(t){return [state(t)]});Object.keys(keep).forEach(function(k){F[k]=keep[k]});return [n,res.length]})()''')
-    ok(r[0] == 0 and r[1] > 0, 'outside a draw, the old names no longer call the old function bodies (%d calls for %d cases)' % (r[0], r[1]))
-    r = pg.evaluate('''(()=>{var F=ATT150.F,n=0,keep={};Object.keys(F).forEach(function(k){keep[k]=F[k];F[k]=function(){n++;return keep[k].apply(this,arguments)}});
-      go({name:'home'});render();Object.keys(keep).forEach(function(k){F[k]=keep[k]});return n})()''')
-    ok(r == 0, 'and drawing Home calls none of them (%d)' % r)
+    bad = compare(pg, ref, pg.evaluate('S.tasks')); ok(not bad, 'and the record still agrees on the case page: %s' % bad[:4])
+    # every field, on 1,872 variations of the cases' dates, against the old functions
+    cases = pg.evaluate(VARS); bad = compare(pg, ref, cases)
+    ok(len(cases) > 1000 and not bad, 'every attention field (state, priority, why, quick answer, next step, Later, your deadline, reminder day) matches the old functions on %d variations of the cases’ dates: %s' % (len(cases), bad[:4]))
+    # v153: the old bodies and the scaffolding are gone
+    PAGE = open(HERE + '/public/index.html', encoding='utf8').read()
+    gone = [x for x in ('ATT150.F', 'att150Use', '_hp143', '_hw143', '_ns143', '_nst144', '_snoozed143', 'ATT150.busy') if x in PAGE]
+    ok(not gone, 'the old function bodies and the v150 to v152 scaffolding are gone from the page: %s' % gone)
+    ok(PAGE.count('function state(t){return att152Field("state",t)}') == 1 and PAGE.count('function nextStepText(t){return att152Field("next",t)}') == 1, 'the old names are one-line calls to the attention rules')
     # 100 cases: one draw, each case once
     pg.evaluate("""(()=>{var base=S.tasks[0];for(var i=0;i<90;i++){var c=JSON.parse(JSON.stringify(base));c.id='x150-'+i;c.title='Copy '+i;S.tasks.push(c)}})()""")
     r = pg.evaluate("""(()=>{var n=0,undo=__wrapCalc(function(){n++});go({name:'home'});n=0;var t0=performance.now();render();var ms=performance.now()-t0;undo();return [n,S.tasks.length,ms]})()""")
     ok(r[0] <= r[1], 'with %d cases each case is worked out once per draw (%d), drawn in %d ms' % (r[1], r[0], r[2]))
-    a.close()
+    rctx.close(); a.close()
 finish()

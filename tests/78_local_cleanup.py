@@ -93,7 +93,7 @@ with sync_playwright() as p:
     pg.set_input_files('input[data-ocr=f-case]', P['notice'])
     for _ in range(240):
         st = pg.inner_text('#ocr-status') if pg.locator('#ocr-status').count() else ''
-        if re.search(r'Photo read|couldn’t|doesn’t look', st): break
+        if re.search(r'Photo read|doesn’t look', st): break   # not "couldn’t": the last failure's words can still be there
         wait(pg, 500)
     ok(pg.locator('form[data-f=doc]').count() == 1 and pg.input_value('#doc-ref') == 'LJ12345678', 'a clear read is on screen for review')
     account(); pg.click('[data-a=signout]'); wait(pg, 800)

@@ -45,6 +45,20 @@ Each area below has what was tested, what was found, what changed, and what is s
 - **Still open:** these photos are simulated. A real iPhone and a real Android phone are still needed. That is the new
   section in `docs/PHONE_CHECK.md`.
 
+### The first real-phone try (Baldwin's iPhone, 10 October 2026, fixed in v165)
+
+- **What happened:** Baldwin photographed the appliance itself, not its rating label. Sorted said "Sorted couldn’t read
+  that photo", and the line under it repeated the message. It felt like a failed scan, which the specification says it
+  must not.
+- **Why:** Sorted reads words on the phone. It doesn't recognise a machine from its shape, and it shouldn't: that would
+  mean sending the photo to a remote model, which the privacy design rules out.
+- **Fix:** a photo with no make, model or serial now says "Now photograph the label". It explains that Sorted reads the
+  words on a label, not the machine. It also:
+  - says where the label usually is for each kind of thing;
+  - lets the person say what it is;
+  - offers "Photograph the label", "Choose a photo", typing, or "Continue without the label".
+  - The message is said once.
+
 ### Unknown models
 
 - **Tested:** a photo of the product with no label gives at most the make. It never gives a model.

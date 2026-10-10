@@ -37,7 +37,8 @@ Use real appliances at home. Never photograph a card, a bank letter or anything 
    and the serial as ••••1234. Compare the model letter by letter with the label. Note any letter it got wrong.
 2. Do it again at an angle, in dim light, and with the flash on (glare). Note what Sorted read each time, or that it
    said it couldn't read the photo. A wrong model must be one you can correct before Start.
-3. Photograph the appliance itself, not its label. Sorted may give the make; it must never show a model.
+3. Photograph the appliance itself, not its label. Sorted may give the make, or ask for the label ("Now photograph the
+   label", with where it usually is). It must never show a model.
 4. Tap Show and Hide on the serial. Tap Start. On the case, check Home, Cases and the case page never show the serial
    in full; Show and Copy work on the case.
 5. On the purchase step, photograph a till receipt or an order confirmation on screen (your own, with nothing

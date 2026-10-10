@@ -5,8 +5,8 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v159 (10 October 2026)
-- **Page fingerprint (sha1 of public/index.html):** 109d8cff7d139f27be69041e2212fa3ccff5606a
+- **Release:** v160 (10 October 2026)
+- **Page fingerprint (sha1 of public/index.html):** c29a75e77782dd541161bd1bc87e8d64cb895957
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`).
@@ -32,7 +32,8 @@ lock-screen reminders. v149 is the first release aimed at that last gap.
 
 v158 (10 October): the script policy has no `'unsafe-inline'`; the page's inline scripts are listed by hash
 (`node tools/csp_hashes.js` after every build; test 124 fails otherwise). v159: a full phone copy keeps unsent edits
-(test 125). Dependabot leaves the pinned readers and database library alone; old pull requests 18, 33 and 44 closed.
+(test 125). v160: the ways-in cards take their accessible name from what they show (axe-core 4.14's label-in-name
+rule; Dependabot's axe update can merge once this is in). Dependabot leaves the pinned readers and database library alone; old pull requests 18, 33 and 44 closed.
 
 The CI gate (9 October 2026): actions and Playwright pinned, Dependabot, the staging suite running for real with a
 grants matrix and cross-person checks, staging made level with live (`supabase/staging/02_parity_v149.sql`), and a

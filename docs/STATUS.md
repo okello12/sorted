@@ -33,8 +33,12 @@ lock-screen reminders. v149 is the first release aimed at that last gap.
 - **P2, owner:** a real iPhone VoiceOver and Android TalkBack pass (`docs/PHONE_CHECK.md`).
 - **P2:** IndexedDB for the copy on this phone, if accounts grow past a few hundred long cases (v159 keeps unsent edits
   when storage is full; test 125 measures 100 and 500 cases).
-- **P3, owner (one Run):** `supabase/parked/29_pg_net_schema_v158.sql` moves `pg_net` out of `public` (staging, then
-  live, between reminder kicks). The connector's apply was cancelled; it needs the SQL editor's Run.
+- **P3, owner:** migration 29 moves `pg_net` out of `public`. It was rewritten on 11 October 2026 with preflight
+  checks, an empty-queue guard, post-checks and one transaction, and rehearsed locally. Read-only preflight on staging
+  and live is clean (`docs/MIGRATION_29_RUNBOOK.md`). Next: Baldwin approves the staging rehearsal.
+- **Release assurance dossier (11 October 2026):** the engineering inputs are in `docs/DPIA_INPUTS.md` (where data
+  goes, phone storage, retention, rights, gaps to confirm), `docs/RECOVERY.md` (the backup decision and the restore
+  drill) and the runbook above. The DPIA, legal review, phone protocol and backups remain the owner's.
 
 ## Done since v149
 

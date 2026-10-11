@@ -40,10 +40,11 @@ begin
   -- refuse; this check says why before anything is attempted.)
   with recursive ext as (select oid from pg_extension where extname = 'pg_net'),
   members as (select classid, objid from pg_depend where refclassid = 'pg_extension'::regclass and refobjid = (select oid from ext) and deptype = 'e'),
-  closure(classid, objid, objsubid, depth) as (
-    select d.classid, d.objid, d.objsubid, 1 from pg_depend d where d.refclassid = 'pg_extension'::regclass and d.refobjid = (select oid from ext)
+  -- no depth limit: UNION keeps each object once, so the walk ends when nothing new is found
+  closure(classid, objid, objsubid) as (
+    select d.classid, d.objid, d.objsubid from pg_depend d where d.refclassid = 'pg_extension'::regclass and d.refobjid = (select oid from ext)
     union
-    select d.classid, d.objid, d.objsubid, c.depth + 1 from pg_depend d join closure c on d.refclassid = c.classid and d.refobjid = c.objid where c.depth < 10
+    select d.classid, d.objid, d.objsubid from pg_depend d join closure c on d.refclassid = c.classid and d.refobjid = c.objid
   ),
   nm as (select distinct classid, objid, objsubid from closure c where not exists (select 1 from members m where m.classid = c.classid and m.objid = c.objid)),
   sch as (select case classid

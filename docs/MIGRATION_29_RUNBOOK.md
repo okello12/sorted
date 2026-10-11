@@ -45,6 +45,8 @@ promotion. Each condition, as checked:
 2. **A complete dependency check.**
    - The first preflight left four kinds of object out of its count. It is replaced by a recursive walk of every
      object that depends on pg_net, directly or through others, with nothing excluded.
+   - The walk has no depth limit (Baldwin's review): `UNION` keeps each object once, so it ends when nothing new is
+     found. Rehearsed on a chain of three views.
    - Each object that isn't a member of the extension is placed by its schema. Anything outside `net` or `pg_toast`,
      or of a kind the check can't place, refuses the migration.
    - Result, identical on staging and live: 41 objects. 28 are members. 12 are pg_net's own parts: 4 in `pg_toast`
@@ -77,7 +79,12 @@ promotion. Each condition, as checked:
 
    - Why it matters: staging is a required check on every pull request. If staging broke and couldn't be repaired,
      releases would stop until it was. That makes a rebuild worth proving, but this change has a two-line undo.
-4. **Run on staging, then verify.** Waiting on Baldwin's decision about condition 3.
+4. **Run on staging, then verify.** Authorised for staging only (11 October 2026). Production excluded: no automatic
+   promotion.
+   - 07:52 UTC: the fingerprint was retaken just before, and is unchanged.
+   - The migration tool's apply came back "cancelled": its confirmation prompt for a destructive statement doesn't
+     reach Baldwin. Nothing changed.
+   - The run is by Baldwin in staging's SQL editor, with this file exactly as merged.
 
 ## How the script protects itself
 

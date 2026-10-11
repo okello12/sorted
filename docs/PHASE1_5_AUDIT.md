@@ -68,6 +68,16 @@ Each area below has what was tested, what was found, what changed, and what is s
 - **Layout:** the details were an unstyled list. They are rows now.
 - **Title:** "My vacuum cleaner: It's not working" keeps the capital: those are the person's own words, kept as typed.
 
+### A heating case (Baldwin's iPhone, 10 October 2026, fixed in v167)
+
+- **What happened:** an ordinary repair case named "Heating or hot water" showed "What is it, and what's it doing?"
+  with "What is it?" empty, and asked the general safety question instead of the gas one.
+- **Why:** every way of starting a repair names the thing. On the case, "Something else" was already the choice shown,
+  and tapping it again set the name to empty.
+- **Fix:** "Something else" keeps the case's own name. A repair saved with no name is named again from the person's
+  words. A name the person types still wins (test 133).
+- **Server check, 11 October 2026 (counts only):** no page errors reported since 9 October.
+
 ### Unknown models
 
 - **Tested:** a photo of the product with no label gives at most the make. It never gives a model.

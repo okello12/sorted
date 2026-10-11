@@ -9,7 +9,11 @@
      OFFICIAL_INFORMATION_ONLY  official information and contact only, never checks (cars otherwise, fridges, unknown)
      SAFE_EXTERNAL_CHECKS       a later phase may offer the maker's own outside checks; Phase 1 offers none */
 var ProductSafety = (function () {
-  var RULE_VERSION = "ps-2";  /* ps-2 (Phase 1.5 audit): a flash with a bang; a smell of petrol, diesel or fuel */
+  var RULE_VERSION = "ps-3";  /* ps-2 (Phase 1.5 audit): a flash with a bang; a smell of petrol, diesel or fuel.
+     ps-3 (external audit, 11 Oct 2026): a negation never clears danger that is past or paused ("not sparking any
+     more", "isn't smoking now but it was"); a strange smell beside any danger word, even a negated one; electrical
+     smells and noises; discoloured sockets; cut cables; hedged gas and rotten eggs; carbon monoxide signs and symptoms;
+     tyres and dashboard safety lights; "the consumer unit keeps tripping". */
   var ORDER = ["SAFE_EXTERNAL_CHECKS", "OFFICIAL_INFORMATION_ONLY", "PROFESSIONAL_ONLY", "STOP_USE"];
   var D = "spark(?:s|ing|ed|y)?|arc(?:s|ing)?|smok(?:e|es|ing|y)|burn(?:ing|t|ed|s)?(?:\\s+smell)?|scorch(?:ed|ing|es|marks?)?|fire|flames?|fumes?|gas(?:\\s+smell)?|smell(?:s|ing)?(?:\\s+of)?\\s+(?:gas|burning)|melt(?:ed|ing)?|shocks?|tingl(?:e|es|ing)|overheat(?:s|ing|ed)?|hot|water|wet|leak(?:s|ing)?|exposed\\s+wires?|wires?|cables?";
   var NEG = new RegExp("\\b(?:no|not|never|without|nothing(?:'s|\\s+is)?|isn't|aren't|wasn't|can't|cannot|couldn't|don't|doesn't|didn't|won't)\\b(?:\\s+(?:any|signs?|of|smell(?:s|ing)?|see|seen|hear|a|an|the|it|is|been|there|anything|sign|evidence|smoke\\s+or))*\\s+(?:" + D + ")(?:\\s*(?:,|or|nor|and)\\s*(?:any\\s+|no\\s+)?(?:" + D + "))*", "gi");
@@ -19,16 +23,23 @@ var ProductSafety = (function () {
     { id: "burning", res: "STOP_USE", re: /\bburn(?:ing|t|ed|s)?\b|\bscorch(?:ed|ing|es|\s+marks?)?\b|\bchar(?:red|ring)\b|\bmelt(?:ed|ing|s)?\b|\bfire\b|\bflames?\b/i },
     { id: "gas_fumes", res: "STOP_USE", re: /\bsmell(?:s|ing)?\s+(?:of\s+)?gas\b|\bgas\s+(?:smell|leak|leaking)\b|\bleak(?:ing)?\s+gas\b|\bfumes?\b|\bcarbon\s+monoxide\b|\bco\s+(?:alarm|detector)\b|\bsmell(?:s|ing)?\s+(?:of\s+|like\s+)?(?:petrol|diesel|fuel)\b|\b(?:petrol|diesel|fuel)\s+smell\b/i },
     { id: "battery", res: "STOP_USE", re: /\b(?:swollen|swelling|swell(?:ed|s)?|bulg(?:e|es|ing|ed)|puff(?:ed|y|ing)(?:\s+up)?|expanded|bloated)\b[^.]{0,30}\bbatter(?:y|ies)\b|\bbatter(?:y|ies)\b[^.]{0,30}\b(?:swollen|swelling|swelled|bulg\w*|puff\w*|expanded|bloated|leak\w*|hiss\w*|hot)\b/i },
-    { id: "wiring", res: "STOP_USE", re: /\b(?:exposed|bare|frayed|damaged|cut|chewed|split|melted|broken|cracked|loose)\b[^.]{0,20}\b(?:wires?|wiring|cables?|cords?|leads?|flex|plug|sockets?)\b|\b(?:wires?|wiring|cables?|cords?|leads?|flex)\b[^.]{0,20}\b(?:exposed|showing|frayed|damaged|split|melted|sticking\s+out|hanging\s+out)\b|\bcopper\b/i },
+    { id: "wiring", res: "STOP_USE", re: /\b(?:exposed|bare|frayed|damaged|cut|chewed|split|melted|broken|cracked|loose)\b[^.]{0,20}\b(?:wires?|wiring|cables?|cords?|leads?|flex|plug|sockets?)\b|\b(?:wires?|wiring|cables?|cords?|leads?|flex)\b[^.]{0,20}\b(?:exposed|showing|frayed|damaged|split|melted|cut|chewed|nicked|torn|broken|sticking\s+out|hanging\s+out)\b|\bcopper\b/i },
     { id: "shock", res: "STOP_USE", re: /\b(?:electric\s+)?shock(?:s|ed)?\b(?!\s+absorb)|\btingl(?:e|es|ing)\b|\belectrocut\w*/i },
     { id: "overheating", res: "STOP_USE", re: /\boverheat\w*|\btoo\s+hot\s+to\s+touch\b|\b(?:very|really|extremely|dangerously|red|boiling)\s+hot\b|\bhot\s+to\s+the\s+touch\b|\b(?:plug|socket|cable|lead|cord|casing)\b[^.]{0,20}\b(?:hot|warm)\b/i },
     { id: "water_electrics", res: "STOP_USE", re: /\b(?:water|leak\w*|wet|damp)\b[^.]{0,40}\b(?:plug|socket|electrics?|electrical|wiring|fuse\s*box|consumer\s+unit|light\s+fitting|extension\s+lead)\b|\b(?:plug|socket|electrics|wiring|extension\s+lead|consumer\s+unit)\b[^.]{0,40}\b(?:wet|water|damp)\b/i },
-    { id: "tripping", res: "STOP_USE", re: /\btrip(?:s|ping|ped)?\b[^.]{0,30}\b(?:electric\w*|fuse|breaker|rcd|power|switch)\b|\bblows?\s+(?:the\s+)?fuse\b|\bblew\s+(?:the\s+)?fuse\b/i },
+    { id: "tripping", res: "STOP_USE", re: /\btrip(?:s|ping|ped)?\b[^.]{0,30}\b(?:electric\w*|fuse|breaker|rcd|power|switch)\b|\b(?:consumer\s+unit|fuse\s*box|breakers?|rcd|trip\s+switch|electrics)\b[^.]{0,30}\btrip(?:s|ping|ped)?\b|\bblows?\s+(?:the\s+)?fuse\b|\bblew\s+(?:the\s+)?fuse\b/i },
     { id: "explosion", res: "STOP_USE", re: /\bexplod\w*|\bexplosion\b|\bbang\b[^.]{0,20}\b(?:smoke|smell|flash|spark)\w*|\bflash(?:es|ed)?\b[^.]{0,30}\bbang(?:s|ed)?\b/i },
+    { id: "hedged_smell", res: "STOP_USE", raw: true, re: /^(?=[\s\S]*\b(?:smok|burn|spark|fire|flame|gas|melt|scorch|electric|fume)\w*)[\s\S]*(?:\bsmell\w*\s+(?:a\s+bit\s+|really\s+|very\s+)?(?:strange|funny|odd|weird|off|different|bad|wrong)\b|\b(?:strange|funny|odd|weird|bad|electrical|chemical)\s+smell)/i },
+    { id: "odd_smell", res: "STOP_USE", re: /\b(?:electrical|hot\s+plastic|burning\s+plastic|chemical)\s+smell\b|\bsmell\w*\s+(?:of|like)\s+(?:\w+\s+(?:or|and)\s+)?(?:hot\s+plastic|melting|burning|electrical|chemicals?)\b|\bfish(?:y)?\b[^.]{0,30}\b(?:plug|sockets?|adapter|charger|switch|electrics?|fuse\s*box)\b|\b(?:plug|sockets?|adapter|charger|switch|electrics?|fuse\s*box)\b[^.]{0,30}\bfish(?:y)?\b|\bsmell\w*\s+(?:funny|strange|odd|weird|bad)\b[^.]{0,30}\b(?:plug|sockets?|adapter|charger|lead|cable|switch)\b|\b(?:plug|sockets?|adapter|charger|lead|cable|switch)\b[^.]{0,30}\bsmell\w*\s+(?:funny|strange|odd|weird|bad)\b/i },
+    { id: "electrical_noise", res: "STOP_USE", re: /\b(?:crackl\w*|buzz\w*|fizz\w*|sizzl\w*|hiss\w*)\b[^.]{0,30}\b(?:plug|sockets?|adapter|charger|switch|fuse\s*box|consumer\s+unit|breaker|extension\s+lead|wall)\b|\b(?:plug|sockets?|adapter|charger|switch|fuse\s*box|consumer\s+unit|breaker|extension\s+lead)\b[^.]{0,30}\b(?:crackl\w*|buzz\w*|fizz\w*|sizzl\w*|hiss\w*)\b|\b(?:plug|sockets?|fuse\s*box|consumer\s+unit|breaker)\b[^.]{0,20}\bclick(?:s|ing)?\b/i },
+    { id: "discoloured", res: "STOP_USE", re: /\b(?:discolou?r\w*|brown|black|blackened|yellowed)\b[^.]{0,30}\b(?:plug|sockets?|switch|adapter|charger)\b|\b(?:plug|sockets?|switch|adapter|charger)\b[^.]{0,30}\b(?:discolou?r\w*|brown|blackened|black\s+marks?|yellowed)\b/i },
+    { id: "co_signs", res: "STOP_USE", re: /\b(?:dizzy|dizziness|headaches?|nause\w*|feel(?:ing)?\s+sick|drows\w*|light[- ]headed)\b[^.]{0,60}\b(?:boiler|gas|heater|fire|cooker|hob|flue)\b|\b(?:boiler|gas|heater|fire|cooker|hob|flue)\b[^.]{0,60}\b(?:dizzy|dizziness|headaches?|nause\w*|feel(?:ing)?\s+sick|drows\w*|light[- ]headed)\b|\byellow\s+(?:or\s+orange\s+)?flame|\b(?:orange|lazy|floppy)\s+flame|\bsoot\w*\b|\b(?:black|brown|sooty)\s+(?:marks?|stains?)\b[^.]{0,30}\b(?:boiler|fire|heater|flue|cooker)\b|\b(?:boiler|fire|heater|flue|cooker)\b[^.]{0,30}\b(?:black|brown|sooty)\s+(?:marks?|stains?)\b/i },
+    { id: "gas_hedged", res: "STOP_USE", re: /\bgas\b[^.]{0,20}\bsmell\w*|\bsmell\w*\b[^.]{0,20}\bgas\b|\brotten\s+eggs?\b|\bsulphur\w*\b|\bsulfur\w*\b/i },
+    { id: "hot_part", res: "STOP_USE", re: /\b(?:back|plug|socket|cable|lead|cord|casing|adapter|charger|side|outside|motor|compressor)\b[^.]{0,25}\btoo\s+hot\b|\bbatter(?:y|ies)\b[^.]{0,30}\b(?:hot|hiss\w*|crack\w*)\b|\b(?:really|very|too|so)\s+hot\b[^.]{0,20}\bwhile\s+charging\b/i },
     { id: "said_unsafe", res: "STOP_USE", ans: "unsafe" },
     { id: "gas_appliance", res: "PROFESSIONAL_ONLY", re: /\bboiler\b|\bcombi\b|\bgas\s+(?:hob|cooker|oven|fire|heater|appliance|supply|meter|pipe)\b|\bpilot\s+light\b|\bflue\b/i, cats: ["boiler"] },
     { id: "internal_mains", res: "PROFESSIONAL_ONLY", re: /\b(?:open(?:ing)?|take|taking|took|remove|removing)\b[^.]{0,15}\b(?:back|casing|cover|panel|lid)\s+off\b|\b(?:open(?:ing)?\s+(?:it|up|the\s+(?:back|casing|case|cover|panel)))\b|\binside\s+the\s+(?:casing|machine|unit|case|plug)\b|\b(?:replace|replacing|change|changing|fix|fixing|rewire|rewiring)\b[^.]{0,15}\b(?:motor|element|heating\s+element|pcb|circuit\s+board|control\s+board|main\s+board|capacitor|thermostat|wiring|fuse\s+inside)\b|\bhigh[- ]voltage\b|\bcapacitor\b|\bmagnetron\b/i },
-    { id: "car_safety", res: "PROFESSIONAL_ONLY", re: /\bbrak(?:e|es|ing)\b|\bsteering\b|\bair\s*bags?\b|\bfuel\s+(?:leak|smell|line|pump|tank)\b|\bpetrol\s+(?:leak|smell)\b|\bdiesel\s+(?:leak|smell)\b|\bunder(?:neath)?\s+the\s+(?:car|van|vehicle)\b|\bjack(?:ed|ing)?\s+(?:it\s+)?up\b|\bsuspension\b|\btyres?\s+(?:blew|blown|burst|bulge)\b|\bseat\s*belts?\b|\b(?:ev|hybrid|traction)\s+batter(?:y|ies)\b/i },
+    { id: "car_safety", res: "PROFESSIONAL_ONLY", re: /\bbrak(?:e|es|ing)\b|\bsteering\b|\bair\s*bags?\b|\bfuel\s+(?:leak|smell|line|pump|tank)\b|\bpetrol\s+(?:leak|smell)\b|\bdiesel\s+(?:leak|smell)\b|\bunder(?:neath)?\s+the\s+(?:car|van|vehicle)\b|\bjack(?:ed|ing)?\s+(?:it\s+)?up\b|\bsuspension\b|\btyres?\b[^.]{0,20}\b(?:blew|blown|burst|bulg\w*|split|cut|bald|flat|puncture\w*|lump)\b|\b(?:abs|esc|srs|tpms|epb)\b|\b(?:brake|airbag|oil\s+pressure|engine\s+management|tyre\s+pressure)\s+(?:warning\s+)?light\b|\bseat\s*belts?\b|\b(?:ev|hybrid|traction)\s+batter(?:y|ies)\b/i },
     { id: "class_microwave", res: "OFFICIAL_INFORMATION_ONLY", cats: ["microwave"] },
     { id: "class_car", res: "OFFICIAL_INFORMATION_ONLY", cats: ["car"] },
     { id: "class_fridge", res: "OFFICIAL_INFORMATION_ONLY", cats: ["fridge_freezer"] },
@@ -44,7 +55,8 @@ var ProductSafety = (function () {
   };
   function norm(s) { return " " + String(s || "").replace(/[’‘]/g, "'").replace(/\s+/g, " ") + " "; }
   /* Words with their negated danger phrases removed. */
-  function unNegated(s) { return norm(s).replace(NEG, " "); }
+  var STILL = /^(?:\s*[,;]?\s*(?:any\s*more|anymore|now|right\s+now|at\s+the\s+moment|currently|today|yet|this\s+time|for\s+now))|^[^.]{0,40}\b(?:but|though|although|yet)\b[^.]{0,20}\b(?:did|was|were|had|has|have|earlier|before|last\s+night|yesterday|this\s+morning|sometimes|occasionally|again|used\s+to)\b/i;
+  function unNegated(s) { return norm(s).replace(NEG, function (m, off, str) { return STILL.test(str.slice(off + m.length, off + m.length + 70)) ? m : " "; }); }
   function stronger(a, b) { return ORDER.indexOf(a) >= ORDER.indexOf(b) ? a : b; }
   /* decide({category, words, answers:{unsafe:true}}, now) → SafetyDecision. `words` is everything the person said
      about the problem (one string or a list). */
@@ -55,7 +67,7 @@ var ProductSafety = (function () {
     RULES.forEach(function (r) {
       var on = false;
       if (r.ans) on = !!ans[r.ans];
-      if (!on && r.re) on = r.re.test(x);
+      if (!on && r.re) on = r.re.test(r.raw ? norm(said) : x);
       if (!on && r.cats) on = r.cats.indexOf(cat) >= 0;
       if (on) { hit.push(r.id); res = stronger(res, r.res); }
     });

@@ -179,4 +179,19 @@ eq(rt.key, 'SELF_RESOLVED', 'fixed');
 rt = RT.route({ rec: confirmed({ brand: 'Bosch', serial: '123456789', retailer: 'Argos' }), safety: safeDec }, NOW);
 ok(JSON.stringify(rt).indexOf('123456789') < 0, 'a route carries no serial');
 
+// ---------- doubt about a model read from a photo (external audit, 11 Oct 2026; the readings are the audit's own) ----------
+r = I.readLabel('BOSCH E-Nr. WGG244ZCGB/01 S/N: 123456789', { conf: 90 });
+eq([r.model, r.doubt, r.withheld], ['WGG244ZCGB', [], []], 'a clear photo: the model with no doubt');
+r = I.readLabel('BOSCH E-Nr. WGG244zc6p/9, S/N: 123456789', { conf: 71 });
+eq([r.model, r.doubt], ['WGG244ZC6P', ['photo', 'case']], 'tilted: offered, with doubt (photo, lower case inside)');
+r = I.readLabel('BOSCH E-Nr. WGG244ZCGBI0L', { conf: 76 });
+eq(r.doubt, ['photo', 'confusable'], 'low resolution: doubt (an I beside a 0)');
+r = I.readLabel('BOSCH E-Nr. WGG2442CGBO1', { conf: 84 });
+eq(r.doubt, ['photo', 'confusable'], 'blurred: doubt (an O beside a 1)');
+r = I.readLabel('BOSCH E-Nr. WGG2A4ZCORITL S/N: 123456789', { conf: 21 });
+eq([r.model, r.models, r.withheld, r.doubt, r.brand, r.serial], ['', [], ['WGG2A4ZCORITL'], ['unclear'], 'Bosch', '123456789'], 'too unclear: no model offered, the make and serial still read');
+r = I.readLabel('Samsung WW90T534DAW serial number 0B7H5ABR800123');
+eq([r.model, r.doubt], ['WW90T534DAW', []], 'no confidence given (typed or pasted text): no doubt from the photo');
+eq(I.modelDoubt('WGG244zCGB', 86), ['case'], 'a correct read with a lower-case letter is still doubted (a warning, not a refusal)');
+
 done('product units');

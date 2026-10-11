@@ -2,8 +2,8 @@
   "marker": "/*@product-modules*/",
   "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
   "end": "/* ---- end of product modules ---- */",
-  "base": "aff1b674955dfc1393a785c0f847d5ce769cb354",
-  "expect": "63a33b74e67d2e9c42fe2751cf080e33cc7533ce",
+  "base": "14fc5910f24349bf9a6cc972ae91a5dd575c08eb",
+  "expect": "3c66c6198e514a7584b448810b6a05f9fb151178",
   "files": [
     {
       "path": "src/product/product.js",
@@ -15,11 +15,11 @@
     },
     {
       "path": "src/product/product-intake.js",
-      "sha1": "33ac3122e8ccd79be3bc92736d9b184f2f83c69c"
+      "sha1": "32068586d91bc81cd27a698517d109212776fecc"
     },
     {
       "path": "src/product/product-safety.js",
-      "sha1": "5c05e1bea363dbfecf7cabbcdc5e0132986995e7"
+      "sha1": "b0cb56dadfebcd76c16888f1578f9fa4857cfc03"
     },
     {
       "path": "src/product/resolution-route.js",

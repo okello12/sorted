@@ -82,7 +82,7 @@ with sync_playwright() as p:
     ok(f['model']['st'] == 'corrected' and f['model']['v'] == 'WGG244ZCGC' and [w['v'] for w in f['model']['was'] if w['st'] == 'candidate'] == ['WGG244ZCGB'], 'the model corrected by the person, the reading kept')
     ok(c['fix']['item'] == 'Washing machine' and c['fix']['model'] == 'Bosch WGG244ZCGC', 'the repair engine reads the confirmed product')
     sd = c['prod'].get('safety') or {}
-    ok(sd.get('result') == 'SAFE_EXTERNAL_CHECKS' and sd.get('rule_version') == 'ps-2' and sd.get('product_class') == 'washing_machine', 'the safety decision and its rule version are stored: %s' % sd.get('result'))
+    ok(sd.get('result') == 'SAFE_EXTERNAL_CHECKS' and sd.get('rule_version') == 'ps-3' and sd.get('product_class') == 'washing_machine', 'the safety decision and its rule version are stored: %s' % sd.get('result'))
     labels = [e['label'] for e in c['events']]
     ok(any(l.startswith('Make: Bosch, read from the label photo and confirmed by you') for l in labels) and any('Model: WGG244ZCGC, corrected by you. Sorted had read WGG244ZCGB.' == l for l in labels) and any(l.startswith('Serial number: ••••6789') for l in labels), 'the history says where each detail came from')
     ok(not any(SERIAL in l for l in labels) and not any('safety rules' in l for l in labels), 'no full serial in the history; a safe decision is stored, not logged')

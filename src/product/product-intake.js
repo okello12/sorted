@@ -30,10 +30,24 @@ var ProductIntake = (function () {
     var junk = toks.filter(function (x) { return !/[A-Za-z0-9]{2,}/.test(x); }).length;
     return junk / toks.length > 0.6 ? "failed" : "ok";
   }
-  /* From a rating label: {quality, brand, category, model, models[], modelHow (labelled | unlabelled), serial}. */
-  function readLabel(text) {
-    var t = String(text || "").replace(/[’‘]/g, "'").replace(/\r/g, "");
-    var out = { quality: quality(t), brand: "", category: "", model: "", models: [], modelHow: "", serial: "" };
+  /* Why a model read from a photo may be wrong (external audit, 11 Oct 2026). In the audit's ten phone-like photos
+     every wrong model came from a photo the reader scored under 85, and each also had a tell: lower-case letters
+     inside it, or an O, I or L beside a 0 or 1. Under 60 the photo is too unclear to offer a model at all. */
+  var DOUBT_CONF = 85, UNCLEAR_CONF = 60;
+  function modelDoubt(raw, conf) {
+    var why = [], v = String(raw || "");
+    if (typeof conf === "number" && conf < DOUBT_CONF) why.push("photo");
+    if (/[a-z]/.test(v) && /[A-Z]/.test(v)) why.push("case");
+    if (/[OIL][01]|[01][OIL]/i.test(v)) why.push("confusable");
+    return why;
+  }
+  function rawOf(t, v) { var i = t.toUpperCase().indexOf(v); return i < 0 ? v : t.slice(i, i + v.length); }
+  /* From a rating label: {quality, brand, category, model, models[], modelHow (labelled | unlabelled), serial,
+     doubt[] (photo, case, confusable), withheld[] (models not offered because the photo was too unclear)}.
+     opt.conf is the reader's confidence for the whole photo, 0 to 100, when it has one. */
+  function readLabel(text, opt) {
+    var t = String(text || "").replace(/[’‘]/g, "'").replace(/\r/g, ""), conf = opt && typeof opt.conf === "number" ? opt.conf : undefined;
+    var out = { quality: quality(t), brand: "", category: "", model: "", models: [], modelHow: "", serial: "", doubt: [], withheld: [] };
     if (out.quality === "failed") return out;
     out.brand = ProductMakers.brandIn(t);
     out.category = category(t);
@@ -54,6 +68,8 @@ var ProductIntake = (function () {
       while ((m = MODEL_BARE.exec(u))) { var b = trimTok(m[0]); if (plausibleModel(b) && serials.indexOf(b) < 0 && bare.indexOf(b) < 0 && b !== up(out.brand)) bare.push(b); }
       if (bare.length) { out.models = bare.slice(0, 3); out.modelHow = "unlabelled"; }
     }
+    out.models.forEach(function (v) { modelDoubt(rawOf(t, v), conf).forEach(function (w) { if (out.doubt.indexOf(w) < 0) out.doubt.push(w); }); });
+    if (out.models.length && typeof conf === "number" && conf < UNCLEAR_CONF) { out.withheld = out.models; out.models = []; out.modelHow = ""; out.doubt = ["unclear"]; }
     /* Two different models: Sorted asks which, and proposes neither. */
     out.model = out.models.length === 1 ? out.models[0] : "";
     return out;
@@ -91,5 +107,5 @@ var ProductIntake = (function () {
     out.bought = d.list.length === 1 ? d.list[0] : "";
     return out;
   }
-  return { readLabel: readLabel, readReceipt: readReceipt, quality: quality, category: category, dates: dates };
+  return { readLabel: readLabel, readReceipt: readReceipt, quality: quality, category: category, dates: dates, modelDoubt: modelDoubt, DOUBT_CONF: DOUBT_CONF, UNCLEAR_CONF: UNCLEAR_CONF };
 })();

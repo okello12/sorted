@@ -37,7 +37,7 @@ with sync_playwright() as p:
         new = until(pg, lambda: [c for c in a.cases() if c['id'] not in before], 8000)
         if not new: ok(False, '%s: a case was made' % name); continue
         c = new[0]; d = (c.get('prod') or {}).get('safety') or {}
-        ok(d.get('result') == want and d.get('rule_version') == 'ps-2' and isinstance(d.get('matched_rules'), list), '%s: %s stored with its rules and version (got %s %s)' % (name, want, d.get('result'), d.get('matched_rules')))
+        ok(d.get('result') == want and d.get('rule_version') == 'ps-3' and isinstance(d.get('matched_rules'), list), '%s: %s stored with its rules and version (got %s %s)' % (name, want, d.get('result'), d.get('matched_rules')))
         a.open(c['id']); m = a.main()
         ok('Try these safe checks' not in m, '%s: no checks of Sorted’s own' % name)
         if want == 'STOP_USE':

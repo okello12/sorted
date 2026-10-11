@@ -78,6 +78,30 @@ Each area below has what was tested, what was found, what changed, and what is s
   words. A name the person types still wins (test 133).
 - **Server check, 11 October 2026 (counts only):** no page errors reported since 9 October.
 
+### The external audit (11 October 2026, fixed in v168)
+
+An independent audit of the repository, CI and backend (not a phone session) asked for four things before Phase 2.
+
+- **OCR wrong models:**
+  - Every model read from a photo is now checked. The check uses the reader's confidence in the whole photo, plus the
+    model's own shape: lower-case letters inside it, or an O, I or L beside a 0 or 1.
+  - A doubtful model says "Sorted isn't sure it read the model correctly" and puts Retake photo first.
+  - Under 60 the photo is too unclear, and Sorted offers no model at all.
+  - In the ten audit photos, all four wrong models are now doubted, and the noisiest photo offers none. One correct read
+    (sheared) is doubted too, which is a warning, not a refusal (test 131).
+- **Safety wording (rules `ps-3`):**
+  - A negation never clears danger that is past, paused or only hedged ("not sparking any more but it did earlier",
+    "I don't think it's smoking, but it smells strange").
+  - New rules: electrical and hot-plastic smells, crackling or buzzing sockets and switches, discoloured sockets, cut
+    cables, hedged gas and rotten eggs, carbon monoxide signs and symptoms, tyres and dashboard safety lights, and a
+    consumer unit that keeps tripping.
+  - Ordinary repairs with no product now go through the same rules as well as the page's own danger words.
+  - The corpus is 114 descriptions (`tests/product/safety_corpus.mjs`). Test 134 runs them through the page.
+- **Security advisories:** reviewed in `docs/SECURITY_ADVISORIES.md`. Every flagged function is intended. `pg_net` still
+  needs Baldwin's one Run (migration 29).
+- **Still Baldwin's:** backups and a tested restore, the DPIA and legal review, and the real-phone VoiceOver and
+  TalkBack journeys. The audit's verdict stands: conditionally ready for the closed pilot, not yet for a wider release.
+
 ### Unknown models
 
 - **Tested:** a photo of the product with no label gives at most the make. It never gives a model.

@@ -6,8 +6,9 @@
 -- created again with the extensions schema as its home. Its own objects (net.http_post, the request queue, the
 -- response table) live in the net schema before and after. Sorted's only callers, sorted_kick_reminders,
 -- sorted_kick_originals and sorted_kick_moves, name net.http_post in full with an empty search_path and are looked up
--- when they run, so they are not dropped and need no change. The preflight of 11 October 2026 found no other object
--- that depends on pg_net, on staging or live.
+-- when they run, so they are not dropped and need no change. The full dependency walk of 11 October 2026 found 41
+-- objects on both staging and live: 28 members and 12 of their own parts (toast tables, indexes, composite types,
+-- column defaults, a check), all in net or pg_toast. Nothing outside pg_net depends on it.
 --
 -- What it loses: pg_net's own request queue and its log of past responses (net._http_response, which pg_net prunes by
 -- itself). The script refuses to run unless the queue is empty, so no request in flight is lost.
@@ -33,15 +34,30 @@ begin
   end if;
   select count(*) into v_queue from net.http_request_queue;
   if v_queue > 0 then raise exception 'preflight: % request(s) still queued; wait a minute and run again', v_queue; end if;
-  -- anything outside pg_net that depends on one of pg_net's objects would be dropped with it
-  select count(*) into v_foreign
-    from pg_depend d
-    join pg_depend m on m.refobjid = (select oid from pg_extension where extname = 'pg_net') and m.deptype = 'e'
-                    and d.refclassid = m.classid and d.refobjid = m.objid
-   where d.deptype in ('n', 'a')
-     and not exists (select 1 from pg_depend x where x.refobjid = (select oid from pg_extension where extname = 'pg_net')
-                       and x.deptype = 'e' and x.classid = d.classid and x.objid = d.objid)
-     and d.classid not in ('pg_type'::regclass, 'pg_attrdef'::regclass, 'pg_constraint'::regclass, 'pg_class'::regclass);
+  -- Every object that depends, directly or through others, on pg_net (all of pg_depend, no class excluded). Each one
+  -- that isn't a member of the extension must be one of its own parts, in the net or pg_toast schema. Any object
+  -- elsewhere, or of a kind this check can't place, refuses the migration. (DROP EXTENSION without CASCADE would also
+  -- refuse; this check says why before anything is attempted.)
+  with recursive ext as (select oid from pg_extension where extname = 'pg_net'),
+  members as (select classid, objid from pg_depend where refclassid = 'pg_extension'::regclass and refobjid = (select oid from ext) and deptype = 'e'),
+  -- no depth limit: UNION keeps each object once, so the walk ends when nothing new is found
+  closure(classid, objid, objsubid) as (
+    select d.classid, d.objid, d.objsubid from pg_depend d where d.refclassid = 'pg_extension'::regclass and d.refobjid = (select oid from ext)
+    union
+    select d.classid, d.objid, d.objsubid from pg_depend d join closure c on d.refclassid = c.classid and d.refobjid = c.objid
+  ),
+  nm as (select distinct classid, objid, objsubid from closure c where not exists (select 1 from members m where m.classid = c.classid and m.objid = c.objid)),
+  sch as (select case classid
+      when 'pg_class'::regclass then (select relnamespace::regnamespace::text from pg_class where oid = objid)
+      when 'pg_type'::regclass then (select typnamespace::regnamespace::text from pg_type where oid = objid)
+      when 'pg_proc'::regclass then (select pronamespace::regnamespace::text from pg_proc where oid = objid)
+      when 'pg_attrdef'::regclass then (select k.relnamespace::regnamespace::text from pg_attrdef a join pg_class k on k.oid = a.adrelid where a.oid = objid)
+      when 'pg_constraint'::regclass then (select connamespace::regnamespace::text from pg_constraint where oid = objid)
+      when 'pg_rewrite'::regclass then (select k.relnamespace::regnamespace::text from pg_rewrite r join pg_class k on k.oid = r.ev_class where r.oid = objid)
+      when 'pg_trigger'::regclass then (select k.relnamespace::regnamespace::text from pg_trigger t join pg_class k on k.oid = t.tgrelid where t.oid = objid)
+      when 'pg_policy'::regclass then (select k.relnamespace::regnamespace::text from pg_policy p join pg_class k on k.oid = p.polrelid where p.oid = objid)
+      else 'unclassified' end s from nm)
+  select count(*) into v_foreign from sch where s is null or s not in ('net', 'pg_toast');
   if v_foreign > 0 then raise exception 'preflight: % object(s) outside pg_net depend on it; see the runbook', v_foreign; end if;
   if (select count(*) from pg_proc where proname in ('sorted_kick_reminders', 'sorted_kick_originals', 'sorted_kick_moves')) <> 3 then
     raise exception 'preflight: the three kick functions are not all present';

@@ -107,9 +107,10 @@ with sync_playwright() as p:
     pr = [r for r in L(cid) if r['type'] == 'promise' and r['sub'] != 'proposal']
     ok(len(pr) == 2 and pr[0]['st'] == 'superseded' and pr[1]['st'] == 'confirmed' and pr[1].get('sup') == pr[0]['id'], 'a moved date: the old promise row is superseded and the new one links to it (%s)' % [(r['st'], r.get('sup') is not None) for r in pr])
     # ---- 8. an older case gains a ledger on opening, with nothing else changed ----
+    # Keep the promise future-dated: viewing an overdue one legitimately adds dueSeen, independently of the ledger.
     old_case = {'id': 'old1', 'title': 'BT · broadband', 'mode': 'call', 'board': 'waiting', 'created': '2026-09-20T10:00:00.000Z', 'updatedAt': '2026-09-20T10:00:00.000Z', 'rev': 2,
                 'said': 'BT said an engineer would come on Monday, ref VOL011-22334', 'facts': {'party': 'BT', 'ref': 'VOL011-22334', 'kind': 'service'},
-                'promises': [{'id': 'p1', 'said': 'An engineer would come', 'party': 'BT', 'ref': 'VOL011-22334', 'dueAt': '2026-10-12T23:59:59.000Z', 'allDay': True, 'status': 'open', 'loggedAt': '2026-09-20T10:00:00.000Z', 'src': 'sentence'}],
+                'promises': [{'id': 'p1', 'said': 'An engineer would come', 'party': 'BT', 'ref': 'VOL011-22334', 'dueAt': (datetime.date.today()+datetime.timedelta(days=7)).isoformat()+'T23:59:59.000Z', 'allDay': True, 'status': 'open', 'loggedAt': '2026-09-20T10:00:00.000Z', 'src': 'sentence'}],
                 'refs': [{'k': 'complaint', 'v': 'C-5566', 'at': '2026-09-21T10:00:00.000Z', 'src': 'their message', 'st': 'confirmed'}], 'corr': [{'k': 'party', 'from': 'Bt', 'to': 'BT', 'at': '2026-09-21T10:00:00.000Z', 'how': 'fixed', 'src': 'your message'}],
                 'goal': 'Broadband working', 'turn': 'theirs', 'moves': [], 'events': [{'at': '2026-09-20T10:00:00.000Z', 'label': 'Started.'}]}
     poke("db.tasks.push({id:'old1',user_id:%s,data:%s,updated_at:new Date().toISOString()})" % (json.dumps(uid), json.dumps(old_case)))

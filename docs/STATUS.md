@@ -5,14 +5,15 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
 
 ## Production
 
-- **Release:** v168 (11 October 2026): from the external audit, every repair goes through the product safety rules
+- **Release:** v169 (15 October 2026): inspectable reasons on the leading case and a next tracked date card on Home. Uses existing attention rules, preserves uncertain date wording and changes no case without a tap.
+  v168 (11 October 2026): from the external audit, every repair goes through the product safety rules
   (now `ps-3`: hedged, past and paused danger never cleared), and a model read from an unclear photo is doubted with
   Retake photo first, or not offered at all. Security advisories reviewed (`docs/SECURITY_ADVISORIES.md`). v167, from
   Baldwin's heating case, tapping "Something else" on a repair no longer
   wipes its name, and a repair saved with no name is named from its words. v166, from his vacuum cleaner walk: a product
   case asks only the safety question first, and the label can be photographed on the case. v165 asked for the label after a photo of the machine. v164, live
   since PR 77, retired Sorted's own repair checks, added ten makers and the Phase 1.5 audit fixes (`docs/PHASE1_5_AUDIT.md`).
-- **Page fingerprint (sha1 of public/index.html):** 3c66c6198e514a7584b448810b6a05f9fb151178
+- **Page fingerprint (sha1 of public/index.html):** 67254b8b099bbea380cccf7fcc85f54b7a1077a9
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`), and 30

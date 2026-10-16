@@ -25,11 +25,11 @@ with sync_playwright() as p:
     wait(pg, 800)
     t = a.case(c1)
     ok((t.get('rem149') or {}).get('how') == 'cal' and t.get('calAt'), 'the choice is kept on the case')
-    ok(pg.locator('.rem149').count() == 0 and 'Reminder: In your calendar' in a.main(), 'the question becomes one line saying how it will remind them')
+    ok(pg.locator('.rem149').count() == 0 and 'Reminder: Calendar file offered' in a.main() and 'Sorted cannot tell whether you saved it there' in a.main(), 'the case says the calendar file still needs to be added')
     ev = [e for e in a.db().get('pilot_events', []) if e.get('name') == 'reminder_path_chosen']
     ok(ev and ev[-1]['props'].get('how') == 'calendar' and set(ev[-1]['props']) <= {'how', 'mode', 'anon'}, 'recorded as a code only: %s' % (ev and ev[-1]['props']))
     pg.reload(); wait(pg, 900)
-    ok(pg.locator('.rem149').count() == 0 and 'Reminder: In your calendar' in a.main(), 'still answered after a reload')
+    ok(pg.locator('.rem149').count() == 0 and 'Reminder: Calendar file offered' in a.main(), 'the honest calendar status survives a reload')
     pg.click('[data-a=rem149-change]'); wait(pg, 600)
     ok(pg.locator('.rem149').count() == 1, '“Change” asks again')
     # no reminder
@@ -39,6 +39,7 @@ with sync_playwright() as p:
     c2 = a.start('Evri said they would deliver the parcel by %d %s, ref EV123456' % (fri.day, fri.strftime('%B')))
     a.open(c2); pg.click('.rem149 [data-v=email]'); wait(pg, 600)
     ok(pg.locator('#claim').count() == 1, '“Email me” opens the email form')
+    ok('Reminder: Not set by email yet' in a.main(), 'choosing email alone does not claim an unconfirmed address will receive reminders')
     # a case with no date asks nothing
     c3 = a.start('My neighbour’s tree is overhanging the fence', confirm=False)
     a.open(c3)

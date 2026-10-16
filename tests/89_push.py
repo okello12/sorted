@@ -72,6 +72,9 @@ with sync_playwright() as p:
     # ---- blocked, and the offer once only ----
     pg.evaluate("localStorage.setItem('__permAnswer','denied')"); pg.click('.push133 [data-a=push-on]'); wait(pg, 600)
     ok(pg.locator('.push133').get_attribute('data-push') == 'denied' and 'blocked' in pg.inner_text('.push133'), 'if the phone blocks notifications, Settings says how to allow them')
+    # The earlier case had selected this phone. Once permissions are blocked, its case status must not promise delivery.
+    tap('go-home'); pg.locator('[data-a=open][data-id="%s"]' % c1).first.click(); wait(pg, 600)
+    ok('Reminder: Not set: notifications are blocked' in pg.inner_text('main') and pg.locator('.rem149-said [data-a=rem149-change]').count() == 1, 'a blocked phone is never presented as an active reminder and offers a retry')
     c3 = start('Amazon said they would refund £20 by %s, ref AMZ12345' % fri.strftime('%A'))
     pg.goto('https://sorted.test/?task=%s' % c3); wait(pg, 700)
     if pg.locator('.rem149').count(): pg.click('.rem149 [data-v=none]'); wait(pg, 300)

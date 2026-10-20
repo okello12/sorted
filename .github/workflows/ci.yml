@@ -29,6 +29,12 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps chromium
+      - name: Print pending CSP hash change for v173 pinning
+        run: |
+          node all.js >/dev/null
+          node tools/csp_hashes.js
+          git diff -- vercel.json
+          exit 1
       - name: Run full regression suite
         run: SORTED_JOBS=4 sh tests/run.sh
       - name: Verify final build fingerprint is pinned

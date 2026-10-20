@@ -3,7 +3,7 @@
   "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
   "end": "/* ---- end of product modules ---- */",
   "base": "2c4afac30096219ee0950cf9d196b5f9832b4242",
-  "expect": "4aa89440fcf289dd7fa85eab51eb300b90d373f4",
+  "expect": "1f229756583ab5824307114b68a8607c1359d491",
   "files": [
     {
       "path": "src/product/product.js",

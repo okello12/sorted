@@ -2,7 +2,7 @@
   "marker": "/*@product-modules*/",
   "begin": "/* ---- product modules (src/product, see docs/PRODUCT_PHASE1.md) ---- */",
   "end": "/* ---- end of product modules ---- */",
-  "base": "2c4afac30096219ee0950cf9d196b5f9832b4242",
+  "base": "ad922bad5f8b04f09ef3504ab697a7ea7b4083ef",
   "expect": "1f229756583ab5824307114b68a8607c1359d491",
   "files": [
     {

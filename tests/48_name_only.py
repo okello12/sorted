@@ -41,16 +41,19 @@ with sync_playwright() as p:
     ok('HMRC' in newest(pg)['title'], 'an HMRC case: %s' % newest(pg)['title'])
     # 3 press Start again without adding anything: named after them, honest about what it doesn't know, a message that asks
     box(pg); submit(pg, 'From hmrc'); pg.click('.ps-short button[type=submit]'); wait(pg); baseline(pg)
-    t = newest(pg); f = pg.inner_text('.fr-card') if pg.locator('.fr-card').count() else ''
+    t = newest(pg); f = pg.inner_text('.doc171-missing') if pg.locator('.doc171-missing').count() else ''
     ok(t['title'] == 'HMRC', 'the case is called HMRC, not "From hmrc": %s' % t['title'])
-    ok('Sorted doesn’t know yet what it’s about' in f and 'Add what they sent' in f, 'the first response says what Sorted doesn’t know')
+    ok('not what it asks' in f and 'Add the letter or message' in f and pg.locator('form[data-f=call]').count() == 0, 'a sender alone asks for the letter before preparing contact')
+    pg.locator('.doc171-missing [data-p=call]').click(); wait(pg)
     ask = pg.input_value('#f-ask') if pg.locator('#f-ask').count() else ''
     ok(ask.startswith('I’m getting in touch about my case with you.') and 'what it’s about' in ask and 'from hmrc' not in ask.lower(), 'the message asks what it is about: %s' % ask)
     # 4 a letter from the council
     box(pg); submit(pg, 'Got a letter from the council')
     ok('Something from the council.' in pg.inner_text('main') and '“The council wants' in pg.inner_text('main'), 'the council, in plain words')
     pg.click('.ps-short button[type=submit]'); wait(pg); baseline(pg)
-    t = newest(pg); ask = pg.input_value('#f-ask') if pg.locator('#f-ask').count() else ''
+    t = newest(pg)
+    pg.locator('.doc171-missing [data-p=call]').click(); wait(pg)
+    ask = pg.input_value('#f-ask') if pg.locator('#f-ask').count() else ''
     ok(t['title'] == 'Council letter' and 'a letter I had from you' in ask, 'named "Council letter", and the message is about the letter: %s' % t['title'])
     # 5 a real sentence is untouched
     box(pg); submit(pg, 'Currys refund hasn’t arrived')

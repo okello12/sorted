@@ -141,6 +141,13 @@ with sync_playwright() as p:
     pg.locator('[data-cap82=document]').first.evaluate('e=>e.click()'); wait(pg, 300)
     st = photo(P['sms'])
     ok(st.startswith('Done') and 'BG-77120' in pg.input_value('#f-case') and pg.locator('.doc121').count() == 0, 'an SMS screenshot in the ordinary flow fills the box to check, as before')
+    n171 = len(cases()); words171 = pg.input_value('#f-case')
+    ok(pg.locator('main.document171').count() == 1 and pg.locator('.home44-spot').count() == 0, 'a real document photo stays in the focused entry screen')
+    pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 500)
+    pg.locator('.doc171-review summary').click()
+    ok(pg.locator('.doc171-review').count() == 1 and 'BG-77120' in pg.locator('.doc171-words').inner_text() and len(cases()) == n171, 'the actual photo reading reaches review before any case is saved')
+    pg.click('[data-a=back-title]'); wait(pg, 400)
+    ok(pg.input_value('#f-case') == words171, 'Back preserves the actual photo reading for correction')
     # 8 a PDF notice: the same review
     parking_flow(); pg.set_input_files('input[data-ocr=f-case]', HERE + '/tests/out/doc77_notice.pdf'); st = read_wait(pg)
     ok('Photo read' in st and pg.locator('.doc121-review').count() == 1 and pg.input_value('#doc-ref') == 'LJ12345678', 'a PDF notice gets the same review (%s)' % st[:50])

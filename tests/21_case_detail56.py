@@ -74,6 +74,8 @@ with sync_playwright() as p:
     ok(pg.locator('.case56-official a[href="https://www.gov.uk/reapply-licence-revoked"]').count()==1 and pg.locator('.case56-official a[href="https://www.gov.uk/renew-driving-licence"]').count()==1,'both routes link to the appropriate GOV.UK page')
     ok('Renew on GOV.UK' not in official and 'Expired Saturday 25 April' not in renew,'the misleading routine-renewal and expired labels are gone')
     ok(pg.locator('.case56-official .btn.primary').evaluate('(x)=>getComputedStyle(x).color')=='rgb(255, 255, 255)','the main official link has legible white text')
+    missing=pg.evaluate("renewCard({renew:{kind:'licence',step:'done',expiry:'',applied:false}})")
+    ok('data-f="rdate"' in missing and 'Date on the licence' in missing,'a licence case without a date still lets the person add it')
     ok(pg.locator('.case56-official [data-a=applied]').is_visible() and pg.locator('.case56-official [data-p=renewed]').is_visible(),'renewal outcome actions remain available when there is no separate move')
 
     timeline=pg.locator('#case56-timeline').locator('xpath=ancestor::section[1]')

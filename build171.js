@@ -26,7 +26,8 @@ R(`    h+='<div class="stack-s"><h1 class="h2">What were you planning to do next
 `    if(d.document171)h+=doc171Review(d);
     h+='<div class="stack-s"><'+(d.document171?'h2':'h1')+' class="h2">What were you planning to do next?</'+(d.document171?'h2':'h1')+'><p class="lede">This optional pilot question helps us see whether Sorted is useful. “Not sure yet” is fine, or skip it below.</p></div>';`);
 R('case "back-title":d.step="title";d.err="";render();break;', 'case "back-title":if(d.document171){S.draft={gk:"document",casetext:d.said||"",docConfirmed:d.docConfirmed||null};S.view={name:"home"};S.composeOpen=true;S.newOpen=true;render();window.scrollTo(0,0);break}d.step="title";d.err="";render();break;');
-R('    case "home":S.newOpen=false;', '    case "doc171-home":draftSave();docKeepSave143();goHome();break;\n    case "home":S.newOpen=false;');
+R('    case "home":S.newOpen=false;', '    case "doc171-home":docKeepSave143();if(S.view.name==="new"&&d.document171)S.draft={gk:"document",casetext:d.said||""};draftSave();goHome();break;\n    case "home":S.newOpen=false;');
+R('var h=topbar(\'<button class="link" data-a="home">Cancel</button>\');', 'var h=topbar(\'<button class="link" data-a="\'+(d.document171?"doc171-home":"home")+\'">Cancel</button>\');');
 R('S.draft=dgo.gk&&GI[dgo.gk]?', 'S.draft=dgo.gk&&(GI[dgo.gk]||dgo.gk==="document")?');
 R('&&!t.cf&&!pcnRead(String(t.said||""))?"call":null', '&&!t.cf&&!doc171Only(t.said||t.title,t.facts)&&!pcnRead(String(t.said||""))?"call":null');
 R('S._info=frCard(t)+prodCard161(t)+uCard(t);', 'S._info=(doc171Incomplete(t)&&!S.view.panel?"":frCard(t))+prodCard161(t)+uCard(t);');
@@ -35,6 +36,6 @@ R('function now137(t,s){', 'function now137(t,s){\n  if(s!=="done"&&!t.example&&
 R('</head>', `<style>\n.document171{margin-top:12px;padding-bottom:28px}.doc171-words{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}.doc171-review details summary{min-height:44px;cursor:pointer;font-weight:600}.doc171-review .u117 dd{overflow-wrap:anywhere}\n</style>\n</head>`);
 R('SORTED_V="v170"','SORTED_V="v171"');
 fs.writeFileSync('public/index.html',s);
-const EXPECT='3cddd839b89b8ca71a94c29340f8cd38c0030f82';
+const EXPECT='4447bff06e0a8646e267d7ac71042c8b59749292';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v171 ok',h(s),s.length);

@@ -7,6 +7,6 @@ R('function renewedForm(t){',UI+'function renewedForm(t){');
 R('SORTED_V="v172"','SORTED_V="v173"');
 R('</head>','<style>\n.case56-official .btn.primary{color:#fff}.licence173-routine{padding-top:14px;border-top:1px solid var(--rule)}\n</style>\n</head>');
 fs.writeFileSync('public/index.html',s);
-const EXPECT='';
+const EXPECT='2c4afac30096219ee0950cf9d196b5f9832b4242';
 if(EXPECT&&h(s)!==EXPECT)throw new Error('output mismatch '+h(s));
 console.log('v173 ok',h(s),s.length);

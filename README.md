@@ -12,7 +12,7 @@ to it in order, and checks the result against a fingerprint so a wrong step fail
 
 ```
 node all.js          # runs build.js, build7.js … the latest buildN.js in order (all.js lists them)
-# → public/index.html, sha1 4aa89440fcf289dd7fa85eab51eb300b90d373f4 for v172
+# → public/index.html, sha1 bdec5d278aab403e460bd9bd2d1890ac315c1be9 for v173
 sh tests/run.sh      # builds, then runs every walkthrough test
 ```
 

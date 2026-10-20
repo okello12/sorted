@@ -79,7 +79,8 @@ with sync_playwright() as p:
     def home():
         tap('go-home'); return main()
     def homerow(cid):
-        home(); return pg.evaluate("(id)=>{var e=document.querySelector('[data-id=\"'+id+'\"]');return e?e.innerText:''}", cid)
+        # the Home row or spotlight, never the v169 "Next tracked date" card, which carries the case id too
+        home(); return pg.evaluate("(id)=>{var e=Array.from(document.querySelectorAll('[data-id=\"'+id+'\"]')).find(function(x){return !x.closest('.context169-next')});return e?e.innerText:''}", cid)
     def understood(cid):
         opencase(cid); pg.evaluate("document.querySelectorAll('details').forEach(d=>d.open=true)"); wait(pg, 150)
         return pg.inner_text('details.case117-u') if pg.locator('details.case117-u').count() else ''

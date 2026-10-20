@@ -79,12 +79,31 @@ promotion. Each condition, as checked:
 
    - Why it matters: staging is a required check on every pull request. If staging broke and couldn't be repaired,
      releases would stop until it was. That makes a rebuild worth proving, but this change has a two-line undo.
-4. **Run on staging, then verify.** Authorised for staging only (11 October 2026). Production excluded: no automatic
-   promotion.
-   - 07:52 UTC: the fingerprint was retaken just before, and is unchanged.
-   - The migration tool's apply came back "cancelled": its confirmation prompt for a destructive statement doesn't
-     reach Baldwin. Nothing changed.
-   - The run is by Baldwin in staging's SQL editor, with this file exactly as merged.
+4. **Run on staging, then verify.** Authorised for staging only, with the conditions in Baldwin's note of 11
+   October (fingerprint before, verify the extension and advisor, a real HTTP request, the suite). Production
+   excluded: no automatic promotion.
+   - 11 October, 07:52 UTC: the migration tool's apply came back "cancelled" (its confirmation prompt doesn't reach
+     Baldwin). Nothing changed. The run moved to the SQL editor.
+   - **19 October 2026, 19:50 UTC: applied on staging by Baldwin in the SQL editor** (the merged script, sha1
+     `0b4b0842…`, typed into the editor by Claude in the built-in browser; "Success. No rows returned").
+   - Lapse to record: the structural fingerprint was not retaken immediately before this run; the comparison below is
+     against the one taken on 11 October. The tables part had changed in between, and the cause was found (next
+     point). Every other part was identical.
+
+   Results, 19:51 to 19:52 UTC:
+
+   | Check | Result |
+   |---|---|
+   | pg_net | 0.20.4 in `extensions` (was `public`) |
+   | Security advisor | `extension_in_public` no longer listed; every other finding unchanged (all reviewed in `docs/SECURITY_ADVISORIES.md`) |
+   | `net.http_post` callable by | postgres, service_role, anon, authenticated: the same four as before. `net` schema grants unchanged |
+   | Kick functions | all three present |
+   | Queue | 0 before, 0 after |
+   | Fingerprint: functions (64), policies (23), triggers (14), cron (2) | identical hashes to 11 October |
+   | Fingerprint: tables (30) | hash changed. Per-table comparison: Sorted's own tables carry no pg_net types or grants, and the storage tables now match live's exactly. `storage.migrations` shows Supabase ran its own platform migration `revoke-grants-to-unused-operations` on 15 October (live 21:20, staging 21:38 UTC), which changes grants on the storage tables. That accounts for it; the script can't touch table grants or columns |
+   | A real request | `net.http_get` to the live site's manifest: status 200 within a second, queue back to 0 |
+   | Staging suite | run by CI on the pull request that records this (see the PR) |
+   | Staging cases | 3 before, 3 after (the disposable test records) |
 
 ## How the script protects itself
 

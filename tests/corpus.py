@@ -373,9 +373,9 @@ DEMANDS += [
 SHOULD_EST = [
   "DWP said my payment should arrive by Friday", "Direct Line said they should have an answer next week",
   "Amazon said it should arrive by Friday", "The landlord said the plumber should come on Monday",
-  "The council said it should be sorted by Friday", "Your parcel should arrive by Friday 16 October.",
+  "The council said it should be sorted by Friday", "Your parcel should arrive by " + ahead(11)['long'] + ".",
   "Hi, your refund should be with you within 5 working days. Thanks, Currys",
-  "BT: Your broadband should be live on 22 October.",
+  "BT: Your broadband should be live on " + ahead(12)['dm'] + ".",
 ]
 SHOULD_FIRM = ["Your engineer is booked for Tuesday and should arrive between 8am and 12pm", "British Gas will send an engineer on Tuesday"]
 SHOULD_NOT = ["Garage said it should be ready Friday, they'll try their best", "I should ring BT on Monday",

@@ -144,6 +144,7 @@ with sync_playwright() as p:
     n171 = len(cases()); words171 = pg.input_value('#f-case')
     ok(pg.locator('main.document171').count() == 1 and pg.locator('.home44-spot').count() == 0, 'a real document photo stays in the focused entry screen')
     pg.locator('form[data-f=case] button[type=submit]').last.click(); wait(pg, 500)
+    pg.locator('.doc171-review summary').click()
     ok(pg.locator('.doc171-review').count() == 1 and 'BG-77120' in pg.locator('.doc171-words').inner_text() and len(cases()) == n171, 'the actual photo reading reaches review before any case is saved')
     pg.click('[data-a=back-title]'); wait(pg, 400)
     ok(pg.input_value('#f-case') == words171, 'Back preserves the actual photo reading for correction')

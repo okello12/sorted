@@ -71,7 +71,7 @@ with sync_playwright() as p:
     pg.goto('https://sorted.test/#start'); pg.evaluate("localStorage.clear();sessionStorage.clear();localStorage.setItem('__emailReady','1')"); pg.reload(); wait(pg, 300); pg.click('[data-a=anon-start]'); wait(pg, 700)
     # 0 the copy
     pg.locator('[data-cap82=document]').first.evaluate('e=>e.click()'); wait(pg, 300); m = main()
-    ok('read in full' not in m and 'Sorted tries to read the notice. Check the details before continuing.' in m, 'the document door no longer promises notices are read in full')
+    ok('read in full' not in m and 'Check what it found before you continue.' in m, 'the document door no longer promises notices are read in full (v171 wording)')
     ok(pg.locator('#ocr-status[role=status]').count() == 1, 'the document door has its own status region')
     # 1 a clear notice: review, every field editable, nothing until confirmed
     parking_flow(); n0 = len(cases()); st = photo(P['notice'])

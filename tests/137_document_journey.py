@@ -1,4 +1,4 @@
-# v171: document entry is separate from Home, review is before saving, and a sender alone never starts a call form.
+# v172: document entry is separate from Home, review is before saving, and a sender alone never starts a call form.
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from attlib143 import *
@@ -32,7 +32,11 @@ with sync_playwright() as p:
     ok(pg.locator('main.document171').count() == 1 and pg.input_value('#f-case') == text, 'Back returns to the original letter text rather than a title-only form')
     pg.fill('#f-case', 'From HMRC'); pg.locator('form[data-f=case] button[type=submit]').click(); wait(pg)
     pg.locator('.ps-short button[type=submit]').click(); wait(pg)
-    ok('Only the sender is known' in a.main(), 'a sender-only review makes the missing information explicit')
+    ok(pg.locator('.ps-short [role=alert]').count() == 1 and len(a.cases()) == count, 'the document door still requires words from the letter before review')
+    pg.click('[data-a=doc171-home]'); wait(pg)
+    a.tap('new-case'); pg.locator('[data-cap82=other]').first.click(); wait(pg)
+    pg.fill('#f-case', 'From HMRC'); pg.locator('form[data-f=case] button[type=submit]').click(); wait(pg)
+    pg.locator('.ps-short button[type=submit]').click(); wait(pg)
     pg.locator('[data-a=plan-skip]').click(); wait(pg, 700)
     pg.screenshot(path=HERE+'/tests/out/doc171-missing.png', full_page=True)
     ok(pg.locator('.doc171-missing').count() == 1 and pg.locator('form[data-f=call]').count() == 0, 'starting with only the sender offers adding the letter, not an assumed phone call')

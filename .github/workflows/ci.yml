@@ -29,6 +29,12 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check playwright==1.56.0
           python -m playwright install --with-deps chromium
+      - name: Check case choices during sync
+        run: |
+          node all.js >/dev/null
+          mkdir -p tests/out
+          sed 's#\(supabase-js@[0-9.]*/dist/umd/supabase.js"\) integrity="[^"]*"#\1#' public/index.html > tests/out/index.html
+          TZ=Europe/London PYTHONPATH=tests python tests/139_choice_sync.py
       - name: Run full regression suite
         run: SORTED_JOBS=4 sh tests/run.sh
       - name: Verify final build fingerprint is pinned

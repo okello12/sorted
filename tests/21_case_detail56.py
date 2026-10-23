@@ -29,6 +29,19 @@ with sync_playwright() as p:
     pg.locator('.case56-more > summary').click(); wait(pg,100)
     ok(pg.locator('.case56-more [data-p=done]').is_visible(),'finish action remains available under More')
 
+    # A remote refresh can arrive just after opening a choice screen. It must not dismiss it.
+    pg.click('.now137 [data-p=later]'); wait(pg,80)
+    ok(pg.locator('.q130-later').is_visible(),'Later choices open on the case')
+    chosen=(datetime.date.today()+datetime.timedelta(days=5)).isoformat()
+    pg.locator('.q130-later input[type=date]').fill(chosen)
+    pg.evaluate('draw143([{id:S.view.id,k:"adopt"}])'); wait(pg,80)
+    ok(pg.locator('.q130-later').is_visible() and pg.evaluate('S.view.panel')=='later' and pg.locator('.q130-later input[type=date]').input_value()==chosen,'a same-case refresh keeps the Later screen and selected day')
+    pg.click('.q130-later [data-a=q-close]'); wait(pg,80)
+    pg.click('.now137 [data-p=changed]'); wait(pg,80)
+    pg.evaluate('S.draft.changed="I have not filled the form yet";draw143([{id:S.view.id,k:"adopt"}])'); wait(pg,80)
+    ok(pg.evaluate('S.view.panel')=='changed' and pg.evaluate('S.draft.changed')=='I have not filled the form yet','a refresh keeps the change screen and its draft')
+    pg.evaluate('S.view.panel=null;S.draft={};render()'); wait(pg,80)
+
     # Create a real move through the product and exercise the compact Next UI against real stored data.
     pg.click('[data-a=panel][data-p=move]'); wait(pg,120)
     pg.fill('#f-mwhat','Remind to apply for it')

@@ -13,7 +13,7 @@ History and reasons live in `docs/PLAN.md`; how things work lives in `CLAUDE.md`
   wipes its name, and a repair saved with no name is named from its words. v166, from his vacuum cleaner walk: a product
   case asks only the safety question first, and the label can be photographed on the case. v165 asked for the label after a photo of the machine. v164, live
   since PR 77, retired Sorted's own repair checks, added ten makers and the Phase 1.5 audit fixes (`docs/PHASE1_5_AUDIT.md`).
-- **Page fingerprint (sha1 of public/index.html):** 1f229756583ab5824307114b68a8607c1359d491
+- **Page fingerprint (sha1 of public/index.html):** 2c8e79081b13e902da793ce535a06359acfccc42
 - **Site:** https://sorted-pilot.vercel.app, deployed by Vercel from `main`; `live-pilot` is kept level with `main`.
 - **Database:** Supabase `boxrwcuhxmimayaxzywu` (London, free plan, no backups). Staging: `ujwanxqrefziuxwfzeaj`.
 - **Migrations applied (live and staging):** up to 28 (`supabase/parked/28_reminder_path_v149.sql`), and 30

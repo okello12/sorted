@@ -36,11 +36,11 @@ with sync_playwright() as p:
     M1 = "Hi, we've passed this to our refunds team. Thanks for your patience."
     pg.click('[data-a=panel][data-p=paste]'); wait(pg); pg.fill('#f-paste', M1); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
     t = case(pg, T)
-    ok("couldn’t find a date" in pg.inner_text('main') and 'Added to the case' in pg.inner_text('main'), 'no date: says it was added and nothing else changed')
+    ok(pg.locator('#toast').inner_text() == 'Added to the case. Sorted found nothing in it that changes a date or a promise.' and pg.locator('#f-paste').count() == 0, 'no date: says it was added and nothing else changed, and the form closes (v177)')
     ok(any(l.startswith('Added a message: “Hi, we') for l in labels(t)), 'no date: the message is kept in the history')
     ok(not t.get('sugP') and not t['promises'], 'no date: no promise proposed or changed')
-    pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
-    ok(sum(1 for l in labels(case(pg, T)) if l.startswith('Added a message: “Hi, we')) == 1, 'pressing Read it twice keeps it once')
+    pg.click('[data-a=panel][data-p=paste]'); wait(pg); pg.fill('#f-paste', M1); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
+    ok(sum(1 for l in labels(case(pg, T)) if l.startswith('Added a message: “Hi, we')) == 1, 'pasting the same message again keeps it once')
     pg.click('form[data-f=paste] [data-a=panel][data-p=""]'); wait(pg)
     # 2 a pasted message with a date is kept and proposes the promise
     M2 = "Your refund will be paid by %s. Order 445566." % F1['dm']

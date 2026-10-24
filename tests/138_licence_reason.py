@@ -22,7 +22,7 @@ def state(pg): return pg.inner_text('.case56-renew-state')
 def official(pg): return pg.inner_text('.case56-official')
 def links(pg): return pg.evaluate("Array.from(document.querySelectorAll('.case56-official a[href]')).map(a=>a.getAttribute('href'))")
 with sync_playwright() as p:
-    b = p.chromium.launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, timezone_id='Europe/London')
+    b = p.chromium.launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, timezone_id='Europe/London', color_scheme='dark')
     ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=HERE + '/tests/mock.js', content_type='application/javascript'))
     ctx.route(lambda u: u.startswith('https://sorted.test/'), lambda r: r.fulfill(path=HERE + '/tests/out/index.html', content_type='text/html') if '/art/' not in r.request.url else r.fulfill(body=''))
     pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
@@ -35,9 +35,15 @@ with sync_playwright() as p:
         {'id': 'lic-plain', 'title': 'Renew my driving licence', 'said': 'Renew my driving licence', 'renew': {'kind': 'licence', 'step': 'done', 'expiry': '2026-04-25', 'applied': False, 'provider': 'DVLA', 'how': 'self'}},
         {'id': 'lic-soon', 'title': 'Driving licence', 'said': 'My driving licence runs out next year', 'renew': {'kind': 'licence', 'step': 'done', 'expiry': '2027-06-01', 'applied': False, 'provider': 'DVLA', 'how': 'self'}},
     ])
+    pg.evaluate("""()=>{var db=JSON.parse(localStorage.getItem('__mockdb')),t=db.tasks.find(x=>x.data.id==='lic-apply').data;
+      t.events=[{at:'2026-10-23T08:00:00Z',label:'Application form requested.'},{at:'2026-10-23T08:01:00Z',label:'Merged with changes saved from another device.'}];
+      localStorage.setItem('__mockdb',JSON.stringify(db))}""")
     pg.goto('https://sorted.test/'); wait(pg, 700)
     # 1 Baldwin's case: an expired licence whose own step says "apply" is asked about, not called a renewal
     opencase(pg, 'lic-apply'); st = state(pg); of = official(pg)
+    ok('Application form requested.' in pg.inner_text('.now137') and 'Merged with changes' not in pg.inner_text('.now137'), 'Now shows the latest real update instead of sync bookkeeping')
+    history=pg.locator('#case56-timeline').locator('xpath=ancestor::section[1]')
+    ok('Merged with changes saved from another device.' in history.text_content(), 'the complete sync history is still retained')
     ok('Check which page fits' in st and 'Expired' not in st and 'You gave Saturday 25 April as the date.' in st, 'an expired licence with "apply for it" is not called expired or a renewal: %s' % st.replace('\n', ' | '))
     ok('Why do you need a licence?' in of and 'Renew on GOV.UK' not in of and links(pg) == [], 'the official card asks which page fits and shows no link yet')
     chips = pg.locator('.lic173-ask .chip')
@@ -48,6 +54,11 @@ with sync_playwright() as p:
     ok(t['renew']['why'] == 'ban' and any('after a driving ban' in e['label'] and 'Your choice' in e['label'] for e in t['events']), 'the tap saves the reason with a history line')
     ok('After a driving ban' in st and 'Expired' not in st, 'the state says after a driving ban: %s' % st.replace('\n', ' | '))
     ok('Reapply on GOV.UK' in of and links(pg) == [BAN] and 'D27' in of and 'can’t drive until the ban has ended' in of and 'Renew on GOV.UK' not in of, 'the route is the reapply-after-a-ban page')
+    official_button=pg.locator('.case56-official a.btn.primary')
+    ok(official_button.evaluate('(el)=>getComputedStyle(el).color')=='rgb(255, 255, 255)', 'the official link has white text in dark mode')
+    pg.emulate_media(color_scheme='light');wait(pg,100)
+    ok(official_button.evaluate('(el)=>getComputedStyle(el).color')=='rgb(255, 255, 255)', 'the official link keeps white text in light mode')
+    pg.emulate_media(color_scheme='dark')
     ok(pg.locator('.case56-official [data-p=renewed]').inner_text() == 'I’ve got it back' and pg.locator('.case56-official [data-a=applied]').count() == 0, 'the actions fit (the open step already says apply)')
     pg.reload(); wait(pg, 700)
     if pg.locator('.case56-official').count() == 0: opencase(pg, 'lic-apply')

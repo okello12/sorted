@@ -51,7 +51,7 @@ with sync_playwright() as p:
     pg.click('[data-a=sug-yes]'); wait(pg)
     # 6 a message with no date
     pg.click('[data-a=panel][data-p=paste]'); wait(pg); pg.fill('#f-paste',"We are looking into this and will be in touch."); pg.click('form[data-f=paste] button[type=submit]'); wait(pg)
-    ok("couldn’t find a date" in pg.inner_text('main'),'no date: says so, changes nothing')
+    ok(pg.locator('#toast').inner_text()=='Added to the case. Sorted found nothing in it that changes a date or a promise.' and pg.locator('#f-paste').count()==0,'no date: says so, changes nothing, and the form closes (v177)')
     # 7 wins line once a case is finished
     pg.evaluate("""(t)=>{var db=JSON.parse(localStorage.getItem('__mockdb'));var x=db.tasks.find(y=>y.data.said===t).data;x.board='done';x.promises.forEach(q=>q.status='kept');localStorage.setItem('__mockdb',JSON.stringify(db));Object.keys(localStorage).filter(k=>k.startsWith('sorted.cache.')).forEach(k=>localStorage.removeItem(k))}""",T5)
     pg.goto('https://sorted.test/'); wait(pg,600); w=pg.locator('.wins').inner_text() if pg.locator('.wins').count() else ''; print('  wins:',w.replace('\n',' | '))

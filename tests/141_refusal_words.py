@@ -14,7 +14,7 @@ def paste(a, cid, words):
 with sync_playwright() as p:
     a = App(p); pg = a.pg
     # 1 a case with their promise: the refusal is proposed, the promise untouched until Yes
-    c1 = a.start('DWP said they would decide on my PIP claim by 30 October')
+    c1 = a.start('DWP said they would decide on my PIP claim by %d %s' % (day(20).day, day(20).strftime('%B')))
     ok(len(a.openp(c1)) == 1, 'the case has DWP’s open promise')
     paste(a, c1, 'They said I don’t qualify')
     m = a.main()

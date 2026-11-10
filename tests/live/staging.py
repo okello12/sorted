@@ -114,6 +114,10 @@ for nm in ('product_flow_started', 'product_candidate_found', 'product_read_fail
            'safety_stopped', 'official_support_shown', 'resolution_route_shown', 'contact_prepared'):
     st, r = rest('POST', 'pilot_events', {'name': nm, 'case_id': tid, 'props': {'src': 'label', 'route': 'RETAILER'}}, A, 'return=minimal')
     ok(st == 201, 'staging accepts the step name %s (%s)' % (nm, st))
+# v178: the chase's steps (migration 31), with code-only props
+for nm in ('chase_prepared', 'chase_opened', 'chase_sent_said', 'message_added'):
+    st, r = rest('POST', 'pilot_events', {'name': nm, 'case_id': tid, 'props': {'via': 'email', 'after_chase': True}}, A, 'return=minimal')
+    ok(st == 201, 'staging accepts the step name %s (%s)' % (nm, st))
 st, r = rest('POST', 'pilot_events', {'name': 'product_made_up', 'case_id': tid}, A, 'return=minimal')
 ok(st >= 400, 'a step name outside the list is still refused (%s)' % st)
 st, r = rpc('pilot_metrics', {'include_admins': False}, A)

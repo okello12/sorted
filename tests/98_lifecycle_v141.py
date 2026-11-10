@@ -99,17 +99,18 @@ with sync_playwright() as p:
     ok('check the notice details' in h.lower() and 'get the call ready' not in h.lower(), 'a typed parking notice: Home says check the notice details')
 
     # ================= 8. the deadline on a demand =================
-    c5 = start('Letter from HMRC says I owe £340 and must pay by 31 October, ref 123/AB45678')
+    dd = today + datetime.timedelta(days=20)  # a deadline three weeks away, whatever today is
+    c5 = start('Letter from HMRC says I owe £340 and must pay by %d %s, ref 123/AB45678' % (dd.day, dd.strftime('%B')))
     dl = case(c5).get('deadline') or {}
-    ok(dl.get('date', '')[5:] == '10-31', 'the deadline is kept on the case as a date: %s' % dl)
-    ok('31 October' in now() and 'get the call ready' not in now().lower(), 'the Now line names the deadline: %r' % now())
-    h = homespot('HMRC'); ok('before Saturday 31 October' in h or 'before ' + fday(datetime.date(today.year if today <= datetime.date(today.year, 10, 31) else today.year + 1, 10, 31)) in h, 'Home names it too')
+    ok(dl.get('date', '') == dd.isoformat(), 'the deadline is kept on the case as a date: %s' % dl)
+    ok('%d %s' % (dd.day, dd.strftime('%B')) in now() and 'get the call ready' not in now().lower(), 'the Now line names the deadline: %r' % now())
+    h = homespot('HMRC'); ok('before ' + fday(dd) in h, 'Home names it too')
     opencase(c5)
     if pg.locator('[data-a=fr-ok]').count(): pg.click('[data-a=fr-ok]'); wait(pg, 300)
     opencase(c5)
     ok(pg.locator('.dl141 [data-a=fr-remind]').count() == 1, 'after leaving, the reminder before the deadline is still offered')
     pg.click('.dl141 [data-a=fr-remind]'); wait(pg, 400)
-    ok(pg.locator('#moveform').count() == 1 and pg.input_value('#f-mdate')[5:] == '10-31', 'it opens your own step at the deadline')
+    ok(pg.locator('#moveform').count() == 1 and pg.input_value('#f-mdate') == dd.isoformat(), 'it opens your own step at the deadline')
     pg.click('#moveform button[type=submit]'); wait(pg, 500)
     ok((case(c5).get('deadline') or {}).get('ans') == 'remind' and pg.locator('.dl141').count() == 0, 'once saved, it isn’t offered again')
     c5b = start('Letter from the council says I owe £120 council tax arrears and must pay by 30 November')

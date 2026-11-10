@@ -34,7 +34,7 @@ with sync_playwright() as p:
     pg.fill('#f-who', 'Currys'); pg.click('form[data-f=call] button[type=submit]'); wait(pg, 500)
     href = pg.get_attribute('a[data-a=mail-open]', 'href') or ''
     ok(href.startswith('mailto:?cc=case-') and urllib.parse.quote('@inbound.getsorted.uk') in href, 'the email button adds the case’s own address in Cc: %s' % href[:60])
-    ok('Sorted adds this case’s own address in Cc, so their reply comes back to this case.' in pg.inner_text('main'), 'and says why')
+    ok('If they reply to all, their reply appears in this case. If they reply only to you, add it here yourself.' in pg.inner_text('main') and 'comes back to this case' not in pg.inner_text('main'), 'and says honestly what the Cc does')
     # 2 a reply comes in: proposed, not applied
     poke(pg, "db.inbound_items.push({id:'r1',user_id:'x',task_id:'%s',from_domain:'currys.co.uk',subject:'Your refund',body:'Hello. We will pay your refund of £89 by %s. Order 445566. Kind regards, Currys',received_at:new Date().toISOString(),used_at:null});"
          "db.inbound_items.push({id:'r2',user_id:'x',task_id:'%s',from_domain:'spam.example',subject:'You won',body:'Claim your prize now',received_at:new Date().toISOString(),used_at:null})" % (tid, F['long'], tid))
